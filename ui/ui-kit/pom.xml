@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>de.javaholic</groupId>
+    <artifactId>javaholic-modules</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>ui-kit</artifactId>
+  <name>UI Kit</name>
+  <packaging>jar</packaging>
+
+  <dependencies>
+
+    <!-- Vaadin API: required for compilation, provided by the app -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- i18n support (labels, validation messages, etc.) -->
+    <dependency>
+      <groupId>de.javaholic</groupId>
+      <artifactId>i18n-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+  </dependencies>
+
+</project>

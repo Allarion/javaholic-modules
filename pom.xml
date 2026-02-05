@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>ui/ui-kit</module>
         <module>iam/iam-core</module>
         <module>iam/iam-ui</module>
         <module>config/config-core</module>
@@ -23,7 +24,9 @@
     <properties>
         <java.version>21</java.version>
         <spring.boot.version>3.2.2</spring.boot.version>
-        <vaadin.version>24.4.4</vaadin.version>
+        <vaadin.version>24.9.7</vaadin.version>
+
+        <jakarta.el.version>4.0.2</jakarta.el.version>
     </properties>
 
     <dependencyManagement>
