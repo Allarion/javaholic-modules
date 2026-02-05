@@ -1,0 +1,249 @@
+package de.javaholic.util.ui.vaadin.fluent;
+
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.notification.Notification;
+
+import de.javaholic.util.ui.i18n.I18n;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+/**
+ * Fluent builder for Vaadin {@link Button Buttons}.
+ *
+ * <p>This utility focuses on explicit behavior:
+ * no automatic bindings, no polling, no hidden lifecycle logic.</p>
+ *
+ * <pre>{@code
+ * Button save =
+ *     Buttons.create()
+ *            .label("Save")
+ *            .action(this::onSave)
+ *            .build();
+ * }</pre>
+ *
+ * <h3>Dynamic enablement</h3>
+ *
+ * <pre>{@code
+ * Button ok =
+ *     Buttons.create()
+ *            .label("OK")
+ *            .enabledWhen(form::isValid)
+ *                .revalidateOn(nameField)
+ *                .revalidateOn(enabledCheckbox)
+ *                .done()
+ *            .action(this::onOk)
+ *            .build();
+ * }</pre>
+ *
+ * <p>This is optional syntax sugar only. You can always use Vaadin directly.</p>
+ */
+public final class Buttons {
+
+    private Buttons() {
+    }
+
+    /**
+     * Entry point for fluent button creation.
+     */
+    public static Builder create() {
+        return new Builder();
+    }
+
+    // =====================================================================
+    // == Builder
+    // =====================================================================
+
+    /**
+     * Fluent builder for a Vaadin {@link Button}.
+     *
+     * <p>After calling {@link #build()}, the returned button behaves like
+     * a regular Vaadin component. The fluent API is detached.</p>
+     */
+    public static final class Builder {
+
+        private String label;
+        private Runnable action;
+        private EnablementBinding enablement;
+        private final List<ButtonVariant> themeVariants = new ArrayList<>();
+
+        /** notification duration for action errors */
+        private int errorNotificationMs = 5_000;
+
+        private Builder() {
+        }
+
+        /**
+         * Sets the button label.
+         */
+        public Builder label(String label) {
+            this.label = label;
+            return this;
+        }
+
+        /**
+         * Sets the button label via i18n lookup.
+         */
+        public Builder textI18n(I18n i18n, String key) {
+            return label(i18n.text(key));
+        }
+
+        /**
+         * Defines a dynamic enablement condition.
+         */
+        public EnablementStep enabledWhen(Supplier<Boolean> condition) {
+            if (this.enablement != null) {
+                throw new IllegalStateException("enabledWhen already defined");
+            }
+            this.enablement = new EnablementBinding(condition);
+            return new EnablementStep(this, enablement);
+        }
+
+        /**
+         * Defines the click action.
+         *
+         * <p>The action is executed inside a centralized try/catch block
+         * handling {@link IllegalStateException} uniformly.</p>
+         */
+        public Builder action(Runnable action) {
+            if (this.action != null) {
+                throw new IllegalStateException("action already defined");
+            }
+            this.action = action;
+            return this;
+        }
+
+        /**
+         * Adds a Vaadin {@link ButtonVariant}.
+         */
+        public Builder style(ButtonVariant variant) {
+            this.themeVariants.add(variant);
+            return this;
+        }
+
+        /**
+         * Indicates how long a error Notification should be displayed.
+         */
+        public Builder errorNotificationMs(int ms) {
+            this.errorNotificationMs = ms;
+            return this;
+        }
+
+        /**
+         * Builds the Vaadin {@link Button}.
+         */
+        public Button build() {
+            Button button = new Button(label);
+
+            themeVariants.forEach(button::addThemeVariants);
+
+            if (action != null) {
+                button.addClickListener(e -> runSafely(action));
+            }
+
+            if (enablement != null) {
+                enablement.bindTo(button);
+            }
+
+            return button;
+        }
+
+        /**
+         * Centralized exception handling for button actions.
+         */
+        private void runSafely(Runnable action) {
+            try {
+                action.run();
+            } catch (IllegalStateException ex) {
+                Notification.show(
+                        ex.getMessage(),
+                        errorNotificationMs,
+                        Notification.Position.BOTTOM_CENTER
+                );
+            }
+        }
+    }
+
+    // =====================================================================
+    // == EnablementStep
+    // =====================================================================
+
+    public static final class EnablementStep {
+
+        private final Builder builder;
+        private final EnablementBinding binding;
+
+        private EnablementStep(Builder builder, EnablementBinding binding) {
+            this.builder = builder;
+            this.binding = binding;
+        }
+
+        /**
+         * Revalidates when a Vaadin value component changes.
+         */
+        public EnablementStep revalidateOn(HasValue<?, ?> field) {
+            Objects.requireNonNull(field, "field");
+            binding.addRegistrar(r -> field.addValueChangeListener(e -> r.run()));
+            return this;
+        }
+
+        /**
+         * Revalidates when a button is clicked.
+         */
+        public EnablementStep revalidateOn(Button button) {
+            Objects.requireNonNull(button, "button");
+            binding.addRegistrar(r -> button.addClickListener(e -> r.run()));
+            return this;
+        }
+
+        /**
+         * Revalidates using a custom registrar (e.g. attach listener, timer, etc.).
+         */
+        public EnablementStep revalidateOn(Consumer<Runnable> registrar) {
+            Objects.requireNonNull(registrar, "registrar");
+            binding.addRegistrar(registrar);
+            return this;
+        }
+
+        /**
+         * Returns to the main builder.
+         */
+        public Builder done() {
+            return builder;
+        }
+    }
+
+    // =====================================================================
+    // == EnablementBinding
+    // =====================================================================
+
+    private static final class EnablementBinding {
+
+        private final Supplier<Boolean> condition;
+        private final List<Consumer<Runnable>> registrars = new ArrayList<>();
+
+        private EnablementBinding(Supplier<Boolean> condition) {
+            this.condition = Objects.requireNonNull(condition, "condition");
+        }
+
+        private void addRegistrar(Consumer<Runnable> registrar) {
+            registrars.add(Objects.requireNonNull(registrar, "registrar"));
+        }
+
+        private void bindTo(Button button) {
+            Runnable revalidate =
+                    () -> button.setEnabled(Boolean.TRUE.equals(condition.get()));
+
+            revalidate.run();
+
+            for (Consumer<Runnable> registrar : registrars) {
+                registrar.accept(revalidate);
+            }
+        }
+    }
+}
