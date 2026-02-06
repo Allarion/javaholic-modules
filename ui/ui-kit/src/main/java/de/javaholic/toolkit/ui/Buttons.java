@@ -1,11 +1,10 @@
-package de.javaholic.util.ui.vaadin.fluent;
+package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.Notification;
-
-import de.javaholic.util.ui.i18n.I18n;
+import de.javaholic.toolkit.i18n.I18n;
 
 import java.util.ArrayList;
 import java.util.List;

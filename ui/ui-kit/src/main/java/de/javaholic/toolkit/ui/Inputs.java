@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.ui.vaadin.fluent;
+package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;

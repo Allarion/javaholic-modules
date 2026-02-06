@@ -1,5 +1,4 @@
-package de.javaholic.util.ui;
-// ui.fluent.layout;
+package de.javaholic.toolkit.ui.layout;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;

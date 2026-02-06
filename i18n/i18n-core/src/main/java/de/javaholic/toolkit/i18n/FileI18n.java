@@ -1,4 +1,4 @@
-package de.javaholic.util.ui.i18n;
+package de.javaholic.toolkit.i18n;
 
 import java.io.BufferedReader;
 import java.io.IOException;

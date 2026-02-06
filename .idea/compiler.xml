@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="iam-core" />
+        <module name="audit-core" />
+        <module name="config-core" />
+        <module name="i18n-editor-ui" />
+        <module name="ui-kit" />
+        <module name="iam-ui" />
+        <module name="i18n-core" />
+        <module name="config-forms-ui" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

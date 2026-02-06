@@ -1,4 +1,4 @@
-package de.javaholic.util.ui.vaadin.fluent;
+package de.javaholic.toolkit.ui.form;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
@@ -10,8 +10,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.validator.BeanValidator;
-
-import de.javaholic.util.ui.i18n.I18n;
+import de.javaholic.toolkit.i18n.I18n;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;

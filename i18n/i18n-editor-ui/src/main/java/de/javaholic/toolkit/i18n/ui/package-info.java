@@ -14,4 +14,4 @@
  * </ul>
  * </p>
  */
-package de.javaholic.i18n.ui;
+package de.javaholic.toolkit.i18n.ui;

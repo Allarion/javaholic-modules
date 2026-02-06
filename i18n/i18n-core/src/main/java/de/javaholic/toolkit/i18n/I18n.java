@@ -1,4 +1,4 @@
-package de.javaholic.util.ui.i18n;
+package de.javaholic.toolkit.i18n;
 
 /**
  * Minimal lookup-only i18n service.

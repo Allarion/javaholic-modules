@@ -1,4 +1,4 @@
-package de.javaholic.util.ui.vaadin.fluent;
+package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -6,6 +6,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import de.javaholic.toolkit.ui.form.Forms;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
