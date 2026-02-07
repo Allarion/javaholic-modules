@@ -13,7 +13,8 @@
     <modules>
         <module>ui/ui-kit</module>
         <module>iam/iam-core</module>
-        <module>iam/iam-ui</module>
+        <module>iam/iam-persistence-file</module>
+        <module>iam/iam-security-spring</module>
         <module>config/config-core</module>
         <module>config/config-forms-ui</module>
         <module>i18n/i18n-core</module>
