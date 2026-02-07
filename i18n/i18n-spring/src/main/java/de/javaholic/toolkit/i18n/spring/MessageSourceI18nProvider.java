@@ -29,11 +29,6 @@ public final class MessageSourceI18nProvider implements I18nProvider {
 
     @Override
     public I18n get(){
-        return new I18n() {
-            @Override
-            public String text(String key) {
-                return messageSource.getMessage(key, null, locale);
-            }
-        };
+        return key -> messageSource.getMessage(key, null, locale);
     }
 }
