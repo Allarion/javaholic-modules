@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-
+// TODO: Aaron: look into: AUTO-GRID; CRUD (PAID VAADIN)
 /**
  * Fluent builder for {@link Grid} configuration.<br>
  *
