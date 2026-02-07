@@ -1,0 +1,14 @@
+IAM-Core (fertig)
+   ↓
+iam-persistence-file        (Bootstrap / Tests)
+iam-persistence-jpa         (Produktionsfähig)
+   ↓
+IAM Management API          (User / Role / Permission verwalten)
+   ↓
+IAM Base UI (Vaadin)        (notwendig, nicht nice-to-have)
+   ↓
+i18n wird real              (Keys + Editor)
+   ↓
+Config wird real            (Config-Beans + UI)
+   ↓
+AdminWorkbench              (Integration aller Module)
