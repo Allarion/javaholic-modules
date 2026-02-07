@@ -5,7 +5,10 @@ package de.javaholic.toolkit.i18n;
  *
  * <p>Usage:</p>
  * <pre>{@code
- * I18n i18n = new FileI18n(Locale.GERMAN, Path.of("i18n/messages_de.properties"));
+ * I18n i18n = new CompositeI18n(List.of(
+ *     new FileI18nProvider("messages_de.properties"),
+ *     new FileI18nProvider("messages.properties") // fallback
+ * ));
  * String title = i18n.text("user.create.dialog.title");
  * }</pre>
  */

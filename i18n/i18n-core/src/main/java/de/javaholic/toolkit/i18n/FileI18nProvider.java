@@ -3,44 +3,31 @@ package de.javaholic.toolkit.i18n;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
-/**
- * File-based {@link I18n} implementation.
- *
- * <p>Reads a single locale-specific file. Missing keys return {@code ??key??}.</p>
- *
- * <pre>{@code
- * I18n i18n = new FileI18n(Locale.ENGLISH, Path.of("i18n/messages_en.properties"));
- * i18n.text("user.form.name.field.label");
- * }</pre>
- */
-public final class FileI18n implements I18n {
 
-    private final Locale locale;
+public final class FileI18nProvider implements I18nProvider {
+
     private final Map<String, String> entries;
 
-    public FileI18n(Locale locale, Path file) {
-        this.locale = Objects.requireNonNull(locale, "locale");
-        this.entries = load(Objects.requireNonNull(file, "file"));
-    }
-
-    public Locale locale() {
-        return locale;
+    public FileI18nProvider(Path file) {
+        this.entries = load(file);
     }
 
     @Override
-    public String text(String key) {
-        String value = entries.get(key);
-        return value != null ? value : "??" + key + "??";
+    public boolean contains(String key) {
+        return entries.containsKey(key);
+    }
+
+    @Override
+    public I18n get(){
+        return entries::get;
     }
 
     private static Map<String, String> load(Path file) {
