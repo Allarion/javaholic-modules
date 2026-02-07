@@ -1,7 +1,15 @@
 package de.javaholic.toolkit.iam.core.domain;
 
 import java.util.Objects;
-
+/**
+ * Domain representation of a permission.
+ *
+ * <p>Permissions are identified by stable string codes
+ * (e.g. {@code "user.manage"}, {@code "config.read"}).</p>
+ *
+ * <p>They are domain data, not enums, to allow extensibility
+ * without code changes.</p>
+ */
 public final class Permission {
 
     private final String code;

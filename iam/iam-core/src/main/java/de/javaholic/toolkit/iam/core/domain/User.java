@@ -1,11 +1,28 @@
 package de.javaholic.toolkit.iam.core.domain;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
+/**
+ * Domain entity representing a persisted user.
+ *
+ * <p>This is the authoritative representation of a user in the system.</p>
+ *
+ * <ul>
+ *   <li>Represents long-lived state (identity, status, role assignments)</li>
+ *   <li>Is persisted via a {@code UserStore} (file, JPA, etc.)</li>
+ *   <li>Independent of security context, requests, or sessions</li>
+ * </ul>
+ *
+ * <p>IMPORTANT:</p>
+ * <ul>
+ *   <li>Do NOT use this class directly for authorization checks</li>
+ *   <li>Do NOT expose this as a security principal</li>
+ * </ul>
+ *
+ * <p>{@link de.javaholic.toolkit.iam.core.api.UserPrincipal}
+ * is a derived, runtime-only projection of this entity.</p>
+ */
 public final class User {
 
     private final UUID id;
