@@ -1,0 +1,9 @@
+users:
+  - username: admin
+    roles: [ADMIN]
+
+roles:
+  ADMIN:
+    permissions:
+      - user.manage
+      - config.write
