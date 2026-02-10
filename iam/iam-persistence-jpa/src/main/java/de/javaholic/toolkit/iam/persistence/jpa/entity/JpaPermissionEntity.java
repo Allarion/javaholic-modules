@@ -18,7 +18,7 @@ public class JpaPermissionEntity {
     @Column(name = "code", nullable = false)
     private String code;
 
-    protected JpaPermissionEntity() {
+    public JpaPermissionEntity() {
     }
 
     public UUID getId() {

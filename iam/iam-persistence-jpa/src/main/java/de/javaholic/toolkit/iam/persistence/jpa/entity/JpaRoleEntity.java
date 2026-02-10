@@ -32,7 +32,7 @@ public class JpaRoleEntity {
     )
     private Set<JpaPermissionEntity> permissions = new HashSet<>();
 
-    protected JpaRoleEntity() {
+    public JpaRoleEntity() {
     }
 
     public UUID getId() {

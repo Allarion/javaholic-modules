@@ -39,7 +39,7 @@ public class JpaUserEntity {
     )
     private Set<JpaRoleEntity> roles = new HashSet<>();
 
-    protected JpaUserEntity() {
+    public JpaUserEntity() {
     }
 
     public UUID getId() {
