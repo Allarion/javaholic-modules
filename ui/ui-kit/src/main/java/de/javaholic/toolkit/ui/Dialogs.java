@@ -6,7 +6,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import de.javaholic.toolkit.ui.form.Forms;
+import de.javaholic.toolkit.ui.form.Form;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -215,60 +215,61 @@ public final class Dialogs {
     // =====================================================================
 
     /**
-     * Opens a dialog containing a {@link Forms.DefaultForm}.
+     * Opens a dialog containing a {@link Form}.
      * <p>
-     * The OK button only closes the dialog if {@link Forms.DefaultForm#isValid()}
-     * returns {@code true}. Validation uses Bean Validation annotations on the
+     * The OK button only closes the dialog if the binder validates successfully.
+     * Validation uses Bean Validation annotations on the
      * bound bean (e.g. {@code @NotNull}, {@code @Min}, {@code @Max}).
      *
      * <pre>{@code
-     * Forms.DefaultForm<UserConfig> form =
+     * Form<UserConfig> form =
      *     Forms.of(UserConfig.class)
-     *          .field("name")
-     *              .component(Inputs.text().widthFull().build())
-     *              .label("Name")
-     *              .validate(b -> b.asRequired("Required"))
+     *          .field("name", f -> {
+     *              f.component(Inputs.text().widthFull().build());
+     *              f.label("Name");
+     *              f.validate(b -> b.asRequired("Required"));
+     *          })
      *          .build();
      *
      * Dialogs.form(form, DialogTexts.of("Edit user", "Save", "Cancel"))
-     *        .onOk(f -> save(f.getValue()))
+     *        .onOk(f -> save(f.binder().getBean()))
      *        .open();
      * }</pre>
      */
-    public static <T> FormDialog<T> form(Forms.DefaultForm<T> form) {
+    public static <T> FormDialog<T> form(Form<T> form) {
         return new FormDialog<>(form, null);
     }
 
     /**
-     * Same as {@link #form(Forms.DefaultForm)} but with dialog texts.
+     * Same as {@link #form(Form)} but with dialog texts.
      */
-    public static <T> FormDialog<T> form(Forms.DefaultForm<T> form, DialogTexts texts) {
+    public static <T> FormDialog<T> form(Form<T> form, DialogTexts texts) {
         return new FormDialog<>(form, texts);
     }
 
     public static final class FormDialog<T> {
 
         private final Dialog dialog = new Dialog();
-        private final Forms.DefaultForm<T> form;
+        private final Form<T> form;
 
-        private BiConsumer<Forms.DefaultForm<T>, Dialog> onOk;
+        private BiConsumer<Form<T>, Dialog> onOk;
         private Runnable onCancel;
 
-        private FormDialog(Forms.DefaultForm<T> form, DialogTexts texts) {
+        private FormDialog(Form<T> form, DialogTexts texts) {
             this.form = form;
 
-            dialog.add(form);
+            dialog.add(form.layout());
 
             String okText = texts != null ? texts.okText : "OK";
             String cancelText = texts != null ? texts.cancelText : "Cancel";
 
             Button ok = Buttons.create()
                     .label(okText)
-                    .enabledWhen(form::isValid)
+                    .enabledWhen(() -> form.binder().validate().isOk())
                         .revalidateOn(r -> form.binder().addStatusChangeListener(e -> r.run()))
                         .done()
                     .action(() -> {
-                        if (!form.isValid()) {
+                        if (!form.binder().validate().isOk()) {
                             return;
                         }
                         if (onOk != null) {
@@ -292,7 +293,7 @@ public final class Dialogs {
             dialog.add(buttons);
         }
 
-        public FormDialog<T> onOk(Consumer<Forms.DefaultForm<T>> handler) {
+        public FormDialog<T> onOk(Consumer<Form<T>> handler) {
             this.onOk = (f, d) -> {
                 handler.accept(f);
                 d.close();
@@ -300,7 +301,7 @@ public final class Dialogs {
             return this;
         }
 
-        public FormDialog<T> onOk(BiConsumer<Forms.DefaultForm<T>, Dialog> handler) {
+        public FormDialog<T> onOk(BiConsumer<Form<T>, Dialog> handler) {
             this.onOk = handler;
             return this;
         }
