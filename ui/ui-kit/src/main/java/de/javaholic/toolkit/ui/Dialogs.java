@@ -44,7 +44,7 @@ public final class Dialogs {
      *     .withI18n(i18n)
      *     .text(Texts.header("user.select.title"))
      *     .textConfirm(Texts.label("ok"))
-     *     .textCancel(Texts.label("cancel"))
+     *     .textCancel()
      *     .open(result -> result.ifPresent(this::handleUser));
      * }</pre>
      *
@@ -69,6 +69,7 @@ public final class Dialogs {
         private Text descriptionText;
         private Text confirmLabelText;
         private Text confirmTooltipText;
+        private boolean confirmEnabled;
         private Text cancelLabelText;
         private Text cancelTooltipText;
         private boolean cancelEnabled;
@@ -92,18 +93,12 @@ public final class Dialogs {
          * <p>Other roles are ignored.</p>
          */
         public GridSelectionDialogBuilder<T> text(Text... texts) {
-            if (texts == null) {
-                return this;
+            HeaderDescriptionSlots slots = headerDescriptionSlots(texts);
+            if (slots.header != null) {
+                this.titleText = slots.header;
             }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.HEADER) {
-                    this.titleText = text;
-                } else if (text.role() == TextRole.DESCRIPTION) {
-                    this.descriptionText = text;
-                }
+            if (slots.description != null) {
+                this.descriptionText = slots.description;
             }
             return this;
         }
@@ -115,17 +110,16 @@ public final class Dialogs {
          */
         public GridSelectionDialogBuilder<T> textConfirm(Text... texts) {
             if (texts == null) {
+                this.confirmEnabled = true;
                 return this;
             }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.LABEL) {
-                    this.confirmLabelText = text;
-                } else if (text.role() == TextRole.TOOLTIP) {
-                    this.confirmTooltipText = text;
-                }
+            this.confirmEnabled = true;
+            ButtonTextSlots slots = buttonTextSlots(texts);
+            if (slots.label != null) {
+                this.confirmLabelText = slots.label;
+            }
+            if (slots.tooltip != null) {
+                this.confirmTooltipText = slots.tooltip;
             }
             return this;
         }
@@ -137,31 +131,25 @@ public final class Dialogs {
          */
         public GridSelectionDialogBuilder<T> textCancel(Text... texts) {
             if (texts == null) {
+                this.cancelEnabled = true;
                 return this;
             }
             this.cancelEnabled = true;
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.LABEL) {
-                    this.cancelLabelText = text;
-                } else if (text.role() == TextRole.TOOLTIP) {
-                    this.cancelTooltipText = text;
-                }
+            ButtonTextSlots slots = buttonTextSlots(texts);
+            if (slots.label != null) {
+                this.cancelLabelText = slots.label;
+            }
+            if (slots.tooltip != null) {
+                this.cancelTooltipText = slots.tooltip;
             }
             return this;
         }
 
         /**
-         * Enables a cancel action with default text.
+         * Enables a cancel action with default label.
          */
-        public GridSelectionDialogBuilder<T> withCancelAction() {
-            this.cancelEnabled = true;
-            if (cancelLabelText == null) {
-                this.cancelLabelText = Texts.label("cancel");
-            }
-            return this;
+        public GridSelectionDialogBuilder<T> textCancel() {
+            return textCancel((Text[]) null);
         }
 
         /**
@@ -189,6 +177,9 @@ public final class Dialogs {
          * @param completion selection result consumer
          */
         public void open(Consumer<Optional<T>> completion) {
+            if (!confirmEnabled) {
+                throw new IllegalStateException("Confirm text not set; call textConfirm(...)");
+            }
             Dialog dialog = new Dialog();
             dialog.setModal(true);
             dialog.setCloseOnEsc(false);
@@ -214,10 +205,8 @@ public final class Dialogs {
                     selection.value = e.getFirstSelectedItem().orElse(null)
             );
 
-            Text okText = this.confirmLabelText != null
-                    ? this.confirmLabelText
-                    : Texts.label("ok");
-            Text okTooltip = this.confirmTooltipText;
+            Text okText = defaultIfNull(confirmLabelText, Texts.label("ok"));
+            Text okTooltip = confirmTooltipText;
 
             Button ok = Buttons.create()
                     .withI18n(i18n)
@@ -234,7 +223,7 @@ public final class Dialogs {
             );
 
             if (cancelEnabled) {
-                Text cancelText = cancelLabelText != null ? cancelLabelText : Texts.label("cancel");
+                Text cancelText = defaultIfNull(cancelLabelText, Texts.label("cancel"));
                 Button cancel = Buttons.create()
                         .withI18n(i18n)
                         .text(cancelText, cancelTooltipText)
@@ -265,7 +254,7 @@ public final class Dialogs {
      *     .text(Texts.header("config.delete.title"))
      *     .text(Texts.description("config.delete.confirmation"))
      *     .textConfirm(Texts.label("delete"))
-     *     .textCancel(Texts.label("cancel"))
+     *     .textCancel()
      *     .open(confirmed -> {
      *         if (confirmed) {
      *             deleteConfig();
@@ -304,7 +293,7 @@ public final class Dialogs {
      *     .withI18n(i18n)
      *     .text(Texts.header("user.edit.title"))
      *     .textConfirm(Texts.label("save"))
-     *     .textCancel(Texts.label("cancel"))
+     *     .textCancel()
      *     .onOk(f -> save(f.binder().getBean()))
      *     .open();
      * }</pre>
@@ -337,6 +326,7 @@ public final class Dialogs {
         private Text descriptionText;
         private Text okLabelText = Texts.label("ok");
         private Text okTooltipText;
+        private boolean confirmEnabled;
         private Text cancelLabelText = Texts.label("cancel");
         private Text cancelTooltipText;
         private boolean cancelEnabled;
@@ -395,18 +385,12 @@ public final class Dialogs {
          * <p>Other roles are ignored.</p>
          */
         public FormDialog<T> text(Text... texts) {
-            if (texts == null) {
-                return this;
+            HeaderDescriptionSlots slots = headerDescriptionSlots(texts);
+            if (slots.header != null) {
+                this.titleText = slots.header;
             }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.HEADER) {
-                    this.titleText = text;
-                } else if (text.role() == TextRole.DESCRIPTION) {
-                    this.descriptionText = text;
-                }
+            if (slots.description != null) {
+                this.descriptionText = slots.description;
             }
             applyTexts();
             return this;
@@ -419,17 +403,17 @@ public final class Dialogs {
          */
         public FormDialog<T> textConfirm(Text... texts) {
             if (texts == null) {
+                this.confirmEnabled = true;
+                applyTexts();
                 return this;
             }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.LABEL) {
-                    this.okLabelText = text;
-                } else if (text.role() == TextRole.TOOLTIP) {
-                    this.okTooltipText = text;
-                }
+            this.confirmEnabled = true;
+            ButtonTextSlots slots = buttonTextSlots(texts);
+            if (slots.label != null) {
+                this.okLabelText = slots.label;
+            }
+            if (slots.tooltip != null) {
+                this.okTooltipText = slots.tooltip;
             }
             applyTexts();
             return this;
@@ -442,33 +426,27 @@ public final class Dialogs {
          */
         public FormDialog<T> textCancel(Text... texts) {
             if (texts == null) {
+                this.cancelEnabled = true;
+                applyTexts();
                 return this;
             }
             this.cancelEnabled = true;
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.LABEL) {
-                    this.cancelLabelText = text;
-                } else if (text.role() == TextRole.TOOLTIP) {
-                    this.cancelTooltipText = text;
-                }
+            ButtonTextSlots slots = buttonTextSlots(texts);
+            if (slots.label != null) {
+                this.cancelLabelText = slots.label;
+            }
+            if (slots.tooltip != null) {
+                this.cancelTooltipText = slots.tooltip;
             }
             applyTexts();
             return this;
         }
 
         /**
-         * Enables a cancel action with default text.
+         * Enables a cancel action with default label.
          */
-        public FormDialog<T> withCancelAction() {
-            this.cancelEnabled = true;
-            if (cancelLabelText == null) {
-                this.cancelLabelText = Texts.label("cancel");
-            }
-            applyTexts();
-            return this;
+        public FormDialog<T> textCancel() {
+            return textCancel((Text[]) null);
         }
 
         public FormDialog<T> onOk(Consumer<Forms.Form<T>> handler) {
@@ -494,6 +472,9 @@ public final class Dialogs {
         }
 
         public void open() {
+            if (!confirmEnabled) {
+                throw new IllegalStateException("Confirm text not set; call textConfirm(...)");
+            }
             dialog.open();
         }
 
@@ -511,11 +492,11 @@ public final class Dialogs {
                 content.remove(description);
                 description = null;
             }
-            ok.setText(Texts.resolve(i18n, okLabelText));
+            ok.setText(Texts.resolve(i18n, defaultIfNull(okLabelText, Texts.label("ok"))));
             if (okTooltipText != null) {
                 ok.setTooltipText(Texts.resolve(i18n, okTooltipText));
             }
-            cancel.setText(Texts.resolve(i18n, cancelLabelText));
+            cancel.setText(Texts.resolve(i18n, defaultIfNull(cancelLabelText, Texts.label("cancel"))));
             if (cancelTooltipText != null) {
                 cancel.setTooltipText(Texts.resolve(i18n, cancelTooltipText));
             }
@@ -536,6 +517,7 @@ public final class Dialogs {
         private Text descriptionText;
         private Text confirmLabelText = Texts.label("ok");
         private Text confirmTooltipText;
+        private boolean confirmEnabled;
         private Text cancelLabelText = Texts.label("cancel");
         private Text cancelTooltipText;
         private boolean cancelEnabled;
@@ -560,18 +542,12 @@ public final class Dialogs {
          * <p>Other roles are ignored.</p>
          */
         public ConfirmDialogBuilder text(Text... texts) {
-            if (texts == null) {
-                return this;
+            HeaderDescriptionSlots slots = headerDescriptionSlots(texts);
+            if (slots.header != null) {
+                this.titleText = slots.header;
             }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.HEADER) {
-                    this.titleText = text;
-                } else if (text.role() == TextRole.DESCRIPTION) {
-                    this.descriptionText = text;
-                }
+            if (slots.description != null) {
+                this.descriptionText = slots.description;
             }
             return this;
         }
@@ -583,17 +559,16 @@ public final class Dialogs {
          */
         public ConfirmDialogBuilder textConfirm(Text... texts) {
             if (texts == null) {
+                this.confirmEnabled = true;
                 return this;
             }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.LABEL) {
-                    this.confirmLabelText = text;
-                } else if (text.role() == TextRole.TOOLTIP) {
-                    this.confirmTooltipText = text;
-                }
+            this.confirmEnabled = true;
+            ButtonTextSlots slots = buttonTextSlots(texts);
+            if (slots.label != null) {
+                this.confirmLabelText = slots.label;
+            }
+            if (slots.tooltip != null) {
+                this.confirmTooltipText = slots.tooltip;
             }
             return this;
         }
@@ -605,37 +580,34 @@ public final class Dialogs {
          */
         public ConfirmDialogBuilder textCancel(Text... texts) {
             if (texts == null) {
+                this.cancelEnabled = true;
                 return this;
             }
             this.cancelEnabled = true;
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                if (text.role() == TextRole.LABEL) {
-                    this.cancelLabelText = text;
-                } else if (text.role() == TextRole.TOOLTIP) {
-                    this.cancelTooltipText = text;
-                }
+            ButtonTextSlots slots = buttonTextSlots(texts);
+            if (slots.label != null) {
+                this.cancelLabelText = slots.label;
+            }
+            if (slots.tooltip != null) {
+                this.cancelTooltipText = slots.tooltip;
             }
             return this;
         }
 
         /**
-         * Enables a cancel action with default text.
+         * Enables a cancel action with default label.
          */
-        public ConfirmDialogBuilder withCancelAction() {
-            this.cancelEnabled = true;
-            if (cancelLabelText == null) {
-                this.cancelLabelText = Texts.label("cancel");
-            }
-            return this;
+        public ConfirmDialogBuilder textCancel() {
+            return textCancel((Text[]) null);
         }
 
         /**
          * Opens the dialog.
          */
         public void open(Consumer<Boolean> completion) {
+            if (!confirmEnabled) {
+                throw new IllegalStateException("Confirm text not set; call textConfirm(...)");
+            }
             if (titleText != null) {
                 dialog.setHeaderTitle(Texts.resolve(i18n, titleText));
             }
@@ -651,7 +623,7 @@ public final class Dialogs {
 
             Button ok = Buttons.create()
                     .withI18n(i18n)
-                    .text(confirmLabelText, confirmTooltipText)
+                    .text(defaultIfNull(confirmLabelText, Texts.label("ok")), confirmTooltipText)
                     .action(() -> {
                         dialog.close();
                         completion.accept(true);
@@ -662,7 +634,7 @@ public final class Dialogs {
             if (cancelEnabled) {
                 Button cancel = Buttons.create()
                         .withI18n(i18n)
-                        .text(cancelLabelText, cancelTooltipText)
+                        .text(defaultIfNull(cancelLabelText, Texts.label("cancel")), cancelTooltipText)
                         .action(() -> {
                             dialog.close();
                             completion.accept(false);
@@ -685,5 +657,59 @@ public final class Dialogs {
      */
     private static final class Selection<T> {
         T value;
+    }
+
+    private static Text defaultIfNull(Text value, Text fallback) {
+        return value != null ? value : fallback;
+    }
+
+    private static ButtonTextSlots buttonTextSlots(Text... texts) {
+        if (texts == null) {
+            return ButtonTextSlots.empty();
+        }
+        Text label = null;
+        Text tooltip = null;
+        for (Text text : texts) {
+            if (text == null) {
+                continue;
+            }
+            if (text.role() == TextRole.LABEL) {
+                label = text;
+            } else if (text.role() == TextRole.TOOLTIP) {
+                tooltip = text;
+            }
+        }
+        return new ButtonTextSlots(label, tooltip);
+    }
+
+    private static HeaderDescriptionSlots headerDescriptionSlots(Text... texts) {
+        if (texts == null) {
+            return HeaderDescriptionSlots.empty();
+        }
+        Text header = null;
+        Text description = null;
+        for (Text text : texts) {
+            if (text == null) {
+                continue;
+            }
+            if (text.role() == TextRole.HEADER) {
+                header = text;
+            } else if (text.role() == TextRole.DESCRIPTION) {
+                description = text;
+            }
+        }
+        return new HeaderDescriptionSlots(header, description);
+    }
+
+    private record ButtonTextSlots(Text label, Text tooltip) {
+        private static ButtonTextSlots empty() {
+            return new ButtonTextSlots(null, null);
+        }
+    }
+
+    private record HeaderDescriptionSlots(Text header, Text description) {
+        private static HeaderDescriptionSlots empty() {
+            return new HeaderDescriptionSlots(null, null);
+        }
     }
 }
