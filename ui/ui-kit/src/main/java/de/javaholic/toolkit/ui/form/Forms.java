@@ -3,6 +3,8 @@ package de.javaholic.toolkit.ui.form;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValueAndElement;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.BeanValidator;
@@ -22,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public final class Forms {
 
@@ -128,15 +132,22 @@ public final class Forms {
          */
         public Form<T> build() {
             List<FieldAccess> fields = FieldAccess.forType(type);
-            Map<String, FieldAccess> byName = new LinkedHashMap<>();
-            for (FieldAccess field : fields) {
-                byName.put(field.name(), field);
-            }
-            failOnUnknownOverrides(byName.keySet());
-
             VerticalLayout layout = new VerticalLayout();
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
+
+            Span formErrorLabel = new Span(
+                    i18n != null
+                            ? i18n.text("form.validation.error")
+                            : "Please fix the highlighted fields"
+            );
+            formErrorLabel.addClassName("form-error");
+            formErrorLabel.setVisible(false);
+            layout.add(formErrorLabel);
+
+            binder.addStatusChangeListener(event ->
+                    formErrorLabel.setVisible(event.hasValidationErrors())
+            );
 
             for (FieldAccess field : fields) {
                 FieldOverride<T> override = overrides.get(field.name());
@@ -146,6 +157,7 @@ public final class Forms {
                 }
 
                 Component component = spec.component;
+                HasValue<?, ?> value;
                 if (component == null) {
                     FieldContext ctx = new FieldContext(
                             type,
@@ -153,11 +165,24 @@ public final class Forms {
                             field.type(),
                             field.annotations()
                     );
-                    component = fieldRegistry.create(ctx);
+                    value = fieldRegistry.create(ctx);
+                    if (!(value instanceof Component)) {
+                        throw new IllegalStateException(
+                                "FieldFactory returned non-Component for property '" + field.name() + "'"
+                        );
+                    }
+                    component = (Component) value;
+                } else if (component instanceof HasValue<?, ?> hasValue) {
+                    value = hasValue;
+                } else {
+                    throw new IllegalStateException(
+                            "Component for property '" + field.name() + "' is not a HasValue"
+                    );
                 }
 
                 applyLabel(component, field.name(), spec.label);
-                bindField(binder, field, component, spec.validators);
+                applyRequiredIndicator(component, field.annotations());
+                bindField(binder, field, value, spec.validators);
 
                 layout.add(component);
                 components.put(field.name(), component);
@@ -170,16 +195,6 @@ public final class Forms {
             return form;
         }
 
-        private void failOnUnknownOverrides(Set<String> fieldNames) {
-            for (String key : overrides.keySet()) {
-                if (!fieldNames.contains(key)) {
-                    throw new IllegalArgumentException(
-                            "No such property '" + key + "' on " + type.getSimpleName()
-                    );
-                }
-            }
-        }
-
         private void applyLabel(Component component, String fieldName, Text overrideLabel) {
             if (!(component instanceof HasLabel hasLabel)) {
                 return;
@@ -188,26 +203,30 @@ public final class Forms {
             hasLabel.setLabel(Texts.resolve(i18n, label));
         }
 
+        private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {
+            if (!isRequired(annotations)) {
+                return;
+            }
+            if (component instanceof HasValueAndElement hasValue) {
+                hasValue.setRequiredIndicatorVisible(true);
+            }
+        }
+
         private void bindField(
                 Binder<T> binder,
                 FieldAccess field,
-                Component component,
+                HasValue<?, ?> fieldComponent,
                 List<Consumer<Binder.BindingBuilder<T, Object>>> validators
         ) {
-            if (!(component instanceof HasValue<?, ?>)) {
-                throw new IllegalStateException(
-                        "Component for property '" + field.name() + "' is not a HasValue"
-                );
-            }
-
             @SuppressWarnings("unchecked")
-            HasValue<?, Object> value = (HasValue<?, Object>) component;
+            HasValue<?, Object> value = (HasValue<?, Object>) fieldComponent;
             Binder.BindingBuilder<T, Object> binding = binder.forField(value);
 
             binding = binding.withValidator(new BeanValidator(type, field.name()));
             for (Consumer<Binder.BindingBuilder<T, Object>> validator : validators) {
                 validator.accept(binding);
             }
+
             binding.bind(
                     bean -> field.get(bean),
                     (bean, v) -> field.set(bean, v)
@@ -399,5 +418,11 @@ public final class Forms {
             }
             return fields;
         }
+    }
+
+    private static boolean isRequired(AnnotatedElement annotations) {
+        return annotations.isAnnotationPresent(NotNull.class) ||
+                annotations.isAnnotationPresent(NotBlank.class) ||
+                annotations.isAnnotationPresent(NotEmpty.class);
     }
 }

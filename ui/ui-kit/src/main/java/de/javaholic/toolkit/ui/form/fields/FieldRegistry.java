@@ -1,7 +1,6 @@
 package de.javaholic.toolkit.ui.form.fields;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.HasValue;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -30,30 +29,35 @@ public final class FieldRegistry {
         this.configMappings = Collections.unmodifiableMap(new LinkedHashMap<>(configMappings));
     }
 
-    public Component create(FieldContext ctx) {
+    public HasValue<?, ?> create(FieldContext ctx) {
         Objects.requireNonNull(ctx, "ctx");
 
         FieldFactory factory = propertyOverrides.get(PropertyKey.of(ctx.declaringType(), ctx.property()));
         if (factory != null) {
-            return factory.create(ctx);
+            return requireFactoryResult(factory, ctx);
         }
 
         factory = resolveByType(typeOverrides, ctx.fieldType());
         if (factory != null) {
-            return factory.create(ctx);
+            return requireFactoryResult(factory, ctx);
         }
 
         factory = resolveByConfig(ctx);
         if (factory != null) {
-            return factory.create(ctx);
+            return requireFactoryResult(factory, ctx);
         }
 
         factory = resolveByType(defaultByType, ctx.fieldType());
         if (factory != null) {
-            return factory.create(ctx);
+            return requireFactoryResult(factory, ctx);
         }
 
-        return new TextField();
+        throw new IllegalStateException(
+                "No FieldFactory registered for " +
+                        ctx.declaringType().getSimpleName() +
+                        "#" + ctx.property() +
+                        " (" + ctx.fieldType().getName() + ")"
+        );
     }
 
     public void override(Class<?> type, FieldFactory factory) {
@@ -160,6 +164,18 @@ public final class FieldRegistry {
             normalized.put(entry.getKey().toLowerCase(Locale.ROOT), entry.getValue());
         }
         return Collections.unmodifiableMap(normalized);
+    }
+
+    private static HasValue<?, ?> requireFactoryResult(FieldFactory factory, FieldContext ctx) {
+        HasValue<?, ?> value = factory.create(ctx);
+        if (value == null) {
+            throw new IllegalStateException(
+                    "FieldFactory returned null for " +
+                            ctx.declaringType().getSimpleName() +
+                            "#" + ctx.property()
+            );
+        }
+        return value;
     }
 
     private record PropertyKey(Class<?> dto, String property) {
