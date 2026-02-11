@@ -27,6 +27,7 @@ public final class DefaultMappings {
         this.aliases = Collections.unmodifiableMap(aliases);
     }
 
+    // TODO: refactor to use Inputs. instead
     public static DefaultMappings defaults() {
         Map<Class<?>, FieldFactory> byType = new LinkedHashMap<>();
         byType.put(String.class, ctx -> new TextField());
