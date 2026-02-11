@@ -1,17 +1,27 @@
 package de.javaholic.toolkit.introspection;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public final class BeanMeta<T> {
 
     private final Class<T> type;
     private final List<BeanProperty> properties;
-    private final Optional<BeanProperty> idProperty;
-    private final Optional<BeanProperty> versionProperty;
+    private final BeanProperty idProperty;
+    private final BeanProperty versionProperty;
     private final Map<String, Field> accessors;
 
-    public BeanMeta(Class<T> type, List<BeanProperty> properties, Map<String, Field> accessors, Optional<BeanProperty> idProperty, Optional<BeanProperty> versionProperty) {
+    BeanMeta(
+            Class<T> type,
+            List<BeanProperty> properties,
+            Map<String, Field> accessors,
+            BeanProperty idProperty,
+            BeanProperty versionProperty
+    ) {
         this.type = type;
         this.properties = List.copyOf(properties);
         this.accessors = Collections.unmodifiableMap(new LinkedHashMap<>(accessors));
@@ -28,11 +38,11 @@ public final class BeanMeta<T> {
     }
 
     public Optional<BeanProperty> idProperty() {
-        return idProperty;
+        return Optional.ofNullable(idProperty);
     }
 
     public Optional<BeanProperty> versionProperty() {
-        return versionProperty;
+        return Optional.ofNullable(versionProperty);
     }
 
     public Object getValue(BeanProperty property, Object bean) {

@@ -91,8 +91,8 @@ public final class BeanIntrospector {
                 type,
                 properties,
                 accessors,
-                Optional.ofNullable(idProperty),
-                Optional.ofNullable(versionProperty)
+                idProperty,
+                versionProperty
         );
     }
 

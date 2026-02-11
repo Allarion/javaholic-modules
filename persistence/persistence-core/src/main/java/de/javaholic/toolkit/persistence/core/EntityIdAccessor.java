@@ -9,12 +9,12 @@ public final class EntityIdAccessor<T> {
 
     private final BeanMeta<T> meta;
     private final BeanProperty idProperty;
-    private final Optional<BeanProperty> versionProperty;
+    private final BeanProperty versionProperty;
 
     public EntityIdAccessor(BeanMeta<T> meta) {
         this.meta = meta;
         this.idProperty = meta.idProperty().orElseThrow(() -> new IllegalStateException("No @Id field found on " + meta.type().getName()));
-        this.versionProperty = meta.versionProperty();
+        this.versionProperty = meta.versionProperty().orElse(null);
     }
 
     public Object getId(T entity) {
@@ -22,6 +22,9 @@ public final class EntityIdAccessor<T> {
     }
 
     public Optional<Object> getVersion(T entity) {
-        return versionProperty.map(p -> meta.getValue(p, entity));
+        if (versionProperty == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(meta.getValue(versionProperty, entity));
     }
 }
