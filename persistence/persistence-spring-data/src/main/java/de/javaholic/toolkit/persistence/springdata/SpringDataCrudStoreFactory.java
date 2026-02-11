@@ -8,10 +8,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SpringDataCrudStoreFactory implements CrudStoreFactory {
 
     private final ApplicationContext context;
+
+    private final ConcurrentHashMap<Class<?>, JpaRepository<?, ?>> repoCache = new ConcurrentHashMap<>();
+
+    private <T> JpaRepository<?, ?> repoFor(Class<T> type) {
+        return repoCache.computeIfAbsent(type, this::resolveJpaRepositoryFor);
+    }
 
     public SpringDataCrudStoreFactory(ApplicationContext context) {
         this.context = Objects.requireNonNull(context, "context");
@@ -22,7 +29,7 @@ public class SpringDataCrudStoreFactory implements CrudStoreFactory {
     public <T> CrudStore<T, ?> forType(Class<T> type) {
         Objects.requireNonNull(type, "type");
 
-        JpaRepository repo = resolveJpaRepositoryFor(type);
+        JpaRepository repo = repoFor(type);
 
         // ID-Typ ist hier wildcard; in D machen wir’s sauber typisiert
         return new SpringDataCrudStore(repo);
