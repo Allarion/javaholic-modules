@@ -7,6 +7,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.BeanValidator;
 import de.javaholic.toolkit.i18n.I18n;
+import de.javaholic.toolkit.i18n.Text;
+import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 
@@ -56,12 +58,12 @@ public final class Forms {
      *     Forms.of(UserConfig.class)
      *          .field("name", f -> {
      *              f.component(Inputs.text().widthFull().build());
-     *              f.label("Name");
-     *              f.validate(b -> b.asRequired("Required"));
+     *              f.label(Texts.label("user.name"));
+     *              f.validate(b -> b.asRequired(Texts.resolve(i18n, Texts.error("user.name.required"))));
      *          })
      *          .field("enabled", f -> {
      *              f.component(Inputs.checkbox().build());
-     *              f.label("Enabled");
+     *              f.label(Texts.label("user.enabled"));
      *          })
      *          .build();
      * }</pre>
@@ -178,15 +180,12 @@ public final class Forms {
             }
         }
 
-        private void applyLabel(Component component, String fieldName, String overrideLabel) {
+        private void applyLabel(Component component, String fieldName, Text overrideLabel) {
             if (!(component instanceof HasLabel hasLabel)) {
                 return;
             }
-            String label = overrideLabel;
-            if (label == null) {
-                label = i18n != null ? i18n.text(fieldName) : fieldName;
-            }
-            hasLabel.setLabel(label);
+            Text label = overrideLabel != null ? overrideLabel : Texts.label(fieldName);
+            hasLabel.setLabel(Texts.resolve(i18n, label));
         }
 
         private void bindField(
@@ -220,7 +219,7 @@ public final class Forms {
          */
         static final class FieldSpec<T> implements FieldOverride.Applier<T> {
             Component component;
-            String label;
+            Text label;
             final List<Consumer<Binder.BindingBuilder<T, Object>>> validators = new ArrayList<>();
 
             @Override
@@ -248,13 +247,13 @@ public final class Forms {
         interface Applier<T> {
             void component(Component component);
 
-            void label(String label);
+            void label(Text label);
 
             void validate(Consumer<Binder.BindingBuilder<T, Object>> validator);
         }
 
         private Component component;
-        private String label;
+        private Text label;
         private final List<Consumer<Binder.BindingBuilder<T, Object>>> validators = new ArrayList<>();
 
         /**
@@ -268,7 +267,7 @@ public final class Forms {
         /**
          * Sets the label for this field.
          */
-        public FieldOverride<T> label(String label) {
+        public FieldOverride<T> label(Text label) {
             this.label = Objects.requireNonNull(label, "label");
             return this;
         }

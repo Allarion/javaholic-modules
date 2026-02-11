@@ -5,6 +5,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.Notification;
 import de.javaholic.toolkit.i18n.I18n;
+import de.javaholic.toolkit.i18n.Text;
+import de.javaholic.toolkit.i18n.Texts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.function.Supplier;
  * <pre>{@code
  * Button save =
  *     Buttons.create()
- *            .label("Save")
+ *            .text(Texts.label("save"))
  *            .action(this::onSave)
  *            .build();
  * }</pre>
@@ -31,7 +33,7 @@ import java.util.function.Supplier;
  * <pre>{@code
  * Button ok =
  *     Buttons.create()
- *            .label("OK")
+ *            .text(Texts.label("ok"))
  *            .enabledWhen(form::isValid)
  *                .revalidateOn(nameField)
  *                .revalidateOn(enabledCheckbox)
@@ -70,6 +72,7 @@ public final class Buttons {
         private Runnable action;
         private EnablementBinding enablement;
         private final List<ButtonVariant> themeVariants = new ArrayList<>();
+        private I18n i18n;
 
         /** notification duration for action errors */
         private int errorNotificationMs = 5_000;
@@ -90,6 +93,21 @@ public final class Buttons {
          */
         public Builder textI18n(I18n i18n, String key) {
             return label(i18n.text(key));
+        }
+
+        /**
+         * Sets the button label via Texts and optional i18n.
+         */
+        public Builder text(Text text) {
+            return label(Texts.resolve(i18n, text));
+        }
+
+        /**
+         * Sets the i18n instance used by {@link #text(Text)}.
+         */
+        public Builder withI18n(I18n i18n) {
+            this.i18n = i18n;
+            return this;
         }
 
         /**

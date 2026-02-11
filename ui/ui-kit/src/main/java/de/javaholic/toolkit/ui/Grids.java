@@ -10,6 +10,9 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.function.ValueProvider;
+import de.javaholic.toolkit.i18n.I18n;
+import de.javaholic.toolkit.i18n.Text;
+import de.javaholic.toolkit.i18n.Texts;
 
 import java.util.Collection;
 import java.util.List;
@@ -62,6 +65,7 @@ public final class Grids {
     public static class GridBuilder<T> {
 
         private final Grid<T> grid;
+        private I18n i18n;
 
         private GridBuilder(Class<T> type) {
             this.grid = new Grid<>(type, false);
@@ -293,6 +297,13 @@ public final class Grids {
         }
 
         /**
+         * Enables i18n resolution for column texts.
+         */
+        public GridBuilder<T> withI18n(I18n i18n) {
+            this.i18n = i18n;
+            return this;
+        }
+        /**
          * Sets the width of the component to "100%".
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
@@ -414,8 +425,7 @@ public final class Grids {
          * @return {@code ColumnBuilder<T>} to provide further fluent operations on {@code Grid.Column<T>} level
          */
         public ColumnBuilder<T, V> header(String labelText) {
-            tColumn.setHeader(labelText);
-            return this;
+            return text(Texts.label(labelText));
         }
 
         /**
@@ -429,6 +439,13 @@ public final class Grids {
             return this;
         }
 
+        /**
+         * Sets the header text using the Text model.
+         */
+        public ColumnBuilder<T, V> text(Text text) {
+            tColumn.setHeader(Texts.resolve(tGridBuilder.i18n, text));
+            return this;
+        }
         /**
          * Sets the width of this column as a CSS-string.
          *
