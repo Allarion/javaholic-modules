@@ -30,9 +30,9 @@ public class SpringDataCrudStoreFactory implements CrudStoreFactory {
         Objects.requireNonNull(type, "type");
 
         JpaRepository repo = repoFor(type);
+        Class<?> idType = resolveIdType(repo);
 
-        // ID-Typ ist hier wildcard; in D machen wir’s sauber typisiert
-        return new SpringDataCrudStore(repo);
+        return new SpringDataCrudStore(type, idType, repo);
     }
 
     @SuppressWarnings("rawtypes")
@@ -71,11 +71,22 @@ public class SpringDataCrudStoreFactory implements CrudStoreFactory {
     }
 
     private Class<?> resolveDomainType(Object repoBean) {
-        // repoBean kann ein Proxy sein, ResolvableType kommt damit i.d.R. klar.
         ResolvableType rt = ResolvableType.forClass(repoBean.getClass()).as(JpaRepository.class);
         if (rt == ResolvableType.NONE) {
             return null;
         }
         return rt.getGeneric(0).resolve();
+    }
+
+    private Class<?> resolveIdType(Object repoBean) {
+        ResolvableType rt = ResolvableType.forClass(repoBean.getClass()).as(JpaRepository.class);
+        if (rt == ResolvableType.NONE) {
+            throw new IllegalStateException("Cannot resolve JpaRepository ID type.");
+        }
+        Class<?> idType = rt.getGeneric(1).resolve();
+        if (idType == null) {
+            throw new IllegalStateException("Cannot resolve JpaRepository ID type.");
+        }
+        return idType;
     }
 }
