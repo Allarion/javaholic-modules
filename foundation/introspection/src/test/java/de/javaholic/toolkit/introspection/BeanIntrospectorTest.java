@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BeanIntrospectorTest {
 
@@ -30,6 +28,13 @@ class BeanIntrospectorTest {
 
     static class NoId {
         private String value;
+    }
+
+    static class SeveralId {
+        @Id
+        private long id1;
+        @Id
+        private long id2;
     }
 
     @Test
@@ -66,5 +71,12 @@ class BeanIntrospectorTest {
     void inspectWithoutId() {
         BeanMeta<NoId> meta = BeanIntrospector.inspect(NoId.class);
         assertFalse(meta.idProperty().isPresent());
+    }
+
+    @Test
+    void inspectWithSeveralIds() {
+        assertThrows(IllegalStateException.class, () -> {
+            BeanMeta<SeveralId> meta = BeanIntrospector.inspect(SeveralId.class);
+        });
     }
 }

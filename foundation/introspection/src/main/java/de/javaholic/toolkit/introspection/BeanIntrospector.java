@@ -73,6 +73,11 @@ public final class BeanIntrospector {
                 accessors.put(prop.name(), field);
 
                 if (isId(field)) {
+                    if (idProperty != null) {
+                        throw new IllegalStateException(
+                                "Multiple @Id properties found on " + type.getName()
+                        );
+                    }
                     idProperty = prop;
                 }
 

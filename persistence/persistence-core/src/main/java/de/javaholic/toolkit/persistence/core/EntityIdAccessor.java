@@ -13,9 +13,7 @@ public final class EntityIdAccessor<T> {
 
     public EntityIdAccessor(BeanMeta<T> meta) {
         this.meta = meta;
-        this.idProperty = meta.idProperty().orElseThrow(() ->
-                new IllegalStateException("No @Id field found on " + meta.type().getName())
-        );
+        this.idProperty = meta.idProperty().orElseThrow(() -> new IllegalStateException("No @Id field found on " + meta.type().getName()));
         this.versionProperty = meta.versionProperty();
     }
 
