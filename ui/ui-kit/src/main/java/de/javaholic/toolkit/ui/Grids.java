@@ -242,7 +242,7 @@ public final class Grids {
 
         /**
          * creates a column containing a {@link NativeLabel} used to display 1 char.
-         * For convenience we accept a string and only use the first char.
+         * For convenience: we accept a string and only use the first char.
          *
          * <p>Example:</p>
          *
@@ -273,7 +273,7 @@ public final class Grids {
         /**
          * adds CSS class to the {@link Grid}
          *
-         * @param className css class
+         * @param className CSS class
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          * @see Grid#addClassName(String)
          */
@@ -285,7 +285,7 @@ public final class Grids {
         /**
          * adds Theme name(s) to the {@link Grid}
          *
-         * @param themeNames - css theme(s)
+         * @param themeNames - CSS theme(s)
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          * @see Grid#addThemeName(String)
          */
@@ -472,7 +472,7 @@ public final class Grids {
         }
 
         /**
-         * returing containing parent builder to keep "sentence" going:
+         * returning containing parent builder to keep "sentence" going:
          *
          *<pre>{@code
          * Grid<ApprovalDetailsForSalesForceDTO> grid = Grids.of(ApprovalDetailsForSalesForceDTO.class)

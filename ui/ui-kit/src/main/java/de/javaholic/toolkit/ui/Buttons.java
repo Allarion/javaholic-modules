@@ -147,7 +147,7 @@ public final class Buttons {
         }
 
         /**
-         * Indicates how long a error Notification should be displayed.
+         * Indicates how long an error Notification should be displayed.
          */
         public Builder errorNotificationMs(int ms) {
             this.errorNotificationMs = ms;

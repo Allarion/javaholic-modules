@@ -170,7 +170,7 @@ public final class Dialogs {
          * <p>
          * The completion callback is invoked exactly once:
          * <ul>
-         *   <li>{@link Optional#empty()} if cancelled</li>
+         *   <li>{@link Optional#empty()} if canceled</li>
          *   <li>{@link Optional#of(Object)} if confirmed with a selection</li>
          * </ul>
          *
