@@ -22,6 +22,8 @@
         <module>i18n/i18n-spring</module>
         <module>i18n/i18n-editor-ui</module>
         <module>audit/audit-core</module>
+        <module>persistence/persistence-core</module>
+        <module>persistence/persistence-spring-data</module>
     </modules>
 
     <properties>
