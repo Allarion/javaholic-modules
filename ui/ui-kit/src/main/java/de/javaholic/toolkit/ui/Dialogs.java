@@ -131,7 +131,7 @@ public final class Dialogs {
         }
 
         /**
-         * Sets cancel texts by role (LABEL).
+         * Sets cancel texts by role (LABEL, TOOLTIP).
          *
          * <p>Other roles are ignored.</p>
          */
@@ -146,7 +146,7 @@ public final class Dialogs {
                 }
                 if (text.role() == TextRole.LABEL) {
                     this.cancelLabelText = text;
-                }else if (text.role() == TextRole.TOOLTIP) {
+                } else if (text.role() == TextRole.TOOLTIP) {
                     this.cancelTooltipText = text;
                 }
             }
@@ -198,17 +198,13 @@ public final class Dialogs {
                 dialog.setHeaderTitle(Texts.resolve(i18n, titleText));
             }
 
-            VerticalLayout content = new VerticalLayout();
-            content.setPadding(false);
-            content.setSpacing(true);
-
+            var content = Layouts.vbox();
             if (descriptionText != null) {
                 content.add(new Span(Texts.resolve(i18n, descriptionText)));
             }
             if (extraContent != null) {
                 content.add(extraContent);
             }
-
             content.add(grid);
             dialog.add(content);
 
@@ -247,9 +243,9 @@ public final class Dialogs {
                             completion.accept(Optional.empty());
                         })
                         .build();
-                dialog.getFooter().add(cancel, ok);
+                dialog.getFooter().add(Layouts.hbox(cancel, ok));
             } else {
-                dialog.getFooter().add(ok);
+                dialog.getFooter().add(Layouts.hbox(ok));
             }
             dialog.open();
         }
@@ -342,14 +338,13 @@ public final class Dialogs {
         private Text okLabelText = Texts.label("ok");
         private Text okTooltipText;
         private Text cancelLabelText = Texts.label("cancel");
+        private Text cancelTooltipText;
         private boolean cancelEnabled;
 
         private FormDialog(Forms.Form<T> form) {
             this.form = form;
 
-            content = new VerticalLayout();
-            content.setPadding(false);
-            content.setSpacing(true);
+            content = Layouts.vbox();
             content.add(form.layout());
             dialog.add(content);
 
@@ -371,7 +366,7 @@ public final class Dialogs {
                     .build();
 
             cancel = Buttons.create()
-                    .text(this.cancelLabelText)
+                    .text(this.cancelLabelText, this.cancelTooltipText)
                     .build();
 
             cancel.addClickListener(e -> {
@@ -381,9 +376,8 @@ public final class Dialogs {
                 dialog.close();
             });
 
-            buttons = new HorizontalLayout();
-            buttons.add(ok);
-            dialog.add(buttons);
+            buttons = Layouts.hbox(ok);
+            dialog.getFooter().add(buttons);
         }
 
         /**
@@ -442,7 +436,7 @@ public final class Dialogs {
         }
 
         /**
-         * Sets cancel texts by role (LABEL).
+         * Sets cancel texts by role (LABEL, TOOLTIP).
          *
          * <p>Other roles are ignored.</p>
          */
@@ -457,6 +451,8 @@ public final class Dialogs {
                 }
                 if (text.role() == TextRole.LABEL) {
                     this.cancelLabelText = text;
+                } else if (text.role() == TextRole.TOOLTIP) {
+                    this.cancelTooltipText = text;
                 }
             }
             applyTexts();
@@ -520,6 +516,9 @@ public final class Dialogs {
                 ok.setTooltipText(Texts.resolve(i18n, okTooltipText));
             }
             cancel.setText(Texts.resolve(i18n, cancelLabelText));
+            if (cancelTooltipText != null) {
+                cancel.setTooltipText(Texts.resolve(i18n, cancelTooltipText));
+            }
             buttons.removeAll();
             if (cancelEnabled) {
                 buttons.add(cancel, ok);
@@ -538,6 +537,7 @@ public final class Dialogs {
         private Text confirmLabelText = Texts.label("ok");
         private Text confirmTooltipText;
         private Text cancelLabelText = Texts.label("cancel");
+        private Text cancelTooltipText;
         private boolean cancelEnabled;
 
         private ConfirmDialogBuilder() {
@@ -599,7 +599,7 @@ public final class Dialogs {
         }
 
         /**
-         * Sets cancel texts by role (LABEL).
+         * Sets cancel texts by role (LABEL, TOOLTIP).
          *
          * <p>Other roles are ignored.</p>
          */
@@ -614,6 +614,8 @@ public final class Dialogs {
                 }
                 if (text.role() == TextRole.LABEL) {
                     this.cancelLabelText = text;
+                } else if (text.role() == TextRole.TOOLTIP) {
+                    this.cancelTooltipText = text;
                 }
             }
             return this;
@@ -638,15 +640,14 @@ public final class Dialogs {
                 dialog.setHeaderTitle(Texts.resolve(i18n, titleText));
             }
 
-            VerticalLayout content = Layouts.vbox();
-            content.setPadding(false);
-            content.setSpacing(true);
-
+            var content = Layouts.vbox();
             if (descriptionText != null) {
                 content.add(new Span(Texts.resolve(i18n, descriptionText)));
             }
 
-            dialog.add(content);
+            if (content.getComponentCount() > 0) {
+                dialog.add(content);
+            }
 
             Button ok = Buttons.create()
                     .withI18n(i18n)
@@ -659,18 +660,17 @@ public final class Dialogs {
 
             dialog.getFooter().removeAll();
             if (cancelEnabled) {
-                Text cancelText = cancelLabelText != null ? cancelLabelText : Texts.label("cancel");
                 Button cancel = Buttons.create()
                         .withI18n(i18n)
-                        .text(cancelText)
+                        .text(cancelLabelText, cancelTooltipText)
                         .action(() -> {
                             dialog.close();
                             completion.accept(false);
                         })
                         .build();
-                dialog.getFooter().add(cancel, ok);
+                dialog.getFooter().add(Layouts.hbox(cancel, ok));
             } else {
-                dialog.getFooter().add(ok);
+                dialog.getFooter().add(Layouts.hbox(ok));
             }
             dialog.open();
         }
