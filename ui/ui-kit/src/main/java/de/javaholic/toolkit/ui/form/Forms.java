@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -80,6 +82,8 @@ public final class Forms {
         private I18n i18n;
         private final Map<String, FieldOverride<T>> overrides = new LinkedHashMap<>();
         private final List<Consumer<Form<T>>> configurators = new ArrayList<>();
+        private boolean includeId = false;
+        private boolean includeVersion = false;
 
         private FormBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -104,6 +108,7 @@ public final class Forms {
         /**
          * Bean Validation is always active; this is kept for fluent symmetry.
          */
+        @Deprecated
         public FormBuilder<T> withValidation() {
             return this;
         }
@@ -116,6 +121,17 @@ public final class Forms {
             Objects.requireNonNull(spec, "spec");
             FieldOverride<T> override = overrides.computeIfAbsent(name, key -> new FieldOverride<>());
             spec.accept(override);
+            return this;
+        }
+
+
+        public FormBuilder<T> includeId() { this.includeId= true; return this; }
+        public FormBuilder<T> includeVersion() { this.includeVersion= true; return this;  }
+        public FormBuilder<T> includeTechnicalFields(Supplier<Boolean> include){
+            if (include.get()){
+                includeId();
+                includeVersion();
+            }
             return this;
         }
 
@@ -151,6 +167,16 @@ public final class Forms {
             );
 
             for (BeanProperty property : meta.properties()) {
+
+                if (!includeId && meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
+                    continue;
+                }
+
+                if (!includeVersion && meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
+                    continue;
+                }
+
+
                 FieldOverride<T> override = overrides.get(property.name());
                 FieldSpec<T> spec = new FieldSpec<>();
                 if (override != null) {
