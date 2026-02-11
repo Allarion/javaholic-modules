@@ -228,7 +228,7 @@ public final class Forms {
             }
 
             @Override
-            public void label(String label) {
+            public void label(Text label) {
                 this.label = label;
             }
 

@@ -68,7 +68,8 @@ public final class Buttons {
      */
     public static final class Builder {
 
-        private String label;
+        private Text labelText;
+        private Text tooltipText;
         private Runnable action;
         private EnablementBinding enablement;
         private final List<ButtonVariant> themeVariants = new ArrayList<>();
@@ -81,32 +82,34 @@ public final class Buttons {
         }
 
         /**
-         * Sets the button label.
+         * Sets the i18n instance used by {@link #text(Text...)}.
          */
-        public Builder label(String label) {
-            this.label = label;
+        public Builder withI18n(I18n i18n) {
+            this.i18n = i18n;
             return this;
         }
 
         /**
-         * Sets the button label via i18n lookup.
+         * Sets button texts using the Text model.
+         *
+         * <p>Supported roles: LABEL, TOOLTIP. Others are ignored.</p>
          */
-        public Builder textI18n(I18n i18n, String key) {
-            return label(i18n.text(key));
-        }
-
-        /**
-         * Sets the button label via Texts and optional i18n.
-         */
-        public Builder text(Text text) {
-            return label(Texts.resolve(i18n, text));
-        }
-
-        /**
-         * Sets the i18n instance used by {@link #text(Text)}.
-         */
-        public Builder withI18n(I18n i18n) {
-            this.i18n = i18n;
+        public Builder text(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                switch (text.role()) {
+                    case LABEL -> this.labelText = text;
+                    case TOOLTIP -> this.tooltipText = text;
+                    default -> {
+                        // ignore unsupported roles
+                    }
+                }
+            }
             return this;
         }
 
@@ -155,9 +158,16 @@ public final class Buttons {
          * Builds the Vaadin {@link Button}.
          */
         public Button build() {
-            Button button = new Button(label);
+            Button button = new Button();
 
             themeVariants.forEach(button::addThemeVariants);
+
+            if (labelText != null) {
+                button.setText(Texts.resolve(i18n, labelText));
+            }
+            if (tooltipText != null) {
+                button.setTooltipText(Texts.resolve(i18n, tooltipText));
+            }
 
             if (action != null) {
                 button.addClickListener(e -> runSafely(action));

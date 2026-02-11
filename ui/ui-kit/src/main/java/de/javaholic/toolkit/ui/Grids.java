@@ -1,7 +1,6 @@
 package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
@@ -12,6 +11,7 @@ import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.function.ValueProvider;
 import de.javaholic.toolkit.i18n.I18n;
 import de.javaholic.toolkit.i18n.Text;
+import de.javaholic.toolkit.i18n.TextRole;
 import de.javaholic.toolkit.i18n.Texts;
 
 import java.util.Collection;
@@ -31,10 +31,10 @@ import java.util.function.Supplier;
  * Grids.of(User.class)
  *     .items(users)
  *     .column(User::getUsername)
- *         .header("Username")
+ *         .text(Texts.label("user.username"))
  *         .and()
  *     .column(new ComponentRenderer<>(user -> new Icon("vaadin", "user")))
- *         .header("Icon")
+ *         .text(Texts.label("user.icon"))
  *         .and()
  *     .build();
  * }</pre>
@@ -83,8 +83,8 @@ public final class Grids {
          * <pre>{@code
          * Grid<User> grid =
          *     Grids.of(User.class)
-         *          .column(User::getId).header("ID").and()
-         *          .column(User::getName).header("Name").and()
+         *          .column(User::getId).text(Texts.label("user.id")).and()
+         *          .column(User::getName).text(Texts.label("user.name")).and()
          *          .build();
          * }</pre>
          *
@@ -159,10 +159,10 @@ public final class Grids {
          * <pre>{@code
          * Grid<User> grid = Grids.of(User.class)
          *     .column(User::getUsername)
-         *         .header("Username")
+         *         .text(Texts.label("user.username"))
          *         .and()
          *     .column(user -> user.getAddress().getCity())
-         *         .header("City")
+         *         .text(Texts.label("user.city"))
          *         .and()
          *     .build();
          * }</pre>
@@ -188,7 +188,7 @@ public final class Grids {
          *           );
          *            return badge;
          *        }))
-         *         .header("Status")
+         *         .text(Texts.label("user.status"))
          *         .and()
          *     .build();
          * }</pre>
@@ -207,9 +207,9 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> grid = Grids.of(SalesForceContactDTO.class)
-         *        .emptyStateHtml(i18n.getMessage("grid.description"))
-         *        .column(SalesForceContactDTO::getDisplayName).header("Kundenname").width("400px").and()
-         *        .column(SalesForceContactDTO::getCustomerNumber).header("Kundennummer").and()
+         *        .textEmptyState(Texts.description("grid.description"))
+         *        .column(SalesForceContactDTO::getDisplayName).text(Texts.label("salesforce.displayName")).width("400px").and()
+         *        .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.customerNumber")).and()
          *        .selectionColumnRadio().and()
          *        .build();
          * }</pre>
@@ -248,9 +248,9 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> grid = Grids.of(SalesForceContactDTO.class)
-         *        .emptyStateHtml(i18n.getMessage("grid.description"))
-         *        .column(SalesForceContactDTO::getDisplayName).header("Kundenname").width("400px").and()
-         *        .column(SalesForceContactDTO::getCustomerNumber).header("Kundennummer").and()
+         *        .textEmptyState(Texts.description("grid.description"))
+         *        .column(SalesForceContactDTO::getDisplayName).text(Texts.label("salesforce.displayName")).width("400px").and()
+         *        .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.customerNumber")).and()
          *        .selectionColumnRadio().and()
          *        .build();
          * }</pre>
@@ -349,27 +349,15 @@ public final class Grids {
          *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
-        public GridBuilder<T> emptyStateText(String text) {
-            return emptyState(new Span(text));
-        }
-
-        /**
-         * empty state HTML content (wrapped unescaped in a <code>&lt;div&gt;</code>) which will be displayed when grid is loaded first without items.
-         * <p>
-         * Use sparingly.
-         *
-         * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
-         */
-        public GridBuilder<T> emptyStateHtml(String html) {
-            Html htmlComponent = new Html("<div>" + html + "</div>");
-            return emptyState(htmlComponent);
+        public GridBuilder<T> textEmptyState(Text text) {
+            return emptyState(new Span(Texts.resolve(i18n, text)));
         }
 
         /**
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> sfGrid = Grids.of(SalesForceContactDTO.class)
-         *                 .column(SalesForceContactDTO::getCustomerNumber).header("Nr").and()
+         *                 .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.number")).and()
          *                 .selectable( selectedContact -> { doSomething(selectedContact); } )
          *                 .build();
          * }</pre>
@@ -388,7 +376,7 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> sfGrid = Grids.of(SalesForceContactDTO.class)
-         *    .column(SalesForceContactDTO::getCustomerNumber).header("Nr").and()
+         *    .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.number")).and()
          *    .selectable(selectedContact-> { doSomething(selectedContact);})
          *     .configure(grid ->{
          *             grid.setWidth("400px");
@@ -419,16 +407,6 @@ public final class Grids {
         }
 
         /**
-         * Sets a header text to the column.
-         *
-         * @param labelText text to be shown at column header
-         * @return {@code ColumnBuilder<T>} to provide further fluent operations on {@code Grid.Column<T>} level
-         */
-        public ColumnBuilder<T, V> header(String labelText) {
-            return text(Texts.label(labelText));
-        }
-
-        /**
          * Sets a header component to the column.
          *
          * @param headerComponent component to use as header
@@ -441,9 +419,16 @@ public final class Grids {
 
         /**
          * Sets the header text using the Text model.
+         *
+         * <p>Only LABEL is used; TOOLTIP is ignored.</p>
          */
         public ColumnBuilder<T, V> text(Text text) {
-            tColumn.setHeader(Texts.resolve(tGridBuilder.i18n, text));
+            if (text == null) {
+                return this;
+            }
+            if (text.role() == TextRole.LABEL) {
+                tColumn.setHeader(Texts.resolve(tGridBuilder.i18n, text));
+            }
             return this;
         }
         /**
@@ -474,7 +459,7 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> sfGrid = Grids.of(SalesForceContactDTO.class)
-         *      .column(SalesForceContactDTO::getCustomerNumber).header("Nr")
+         *      .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.number"))
          *      .configure(column-> column.setFlexGrow(0)).and()
          *      .build();
          * }</pre>
@@ -492,10 +477,10 @@ public final class Grids {
          *<pre>{@code
          * Grid<ApprovalDetailsForSalesForceDTO> grid = Grids.of(ApprovalDetailsForSalesForceDTO.class)
          *                 .columnIndexDot(r -> r.salesForceContactDTO().getDisplayName()).and()
-         *                 .column(r -> r.salesForceContactDTO().getDisplayName()).header("Kundenname").and()
-         *                 .column(r -> r.item().getCustomerNumber()).header("Kundennummer").and()
-         *                 .column(this::renderValidity).header("Gültigkeit").and()
-         *                 .column(this::renderStatus).header("Status").and()
+         *                 .column(r -> r.salesForceContactDTO().getDisplayName()).text(Texts.label("salesforce.displayName")).and()
+         *                 .column(r -> r.item().getCustomerNumber()).text(Texts.label("salesforce.customerNumber")).and()
+         *                 .column(this::renderValidity).text(Texts.label("salesforce.validity")).and()
+         *                 .column(this::renderStatus).text(Texts.label("salesforce.status")).and()
          *                 .build();}</pre>
          *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.javaholic.toolkit.i18n.I18n;
@@ -11,6 +12,7 @@ import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.TextRole;
 import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.ui.form.Forms;
+import de.javaholic.toolkit.ui.layout.Layouts;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -41,8 +43,8 @@ public final class Dialogs {
      * Dialogs.select(userGrid)
      *     .withI18n(i18n)
      *     .text(Texts.header("user.select.title"))
-     *     .confirm(Texts.label("ok"))
-     *     .cancel(Texts.label("cancel"))
+     *     .textConfirm(Texts.label("ok"))
+     *     .textCancel(Texts.label("cancel"))
      *     .open(result -> result.ifPresent(this::handleUser));
      * }</pre>
      *
@@ -63,9 +65,13 @@ public final class Dialogs {
 
         private final Grid<T> grid;
         private I18n i18n;
-        private Text title;
-        private Text confirmText;
-        private Text cancelText;
+        private Text titleText;
+        private Text descriptionText;
+        private Text confirmLabelText;
+        private Text confirmTooltipText;
+        private Text cancelLabelText;
+        private Text cancelTooltipText;
+        private boolean cancelEnabled;
         private Component[] extraContent;
 
         private GridSelectionDialogBuilder(Grid<T> grid) {
@@ -81,29 +87,80 @@ public final class Dialogs {
         }
 
         /**
-         * Sets the dialog text by role (HEADER only).
+         * Sets dialog texts by role (HEADER, DESCRIPTION).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public GridSelectionDialogBuilder<T> text(Text text) {
-            if (text.role() != TextRole.HEADER) {
-                throw new IllegalArgumentException("Grid selection dialog supports HEADER only");
+        public GridSelectionDialogBuilder<T> text(Text... texts) {
+            if (texts == null) {
+                return this;
             }
-            this.title = text;
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.HEADER) {
+                    this.titleText = text;
+                } else if (text.role() == TextRole.DESCRIPTION) {
+                    this.descriptionText = text;
+                }
+            }
             return this;
         }
 
         /**
-         * Sets the confirm button label.
+         * Sets confirm texts by role (LABEL, TOOLTIP).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public GridSelectionDialogBuilder<T> confirm(Text text) {
-            this.confirmText = text;
+        public GridSelectionDialogBuilder<T> textConfirm(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.LABEL) {
+                    this.confirmLabelText = text;
+                } else if (text.role() == TextRole.TOOLTIP) {
+                    this.confirmTooltipText = text;
+                }
+            }
             return this;
         }
 
         /**
-         * Sets the cancel button label.
+         * Sets cancel texts by role (LABEL).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public GridSelectionDialogBuilder<T> cancel(Text text) {
-            this.cancelText = text;
+        public GridSelectionDialogBuilder<T> textCancel(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            this.cancelEnabled = true;
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.LABEL) {
+                    this.cancelLabelText = text;
+                }else if (text.role() == TextRole.TOOLTIP) {
+                    this.cancelTooltipText = text;
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Enables a cancel action with default text.
+         */
+        public GridSelectionDialogBuilder<T> withCancelAction() {
+            this.cancelEnabled = true;
+            if (cancelLabelText == null) {
+                this.cancelLabelText = Texts.label("cancel");
+            }
             return this;
         }
 
@@ -137,14 +194,17 @@ public final class Dialogs {
             dialog.setCloseOnEsc(false);
             dialog.setCloseOnOutsideClick(false);
 
-            if (title != null) {
-                dialog.setHeaderTitle(Texts.resolve(i18n, title));
+            if (titleText != null) {
+                dialog.setHeaderTitle(Texts.resolve(i18n, titleText));
             }
 
             VerticalLayout content = new VerticalLayout();
             content.setPadding(false);
             content.setSpacing(true);
 
+            if (descriptionText != null) {
+                content.add(new Span(Texts.resolve(i18n, descriptionText)));
+            }
             if (extraContent != null) {
                 content.add(extraContent);
             }
@@ -158,21 +218,14 @@ public final class Dialogs {
                     selection.value = e.getFirstSelectedItem().orElse(null)
             );
 
-            Text cancelText = this.cancelText != null ? this.cancelText : Texts.label("Cancel");
-            Text okText = this.confirmText != null ? this.confirmText : Texts.label("OK");
-
-            Button cancel = Buttons.create()
-                    .withI18n(i18n)
-                    .text(cancelText)
-                    .action(() -> {
-                        dialog.close();
-                        completion.accept(Optional.empty());
-                    })
-                    .build();
+            Text okText = this.confirmLabelText != null
+                    ? this.confirmLabelText
+                    : Texts.label("ok");
+            Text okTooltip = this.confirmTooltipText;
 
             Button ok = Buttons.create()
                     .withI18n(i18n)
-                    .text(okText)
+                    .text(okText, okTooltip)
                     .action(() -> {
                         dialog.close();
                         completion.accept(Optional.ofNullable(selection.value));
@@ -184,7 +237,20 @@ public final class Dialogs {
                     ok.setEnabled(e.getFirstSelectedItem().isPresent())
             );
 
-            dialog.getFooter().add(cancel, ok);
+            if (cancelEnabled) {
+                Text cancelText = cancelLabelText != null ? cancelLabelText : Texts.label("cancel");
+                Button cancel = Buttons.create()
+                        .withI18n(i18n)
+                        .text(cancelText, cancelTooltipText)
+                        .action(() -> {
+                            dialog.close();
+                            completion.accept(Optional.empty());
+                        })
+                        .build();
+                dialog.getFooter().add(cancel, ok);
+            } else {
+                dialog.getFooter().add(ok);
+            }
             dialog.open();
         }
     }
@@ -202,8 +268,8 @@ public final class Dialogs {
      *     .withI18n(i18n)
      *     .text(Texts.header("config.delete.title"))
      *     .text(Texts.description("config.delete.confirmation"))
-     *     .confirm(Texts.label("delete"))
-     *     .cancel(Texts.label("cancel"))
+     *     .textConfirm(Texts.label("delete"))
+     *     .textCancel(Texts.label("cancel"))
      *     .open(confirmed -> {
      *         if (confirmed) {
      *             deleteConfig();
@@ -241,8 +307,8 @@ public final class Dialogs {
      * Dialogs.form(form)
      *     .withI18n(i18n)
      *     .text(Texts.header("user.edit.title"))
-     *     .confirm(Texts.label("save"))
-     *     .cancel(Texts.label("cancel"))
+     *     .textConfirm(Texts.label("save"))
+     *     .textCancel(Texts.label("cancel"))
      *     .onOk(f -> save(f.binder().getBean()))
      *     .open();
      * }</pre>
@@ -264,21 +330,31 @@ public final class Dialogs {
         private final Forms.Form<T> form;
         private final Button ok;
         private final Button cancel;
+        private final VerticalLayout content;
+        private final HorizontalLayout buttons;
+        private Span description;
 
         private BiConsumer<Forms.Form<T>, Dialog> onOk;
         private Runnable onCancel;
         private I18n i18n;
-        private Text title;
-        private Text okText = Texts.label("OK");
-        private Text cancelText = Texts.label("Cancel");
+        private Text titleText;
+        private Text descriptionText;
+        private Text okLabelText = Texts.label("ok");
+        private Text okTooltipText;
+        private Text cancelLabelText = Texts.label("cancel");
+        private boolean cancelEnabled;
 
         private FormDialog(Forms.Form<T> form) {
             this.form = form;
 
-            dialog.add(form.layout());
+            content = new VerticalLayout();
+            content.setPadding(false);
+            content.setSpacing(true);
+            content.add(form.layout());
+            dialog.add(content);
 
             ok = Buttons.create()
-                    .text(this.okText)
+                    .text(this.okLabelText, this.okTooltipText)
                     .enabledWhen(() -> form.binder().validate().isOk())
                         .revalidateOn(r -> form.binder().addStatusChangeListener(e -> r.run()))
                         .done()
@@ -295,7 +371,7 @@ public final class Dialogs {
                     .build();
 
             cancel = Buttons.create()
-                    .text(this.cancelText)
+                    .text(this.cancelLabelText)
                     .build();
 
             cancel.addClickListener(e -> {
@@ -305,7 +381,8 @@ public final class Dialogs {
                 dialog.close();
             });
 
-            HorizontalLayout buttons = new HorizontalLayout(cancel, ok);
+            buttons = new HorizontalLayout();
+            buttons.add(ok);
             dialog.add(buttons);
         }
 
@@ -319,31 +396,81 @@ public final class Dialogs {
         }
 
         /**
-         * Sets the dialog text by role (HEADER only).
+         * Sets dialog texts by role (HEADER, DESCRIPTION).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public FormDialog<T> text(Text text) {
-            if (text.role() != TextRole.HEADER) {
-                throw new IllegalArgumentException("Form dialog supports HEADER only");
+        public FormDialog<T> text(Text... texts) {
+            if (texts == null) {
+                return this;
             }
-            this.title = text;
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.HEADER) {
+                    this.titleText = text;
+                } else if (text.role() == TextRole.DESCRIPTION) {
+                    this.descriptionText = text;
+                }
+            }
             applyTexts();
             return this;
         }
 
         /**
-         * Sets the confirm button label.
+         * Sets confirm texts by role (LABEL, TOOLTIP).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public FormDialog<T> confirm(Text text) {
-            this.okText = text;
+        public FormDialog<T> textConfirm(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.LABEL) {
+                    this.okLabelText = text;
+                } else if (text.role() == TextRole.TOOLTIP) {
+                    this.okTooltipText = text;
+                }
+            }
             applyTexts();
             return this;
         }
 
         /**
-         * Sets the cancel button label.
+         * Sets cancel texts by role (LABEL).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public FormDialog<T> cancel(Text text) {
-            this.cancelText = text;
+        public FormDialog<T> textCancel(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            this.cancelEnabled = true;
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.LABEL) {
+                    this.cancelLabelText = text;
+                }
+            }
+            applyTexts();
+            return this;
+        }
+
+        /**
+         * Enables a cancel action with default text.
+         */
+        public FormDialog<T> withCancelAction() {
+            this.cancelEnabled = true;
+            if (cancelLabelText == null) {
+                this.cancelLabelText = Texts.label("cancel");
+            }
             applyTexts();
             return this;
         }
@@ -375,11 +502,30 @@ public final class Dialogs {
         }
 
         private void applyTexts() {
-            if (title != null) {
-                dialog.setHeaderTitle(Texts.resolve(i18n, title));
+            if (titleText != null) {
+                dialog.setHeaderTitle(Texts.resolve(i18n, titleText));
             }
-            ok.setText(Texts.resolve(i18n, okText));
-            cancel.setText(Texts.resolve(i18n, cancelText));
+            if (descriptionText != null) {
+                if (description == null) {
+                    description = new Span();
+                    content.addComponentAsFirst(description);
+                }
+                description.setText(Texts.resolve(i18n, descriptionText));
+            } else if (description != null) {
+                content.remove(description);
+                description = null;
+            }
+            ok.setText(Texts.resolve(i18n, okLabelText));
+            if (okTooltipText != null) {
+                ok.setTooltipText(Texts.resolve(i18n, okTooltipText));
+            }
+            cancel.setText(Texts.resolve(i18n, cancelLabelText));
+            buttons.removeAll();
+            if (cancelEnabled) {
+                buttons.add(cancel, ok);
+            } else {
+                buttons.add(ok);
+            }
         }
     }
 
@@ -387,10 +533,12 @@ public final class Dialogs {
 
         private final Dialog dialog = new Dialog();
         private I18n i18n;
-        private Text title;
-        private Text message;
-        private Text okText = Texts.label("OK");
-        private Text cancelText = Texts.label("Cancel");
+        private Text titleText;
+        private Text descriptionText;
+        private Text confirmLabelText = Texts.label("ok");
+        private Text confirmTooltipText;
+        private Text cancelLabelText = Texts.label("cancel");
+        private boolean cancelEnabled;
 
         private ConfirmDialogBuilder() {
             dialog.setModal(true);
@@ -407,33 +555,78 @@ public final class Dialogs {
         }
 
         /**
-         * Sets dialog text by role (HEADER and DESCRIPTION).
+         * Sets dialog texts by role (HEADER, DESCRIPTION).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public ConfirmDialogBuilder text(Text text) {
-            if (text.role() == TextRole.HEADER) {
-                this.title = text;
+        public ConfirmDialogBuilder text(Text... texts) {
+            if (texts == null) {
                 return this;
             }
-            if (text.role() == TextRole.DESCRIPTION) {
-                this.message = text;
-                return this;
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.HEADER) {
+                    this.titleText = text;
+                } else if (text.role() == TextRole.DESCRIPTION) {
+                    this.descriptionText = text;
+                }
             }
-            throw new IllegalArgumentException("Confirm dialog supports HEADER and DESCRIPTION only");
-        }
-
-        /**
-         * Sets the confirm button label.
-         */
-        public ConfirmDialogBuilder confirm(Text text) {
-            this.okText = text;
             return this;
         }
 
         /**
-         * Sets the cancel button label.
+         * Sets confirm texts by role (LABEL, TOOLTIP).
+         *
+         * <p>Other roles are ignored.</p>
          */
-        public ConfirmDialogBuilder cancel(Text text) {
-            this.cancelText = text;
+        public ConfirmDialogBuilder textConfirm(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.LABEL) {
+                    this.confirmLabelText = text;
+                } else if (text.role() == TextRole.TOOLTIP) {
+                    this.confirmTooltipText = text;
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Sets cancel texts by role (LABEL).
+         *
+         * <p>Other roles are ignored.</p>
+         */
+        public ConfirmDialogBuilder textCancel(Text... texts) {
+            if (texts == null) {
+                return this;
+            }
+            this.cancelEnabled = true;
+            for (Text text : texts) {
+                if (text == null) {
+                    continue;
+                }
+                if (text.role() == TextRole.LABEL) {
+                    this.cancelLabelText = text;
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Enables a cancel action with default text.
+         */
+        public ConfirmDialogBuilder withCancelAction() {
+            this.cancelEnabled = true;
+            if (cancelLabelText == null) {
+                this.cancelLabelText = Texts.label("cancel");
+            }
             return this;
         }
 
@@ -441,25 +634,23 @@ public final class Dialogs {
          * Opens the dialog.
          */
         public void open(Consumer<Boolean> completion) {
-            if (title != null) {
-                dialog.setHeaderTitle(Texts.resolve(i18n, title));
-            }
-            if (message != null) {
-                dialog.add(Texts.resolve(i18n, message));
+            if (titleText != null) {
+                dialog.setHeaderTitle(Texts.resolve(i18n, titleText));
             }
 
-            Button cancel = Buttons.create()
-                    .withI18n(i18n)
-                    .text(cancelText)
-                    .action(() -> {
-                        dialog.close();
-                        completion.accept(false);
-                    })
-                    .build();
+            VerticalLayout content = Layouts.vbox();
+            content.setPadding(false);
+            content.setSpacing(true);
+
+            if (descriptionText != null) {
+                content.add(new Span(Texts.resolve(i18n, descriptionText)));
+            }
+
+            dialog.add(content);
 
             Button ok = Buttons.create()
                     .withI18n(i18n)
-                    .text(okText)
+                    .text(confirmLabelText, confirmTooltipText)
                     .action(() -> {
                         dialog.close();
                         completion.accept(true);
@@ -467,7 +658,20 @@ public final class Dialogs {
                     .build();
 
             dialog.getFooter().removeAll();
-            dialog.getFooter().add(cancel, ok);
+            if (cancelEnabled) {
+                Text cancelText = cancelLabelText != null ? cancelLabelText : Texts.label("cancel");
+                Button cancel = Buttons.create()
+                        .withI18n(i18n)
+                        .text(cancelText)
+                        .action(() -> {
+                            dialog.close();
+                            completion.accept(false);
+                        })
+                        .build();
+                dialog.getFooter().add(cancel, ok);
+            } else {
+                dialog.getFooter().add(ok);
+            }
             dialog.open();
         }
     }
