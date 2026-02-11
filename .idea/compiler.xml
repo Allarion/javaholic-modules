@@ -6,15 +6,24 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="iam-core" />
+        <module name="persistence-core" />
+        <module name="introspection" />
+        <module name="persistence-spring-data" />
         <module name="audit-core" />
+        <module name="iam-security-spring" />
         <module name="config-core" />
+        <module name="i18n-core" />
+        <module name="i18n-spring" />
+        <module name="iam-core" />
         <module name="i18n-editor-ui" />
         <module name="ui-kit" />
-        <module name="iam-ui" />
-        <module name="i18n-core" />
+        <module name="iam-persistence-jpa" />
+        <module name="iam-persistence-file" />
         <module name="config-forms-ui" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="iam-ui" target="21" />
+    </bytecodeTargetLevel>
   </component>
 </project>
