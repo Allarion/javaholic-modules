@@ -6,6 +6,10 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import de.javaholic.toolkit.i18n.I18n;
+import de.javaholic.toolkit.i18n.Text;
+import de.javaholic.toolkit.i18n.TextRole;
+import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.ui.form.Forms;
 
 import java.util.Optional;
@@ -35,7 +39,10 @@ public final class Dialogs {
      * <h3>How to use</h3>
      * <pre>{@code
      * Dialogs.select(userGrid)
-     *     .texts(DialogTexts.of("Select user", "OK", "Cancel"))
+     *     .withI18n(i18n)
+     *     .text(Texts.header("user.select.title"))
+     *     .confirm(Texts.label("ok"))
+     *     .cancel(Texts.label("cancel"))
      *     .open(result -> result.ifPresent(this::handleUser));
      * }</pre>
      *
@@ -55,7 +62,10 @@ public final class Dialogs {
     public static final class GridSelectionDialogBuilder<T> {
 
         private final Grid<T> grid;
-        private DialogTexts texts;
+        private I18n i18n;
+        private Text title;
+        private Text confirmText;
+        private Text cancelText;
         private Component[] extraContent;
 
         private GridSelectionDialogBuilder(Grid<T> grid) {
@@ -63,13 +73,37 @@ public final class Dialogs {
         }
 
         /**
-         * Sets dialog texts such as title and button labels.
-         *
-         * @param texts dialog texts
-         * @return this builder
+         * Sets i18n used to resolve Text keys.
          */
-        public GridSelectionDialogBuilder<T> texts(DialogTexts texts) {
-            this.texts = texts;
+        public GridSelectionDialogBuilder<T> withI18n(I18n i18n) {
+            this.i18n = i18n;
+            return this;
+        }
+
+        /**
+         * Sets the dialog text by role (HEADER only).
+         */
+        public GridSelectionDialogBuilder<T> text(Text text) {
+            if (text.role() != TextRole.HEADER) {
+                throw new IllegalArgumentException("Grid selection dialog supports HEADER only");
+            }
+            this.title = text;
+            return this;
+        }
+
+        /**
+         * Sets the confirm button label.
+         */
+        public GridSelectionDialogBuilder<T> confirm(Text text) {
+            this.confirmText = text;
+            return this;
+        }
+
+        /**
+         * Sets the cancel button label.
+         */
+        public GridSelectionDialogBuilder<T> cancel(Text text) {
+            this.cancelText = text;
             return this;
         }
 
@@ -103,8 +137,8 @@ public final class Dialogs {
             dialog.setCloseOnEsc(false);
             dialog.setCloseOnOutsideClick(false);
 
-            if (texts != null && texts.title != null) {
-                dialog.setHeaderTitle(texts.title);
+            if (title != null) {
+                dialog.setHeaderTitle(Texts.resolve(i18n, title));
             }
 
             VerticalLayout content = new VerticalLayout();
@@ -124,21 +158,26 @@ public final class Dialogs {
                     selection.value = e.getFirstSelectedItem().orElse(null)
             );
 
-            Button cancel = new Button(
-                    texts != null ? texts.cancelText : "Cancel",
-                    e -> {
+            Text cancelText = this.cancelText != null ? this.cancelText : Texts.label("Cancel");
+            Text okText = this.confirmText != null ? this.confirmText : Texts.label("OK");
+
+            Button cancel = Buttons.create()
+                    .withI18n(i18n)
+                    .text(cancelText)
+                    .action(() -> {
                         dialog.close();
                         completion.accept(Optional.empty());
-                    }
-            );
+                    })
+                    .build();
 
-            Button ok = new Button(
-                    texts != null ? texts.okText : "OK",
-                    e -> {
+            Button ok = Buttons.create()
+                    .withI18n(i18n)
+                    .text(okText)
+                    .action(() -> {
                         dialog.close();
                         completion.accept(Optional.ofNullable(selection.value));
-                    }
-            );
+                    })
+                    .build();
             ok.setEnabled(false);
 
             grid.addSelectionListener(e ->
@@ -159,55 +198,23 @@ public final class Dialogs {
      *
      * <h3>How to use</h3>
      * <pre>{@code
-     * Dialogs.confirm(
-     *     DialogTexts.of("Delete configuration", "Delete", "Cancel"),
-     *     "Do you really want to delete this configuration?",
-     *     confirmed -> {
+     * Dialogs.confirm()
+     *     .withI18n(i18n)
+     *     .text(Texts.header("config.delete.title"))
+     *     .text(Texts.description("config.delete.confirmation"))
+     *     .confirm(Texts.label("delete"))
+     *     .cancel(Texts.label("cancel"))
+     *     .open(confirmed -> {
      *         if (confirmed) {
      *             deleteConfig();
      *         }
-     *     }
-     * );
+     *     });
      * }</pre>
      *
-     * @param texts      dialog texts (title, ok, cancel)
-     * @param message    confirmation message
-     * @param completion receives {@code true} if confirmed
+     * @return a fluent dialog builder
      */
-    public static void confirm(
-            DialogTexts texts,
-            String message,
-            Consumer<Boolean> completion
-    ) {
-        Dialog dialog = new Dialog();
-        dialog.setModal(true);
-        dialog.setCloseOnEsc(false);
-        dialog.setCloseOnOutsideClick(false);
-
-        if (texts != null && texts.title != null) {
-            dialog.setHeaderTitle(texts.title);
-        }
-
-        dialog.add(message);
-
-        Button cancel = new Button(
-                texts != null ? texts.cancelText : "Cancel",
-                e -> {
-                    dialog.close();
-                    completion.accept(false);
-                }
-        );
-
-        Button ok = new Button(
-                texts != null ? texts.okText : "OK",
-                e -> {
-                    dialog.close();
-                    completion.accept(true);
-                }
-        );
-
-        dialog.getFooter().add(cancel, ok);
-        dialog.open();
+    public static ConfirmDialogBuilder confirm() {
+        return new ConfirmDialogBuilder();
     }
 
     // =====================================================================
@@ -226,45 +233,52 @@ public final class Dialogs {
      *     Forms.of(UserConfig.class)
      *          .field("name", f -> {
      *              f.component(Inputs.text().widthFull().build());
-     *              f.label("Name");
-     *              f.validate(b -> b.asRequired("Required"));
+     *              f.label(Texts.label("user.name"));
+     *              f.validate(b -> b.asRequired(Texts.resolve(i18n, Texts.error("user.name.required"))));
      *          })
      *          .build();
      *
-     * Dialogs.form(form, DialogTexts.of("Edit user", "Save", "Cancel"))
-     *        .onOk(f -> save(f.binder().getBean()))
-     *        .open();
+     * Dialogs.form(form)
+     *     .withI18n(i18n)
+     *     .text(Texts.header("user.edit.title"))
+     *     .confirm(Texts.label("save"))
+     *     .cancel(Texts.label("cancel"))
+     *     .onOk(f -> save(f.binder().getBean()))
+     *     .open();
      * }</pre>
      */
     public static <T> FormDialog<T> form(Forms.Form<T> form) {
-        return new FormDialog<>(form, null);
+        return new FormDialog<>(form);
     }
 
     /**
-     * Same as {@link #form(Forms.Form)} but with dialog texts.
+     * Same as {@link #form(Forms.Form)} but with i18n.
      */
-    public static <T> FormDialog<T> form(Forms.Form<T> form, DialogTexts texts) {
-        return new FormDialog<>(form, texts);
+    public static <T> FormDialog<T> form(Forms.Form<T> form, I18n i18n) {
+        return new FormDialog<>(form).withI18n(i18n);
     }
 
     public static final class FormDialog<T> {
 
         private final Dialog dialog = new Dialog();
         private final Forms.Form<T> form;
+        private final Button ok;
+        private final Button cancel;
 
         private BiConsumer<Forms.Form<T>, Dialog> onOk;
         private Runnable onCancel;
+        private I18n i18n;
+        private Text title;
+        private Text okText = Texts.label("OK");
+        private Text cancelText = Texts.label("Cancel");
 
-        private FormDialog(Forms.Form<T> form, DialogTexts texts) {
+        private FormDialog(Forms.Form<T> form) {
             this.form = form;
 
             dialog.add(form.layout());
 
-            String okText = texts != null ? texts.okText : "OK";
-            String cancelText = texts != null ? texts.cancelText : "Cancel";
-
-            Button ok = Buttons.create()
-                    .label(okText)
+            ok = Buttons.create()
+                    .text(this.okText)
                     .enabledWhen(() -> form.binder().validate().isOk())
                         .revalidateOn(r -> form.binder().addStatusChangeListener(e -> r.run()))
                         .done()
@@ -280,7 +294,9 @@ public final class Dialogs {
                     })
                     .build();
 
-            Button cancel = new Button(cancelText);
+            cancel = Buttons.create()
+                    .text(this.cancelText)
+                    .build();
 
             cancel.addClickListener(e -> {
                 if (onCancel != null) {
@@ -291,6 +307,45 @@ public final class Dialogs {
 
             HorizontalLayout buttons = new HorizontalLayout(cancel, ok);
             dialog.add(buttons);
+        }
+
+        /**
+         * Sets i18n used to resolve Text keys.
+         */
+        public FormDialog<T> withI18n(I18n i18n) {
+            this.i18n = i18n;
+            applyTexts();
+            return this;
+        }
+
+        /**
+         * Sets the dialog text by role (HEADER only).
+         */
+        public FormDialog<T> text(Text text) {
+            if (text.role() != TextRole.HEADER) {
+                throw new IllegalArgumentException("Form dialog supports HEADER only");
+            }
+            this.title = text;
+            applyTexts();
+            return this;
+        }
+
+        /**
+         * Sets the confirm button label.
+         */
+        public FormDialog<T> confirm(Text text) {
+            this.okText = text;
+            applyTexts();
+            return this;
+        }
+
+        /**
+         * Sets the cancel button label.
+         */
+        public FormDialog<T> cancel(Text text) {
+            this.cancelText = text;
+            applyTexts();
+            return this;
         }
 
         public FormDialog<T> onOk(Consumer<Forms.Form<T>> handler) {
@@ -318,40 +373,102 @@ public final class Dialogs {
         public void open() {
             dialog.open();
         }
+
+        private void applyTexts() {
+            if (title != null) {
+                dialog.setHeaderTitle(Texts.resolve(i18n, title));
+            }
+            ok.setText(Texts.resolve(i18n, okText));
+            cancel.setText(Texts.resolve(i18n, cancelText));
+        }
     }
 
+    public static final class ConfirmDialogBuilder {
 
-    // =====================================================================
-    // SUPPORT TYPES
-    // =====================================================================
+        private final Dialog dialog = new Dialog();
+        private I18n i18n;
+        private Text title;
+        private Text message;
+        private Text okText = Texts.label("OK");
+        private Text cancelText = Texts.label("Cancel");
 
-    /**
-     * Immutable container for dialog texts.
-     * <p>
-     * Intended as a lightweight placeholder until a proper i18n abstraction
-     * is introduced.
-     */
-    public static final class DialogTexts {
-        public final String title;
-        public final String okText;
-        public final String cancelText;
-
-        private DialogTexts(String title, String okText, String cancelText) {
-            this.title = title;
-            this.okText = okText;
-            this.cancelText = cancelText;
+        private ConfirmDialogBuilder() {
+            dialog.setModal(true);
+            dialog.setCloseOnEsc(false);
+            dialog.setCloseOnOutsideClick(false);
         }
 
         /**
-         * Creates a {@link DialogTexts} instance.
-         *
-         * @param title      dialog title
-         * @param okText     label for the confirmation button
-         * @param cancelText label for the cancel button
-         * @return texts container
+         * Sets i18n used to resolve Text keys.
          */
-        public static DialogTexts of(String title, String okText, String cancelText) {
-            return new DialogTexts(title, okText, cancelText);
+        public ConfirmDialogBuilder withI18n(I18n i18n) {
+            this.i18n = i18n;
+            return this;
+        }
+
+        /**
+         * Sets dialog text by role (HEADER and DESCRIPTION).
+         */
+        public ConfirmDialogBuilder text(Text text) {
+            if (text.role() == TextRole.HEADER) {
+                this.title = text;
+                return this;
+            }
+            if (text.role() == TextRole.DESCRIPTION) {
+                this.message = text;
+                return this;
+            }
+            throw new IllegalArgumentException("Confirm dialog supports HEADER and DESCRIPTION only");
+        }
+
+        /**
+         * Sets the confirm button label.
+         */
+        public ConfirmDialogBuilder confirm(Text text) {
+            this.okText = text;
+            return this;
+        }
+
+        /**
+         * Sets the cancel button label.
+         */
+        public ConfirmDialogBuilder cancel(Text text) {
+            this.cancelText = text;
+            return this;
+        }
+
+        /**
+         * Opens the dialog.
+         */
+        public void open(Consumer<Boolean> completion) {
+            if (title != null) {
+                dialog.setHeaderTitle(Texts.resolve(i18n, title));
+            }
+            if (message != null) {
+                dialog.add(Texts.resolve(i18n, message));
+            }
+
+            Button cancel = Buttons.create()
+                    .withI18n(i18n)
+                    .text(cancelText)
+                    .action(() -> {
+                        dialog.close();
+                        completion.accept(false);
+                    })
+                    .build();
+
+            Button ok = Buttons.create()
+                    .withI18n(i18n)
+                    .text(okText)
+                    .action(() -> {
+                        dialog.close();
+                        completion.accept(true);
+                    })
+                    .build();
+
+            dialog.getFooter().removeAll();
+            dialog.getFooter().add(cancel, ok);
+            dialog.open();
         }
     }
 
