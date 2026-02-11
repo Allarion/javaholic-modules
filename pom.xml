@@ -24,6 +24,7 @@
         <module>audit/audit-core</module>
         <module>persistence/persistence-core</module>
         <module>persistence/persistence-spring-data</module>
+        <module>foundation/introspection</module>
     </modules>
 
     <properties>

@@ -7,4 +7,6 @@ public interface CrudStoreMeta<T> {
     Class<?> idType();
 
     Object getId(T entity);
+
+    java.util.Optional<Object> getVersion(T entity);
 }

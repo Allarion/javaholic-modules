@@ -1,7 +1,10 @@
 package de.javaholic.toolkit.persistence.springdata;
 
+import de.javaholic.toolkit.introspection.BeanIntrospector;
+import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.persistence.core.CrudStoreMeta;
+import de.javaholic.toolkit.persistence.core.EntityIdAccessor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -22,7 +25,8 @@ public class SpringDataCrudStore<T, ID> implements CrudStore<T, ID>, CrudStoreMe
         this.domainType = domainType;
         this.idType = idType;
         this.repository = repository;
-        this.idAccessor = new EntityIdAccessor<>(domainType);
+        BeanMeta<T> meta = BeanIntrospector.inspect(domainType);
+        this.idAccessor = new EntityIdAccessor<>(meta);
     }
 
     @Override
@@ -58,5 +62,10 @@ public class SpringDataCrudStore<T, ID> implements CrudStore<T, ID>, CrudStoreMe
     @Override
     public Object getId(T entity) {
         return idAccessor.getId(entity);
+    }
+
+    @Override
+    public Optional<Object> getVersion(T entity) {
+        return idAccessor.getVersion(entity);
     }
 }

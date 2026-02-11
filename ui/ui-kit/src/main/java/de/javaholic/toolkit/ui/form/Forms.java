@@ -11,12 +11,13 @@ import com.vaadin.flow.data.validator.BeanValidator;
 import de.javaholic.toolkit.i18n.I18n;
 import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.Texts;
+import de.javaholic.toolkit.introspection.BeanIntrospector;
+import de.javaholic.toolkit.introspection.BeanMeta;
+import de.javaholic.toolkit.introspection.BeanProperty;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -131,7 +132,7 @@ public final class Forms {
          * Builds the form in a single pass (override first, then auto field).
          */
         public Form<T> build() {
-            List<FieldAccess> fields = FieldAccess.forType(type);
+            BeanMeta<T> meta = BeanIntrospector.inspect(type);
             VerticalLayout layout = new VerticalLayout();
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
@@ -149,8 +150,8 @@ public final class Forms {
                     formErrorLabel.setVisible(event.hasValidationErrors())
             );
 
-            for (FieldAccess field : fields) {
-                FieldOverride<T> override = overrides.get(field.name());
+            for (BeanProperty property : meta.properties()) {
+                FieldOverride<T> override = overrides.get(property.name());
                 FieldSpec<T> spec = new FieldSpec<>();
                 if (override != null) {
                     override.apply(spec);
@@ -161,14 +162,14 @@ public final class Forms {
                 if (component == null) {
                     FieldContext ctx = new FieldContext(
                             type,
-                            field.name(),
-                            field.type(),
-                            field.annotations()
+                            property.name(),
+                            property.type(),
+                            property.definition()
                     );
                     value = fieldRegistry.create(ctx);
                     if (!(value instanceof Component)) {
                         throw new IllegalStateException(
-                                "FieldFactory returned non-Component for property '" + field.name() + "'"
+                                "FieldFactory returned non-Component for property '" + property.name() + "'"
                         );
                     }
                     component = (Component) value;
@@ -176,16 +177,16 @@ public final class Forms {
                     value = hasValue;
                 } else {
                     throw new IllegalStateException(
-                            "Component for property '" + field.name() + "' is not a HasValue"
+                            "Component for property '" + property.name() + "' is not a HasValue"
                     );
                 }
 
-                applyLabel(component, field.name(), spec.label);
-                applyRequiredIndicator(component, field.annotations());
-                bindField(binder, field, value, spec.validators);
+                applyLabel(component, property.name(), spec.label);
+                applyRequiredIndicator(component, property.definition());
+                bindField(binder, meta, property, value, spec.validators);
 
                 layout.add(component);
-                components.put(field.name(), component);
+                components.put(property.name(), component);
             }
 
             Form<T> form = new Form<>(layout, binder, components);
@@ -214,7 +215,8 @@ public final class Forms {
 
         private void bindField(
                 Binder<T> binder,
-                FieldAccess field,
+                BeanMeta<T> meta,
+                BeanProperty property,
                 HasValue<?, ?> fieldComponent,
                 List<Consumer<Binder.BindingBuilder<T, Object>>> validators
         ) {
@@ -222,14 +224,14 @@ public final class Forms {
             HasValue<?, Object> value = (HasValue<?, Object>) fieldComponent;
             Binder.BindingBuilder<T, Object> binding = binder.forField(value);
 
-            binding = binding.withValidator(new BeanValidator(type, field.name()));
+            binding = binding.withValidator(new BeanValidator(type, property.name()));
             for (Consumer<Binder.BindingBuilder<T, Object>> validator : validators) {
                 validator.accept(binding);
             }
 
             binding.bind(
-                    bean -> field.get(bean),
-                    (bean, v) -> field.set(bean, v)
+                    bean -> meta.getValue(property, bean),
+                    (bean, v) -> meta.setValue(property, bean, v)
             );
         }
 
@@ -343,80 +345,6 @@ public final class Forms {
          */
         public Optional<Component> field(String name) {
             return Optional.ofNullable(fields.get(name));
-        }
-    }
-
-    /**
-     * Reflection-based field access preserving declaration order.
-     */
-    static final class FieldAccess {
-
-        private final Field field;
-        private final AnnotatedElement annotations;
-
-        private FieldAccess(Field field, AnnotatedElement annotations) {
-            this.field = field;
-            this.annotations = annotations;
-            this.field.setAccessible(true);
-        }
-
-        static List<FieldAccess> forType(Class<?> type) {
-            if (type.isRecord()) {
-                return fromRecord(type);
-            }
-            return fromDeclaredFields(type);
-        }
-
-        String name() {
-            return field.getName();
-        }
-
-        Class<?> type() {
-            return field.getType();
-        }
-
-        AnnotatedElement annotations() {
-            return annotations;
-        }
-
-        Object get(Object bean) {
-            try {
-                return field.get(bean);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        void set(Object bean, Object value) {
-            try {
-                field.set(bean, value);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private static List<FieldAccess> fromDeclaredFields(Class<?> type) {
-            List<FieldAccess> fields = new ArrayList<>();
-            for (Field field : type.getDeclaredFields()) {
-                if (field.isSynthetic() || java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
-                    continue;
-                }
-                fields.add(new FieldAccess(field, field));
-            }
-            return fields;
-        }
-
-        private static List<FieldAccess> fromRecord(Class<?> type) {
-            List<FieldAccess> fields = new ArrayList<>();
-            for (RecordComponent component : type.getRecordComponents()) {
-                try {
-                    Field field = type.getDeclaredField(component.getName());
-                    fields.add(new FieldAccess(field, component));
-                } catch (NoSuchFieldException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            return fields;
         }
     }
 
