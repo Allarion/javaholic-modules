@@ -502,3 +502,19 @@ public final class Grids {
         }
     }
 }
+// TODO: Grids.column.button
+//  //
+//  (vgl. CrudView: grid.addColumn(new ComponentRenderer<>(item -> {
+//                    Button edit = Buttons.create()
+//                            .text(Texts.label("Edit"))
+//                            .style(ButtonVariant.LUMO_TERTIARY_INLINE)
+//                            .action(() -> onEdit(item))
+//                            .build();
+//                    Button delete = Buttons.create()
+//                            .text(Texts.label("Delete"))
+//                            .style(ButtonVariant.LUMO_ERROR)
+//                            .style(ButtonVariant.LUMO_TERTIARY_INLINE)
+//                            .action(() -> onDelete(item))
+//                            .build();
+//                    return Layouts.hbox(edit, delete);
+//                }))
