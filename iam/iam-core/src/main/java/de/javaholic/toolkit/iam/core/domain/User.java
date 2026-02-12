@@ -24,7 +24,7 @@ import java.util.UUID;
  * is a derived, runtime-only projection of this entity.</p>
  */
 public final class User {
-
+// TODO: Wrap the ID in UserId(UUID)?
     private final UUID id;
     private final String username;
     private final UserStatus status;

@@ -44,7 +44,7 @@ public class CrudPanel<T> extends VerticalLayout {
         this.type = Objects.requireNonNull(type, "type");
         this.meta = BeanIntrospector.inspect(type);
         this.store = Objects.requireNonNull(store, "store");
-        this.grid = new Grid<>(type, false);
+        this.grid = new Grid<>(type, false); // TODO: why not use Grids instead?
         this.createButton = Buttons.create()
                 .text(Texts.label("Create"))
                 .build();
