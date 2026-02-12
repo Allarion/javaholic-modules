@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EntityIdAccessorTest {
 
@@ -32,9 +31,9 @@ class EntityIdAccessorTest {
 
         Entity entity = new Entity(12L, 3);
 
-        assertEquals(12L, accessor.getId(entity));
+        assertThat(accessor.getId(entity)).isEqualTo(12L);
         Optional<Object> version = accessor.getVersion(entity);
-        assertTrue(version.isPresent());
-        assertEquals(3, version.get());
+        assertThat(version).isPresent();
+        assertThat(version.orElseThrow()).isEqualTo(3);
     }
 }

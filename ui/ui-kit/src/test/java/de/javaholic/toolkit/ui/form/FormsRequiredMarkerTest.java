@@ -4,7 +4,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class FormsRequiredMarkerTest {
 
@@ -18,6 +18,6 @@ class FormsRequiredMarkerTest {
         Forms.Form<User> form = Forms.of(User.class).build();
         TextField field = (TextField) form.field("name").orElseThrow();
 
-        assertTrue(field.isRequiredIndicatorVisible());
+        assertThat(field.isRequiredIndicatorVisible()).isTrue();
     }
 }
