@@ -19,6 +19,7 @@ class BeanMetaTest {
     record UserRecord(@Id Long id, @Version long version, String name) {
     }
 
+    // TODO: correct usage of generics
     @Test
     void getAndSetValueForPojo() {
         BeanMeta<User> meta = BeanIntrospector.inspect(User.class);
@@ -38,7 +39,7 @@ class BeanMetaTest {
     @Test
     void getValueForRecord() {
         BeanMeta<UserRecord> meta = BeanIntrospector.inspect(UserRecord.class);
-        BeanProperty nameProperty = meta.properties().stream()
+        BeanProperty<UserRecord, ?> nameProperty = meta.properties().stream()
                 .filter(p -> p.name().equals("name"))
                 .findFirst()
                 .orElseThrow();
