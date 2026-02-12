@@ -16,21 +16,14 @@ import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
-
-import java.lang.reflect.AnnotatedElement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import java.lang.reflect.AnnotatedElement;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class Forms {
 
@@ -125,10 +118,18 @@ public final class Forms {
         }
 
 
-        public FormBuilder<T> includeId() { this.includeId= true; return this; }
-        public FormBuilder<T> includeVersion() { this.includeVersion= true; return this;  }
-        public FormBuilder<T> includeTechnicalFields(Supplier<Boolean> include){
-            if (include.get()){
+        public FormBuilder<T> includeId() {
+            this.includeId = true;
+            return this;
+        }
+
+        public FormBuilder<T> includeVersion() {
+            this.includeVersion = true;
+            return this;
+        }
+
+        public FormBuilder<T> includeTechnicalFields(Supplier<Boolean> include) {
+            if (include.get()) {
                 includeId();
                 includeVersion();
             }
@@ -153,20 +154,14 @@ public final class Forms {
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
 
-            Span formErrorLabel = new Span(
-                    i18n != null
-                            ? i18n.text("form.validation.error")
-                            : "Please fix the highlighted fields"
-            );
+            Span formErrorLabel = new Span(i18n != null ? i18n.text("form.validation.error") : "Please fix the highlighted fields");
             formErrorLabel.addClassName("form-error");
             formErrorLabel.setVisible(false);
             layout.add(formErrorLabel);
 
-            binder.addStatusChangeListener(event ->
-                    formErrorLabel.setVisible(event.hasValidationErrors())
-            );
+            binder.addStatusChangeListener(event -> formErrorLabel.setVisible(event.hasValidationErrors()));
 
-            for (BeanProperty property : meta.properties()) {
+            for (BeanProperty<T, ?> property : meta.properties()) {
 
                 if (!includeId && meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
                     continue;
@@ -186,30 +181,21 @@ public final class Forms {
                 Component component = spec.component;
                 HasValue<?, ?> value;
                 if (component == null) {
-                    FieldContext ctx = new FieldContext(
-                            type,
-                            property.name(),
-                            property.type(),
-                            property.definition()
-                    );
+                    FieldContext ctx = new FieldContext(type, property.name(), property.type(), property.definition());
                     value = fieldRegistry.create(ctx);
                     if (!(value instanceof Component)) {
-                        throw new IllegalStateException(
-                                "FieldFactory returned non-Component for property '" + property.name() + "'"
-                        );
+                        throw new IllegalStateException("FieldFactory returned non-Component for property '" + property.name() + "'");
                     }
                     component = (Component) value;
                 } else if (component instanceof HasValue<?, ?> hasValue) {
                     value = hasValue;
                 } else {
-                    throw new IllegalStateException(
-                            "Component for property '" + property.name() + "' is not a HasValue"
-                    );
+                    throw new IllegalStateException("Component for property '" + property.name() + "' is not a HasValue");
                 }
 
                 applyLabel(component, property.name(), spec.label);
                 applyRequiredIndicator(component, property.definition());
-                bindField(binder, meta, property, value, spec.validators);
+                bindUntyped(binder, meta, property, value, spec.validators);
 
                 layout.add(component);
                 components.put(property.name(), component);
@@ -239,27 +225,44 @@ public final class Forms {
             }
         }
 
-        private void bindField(
+        @SuppressWarnings("unchecked")
+        private <V> void bindUntyped(Binder<T> binder, BeanMeta<T> meta, BeanProperty<T, ?> property, HasValue<?, ?> field, List<TypedValidator<T>> validators) {
+            //noinspection rawtypes
+            bindField(binder, meta, (BeanProperty<T, V>) property, (HasValue<?, V>) field, (List) validators);
+        }
+
+        private <V> void bindField(
                 Binder<T> binder,
                 BeanMeta<T> meta,
-                BeanProperty property,
-                HasValue<?, ?> fieldComponent,
-                List<Consumer<Binder.BindingBuilder<T, Object>>> validators
+                BeanProperty<T, V> property,
+                HasValue<?, V> fieldComponent,
+                List<TypedValidator<T>> validators
         ) {
-            @SuppressWarnings("unchecked")
-            HasValue<?, Object> value = (HasValue<?, Object>) fieldComponent;
-            Binder.BindingBuilder<T, Object> binding = binder.forField(value);
+            Binder.BindingBuilder<T, V> binding = binder.forField(fieldComponent);
 
             binding = binding.withValidator(new BeanValidator(type, property.name()));
-            for (Consumer<Binder.BindingBuilder<T, Object>> validator : validators) {
-                validator.accept(binding);
+
+            for (TypedValidator<T> v : validators) {
+
+                if (!v.valueType().equals(property.type())) {
+                    throw new IllegalArgumentException(
+                            "Validator type mismatch for property '" + property.name() + "'"
+                    );
+                }
+
+                @SuppressWarnings("unchecked")
+                Consumer<Binder.BindingBuilder<T, V>> consumer =
+                        (Consumer<Binder.BindingBuilder<T, V>>) v.consumer();
+
+                consumer.accept(binding);
             }
 
             binding.bind(
                     bean -> meta.getValue(property, bean),
-                    (bean, v) -> meta.setValue(property, bean, v)
+                    (bean, val) -> meta.setValue(property, bean, val)
             );
         }
+
 
         /**
          * Internal collector for per-field override data.
@@ -267,7 +270,12 @@ public final class Forms {
         static final class FieldSpec<T> implements FieldOverride.Applier<T> {
             Component component;
             Text label;
-            final List<Consumer<Binder.BindingBuilder<T, Object>>> validators = new ArrayList<>();
+            final List<TypedValidator<T>> validators = new ArrayList<>();
+
+            @Override
+            public void validate(TypedValidator<T> validator) {
+                validators.add(validator); // controlled unsafe cast
+            }
 
             @Override
             public void component(Component component) {
@@ -277,11 +285,6 @@ public final class Forms {
             @Override
             public void label(Text label) {
                 this.label = label;
-            }
-
-            @Override
-            public void validate(Consumer<Binder.BindingBuilder<T, Object>> validator) {
-                validators.add(validator);
             }
         }
     }
@@ -296,12 +299,12 @@ public final class Forms {
 
             void label(Text label);
 
-            void validate(Consumer<Binder.BindingBuilder<T, Object>> validator);
+            void validate(TypedValidator<T> validator);
         }
 
         private Component component;
         private Text label;
-        private final List<Consumer<Binder.BindingBuilder<T, Object>>> validators = new ArrayList<>();
+        private final List<TypedValidator<T>> validators = new ArrayList<>();
 
         /**
          * Sets the concrete component to use for this field.
@@ -322,8 +325,9 @@ public final class Forms {
         /**
          * Adds an additional validator to the field binding.
          */
-        public FieldOverride<T> validate(Consumer<Binder.BindingBuilder<T, Object>> validator) {
-            validators.add(Objects.requireNonNull(validator, "validator"));
+        // TODO: revisit specifying the valueType here. should be somehow derivied from the BeanMeta
+        public <V> FieldOverride<T> validate(Class<V> valueType, Consumer<Binder.BindingBuilder<T, V>> validator) {
+            validators.add(new TypedValidator<>(valueType, validator));
             return this;
         }
 
@@ -334,10 +338,13 @@ public final class Forms {
             if (label != null) {
                 applier.label(label);
             }
-            for (Consumer<Binder.BindingBuilder<T, Object>> validator : validators) {
-                applier.validate(validator);
+            for (TypedValidator<T> v : validators) {
+                applier.validate(v);
             }
         }
+    }
+
+    record TypedValidator<T>(Class<?> valueType, Consumer<?> consumer) {
     }
 
     public static final class Form<T> {
@@ -375,8 +382,6 @@ public final class Forms {
     }
 
     private static boolean isRequired(AnnotatedElement annotations) {
-        return annotations.isAnnotationPresent(NotNull.class) ||
-                annotations.isAnnotationPresent(NotBlank.class) ||
-                annotations.isAnnotationPresent(NotEmpty.class);
+        return annotations.isAnnotationPresent(NotNull.class) || annotations.isAnnotationPresent(NotBlank.class) || annotations.isAnnotationPresent(NotEmpty.class);
     }
 }

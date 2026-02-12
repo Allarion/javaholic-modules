@@ -17,11 +17,11 @@ public final class BeanIntrospector {
             throw new IllegalArgumentException("type must not be null");
         }
 
-        List<BeanProperty> properties = new ArrayList<>();
+        List<BeanProperty<T,?>> properties = new ArrayList<>();
         Map<String, Field> accessors = new LinkedHashMap<>();
 
-        BeanProperty idProperty = null;
-        BeanProperty versionProperty = null;
+        BeanProperty<T,?> idProperty = null;
+        BeanProperty<T, ?> versionProperty = null;
 
         if (type.isRecord()) {
 
@@ -30,7 +30,7 @@ public final class BeanIntrospector {
                 Field field = findField(type, component.getName());
                 field.setAccessible(true);
 
-                BeanProperty prop = new BeanProperty(
+                BeanProperty<T,?> prop = new BeanProperty(
                         component.getName(),
                         component.getType(),
                         component

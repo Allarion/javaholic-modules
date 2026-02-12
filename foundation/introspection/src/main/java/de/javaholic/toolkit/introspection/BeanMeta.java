@@ -1,5 +1,7 @@
 package de.javaholic.toolkit.introspection;
 
+import jakarta.persistence.Id;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -10,17 +12,17 @@ import java.util.Optional;
 public final class BeanMeta<T> {
 
     private final Class<T> type;
-    private final List<BeanProperty> properties;
-    private final BeanProperty idProperty;
-    private final BeanProperty versionProperty;
+    private final List<BeanProperty<T, ?>> properties;
+    private final BeanProperty<T, ?> idProperty;
+    private final BeanProperty<T, ?> versionProperty;
     private final Map<String, Field> accessors;
 
     BeanMeta(
             Class<T> type,
-            List<BeanProperty> properties,
+            List<BeanProperty<T, ?>> properties,
             Map<String, Field> accessors,
-            BeanProperty idProperty,
-            BeanProperty versionProperty
+            BeanProperty<T, ?> idProperty,
+            BeanProperty<T, ?> versionProperty
     ) {
         this.type = type;
         this.properties = List.copyOf(properties);
@@ -33,31 +35,31 @@ public final class BeanMeta<T> {
         return type;
     }
 
-    public List<BeanProperty> properties() {
+    public List<BeanProperty<T, ?>> properties() {
         return properties;
     }
 
-    public Optional<BeanProperty> idProperty() {
+    public Optional<BeanProperty<T, ?>> idProperty() {
         return Optional.ofNullable(idProperty);
     }
 
-    public Optional<BeanProperty> versionProperty() {
+    public Optional<BeanProperty<T, ?>> versionProperty() {
         return Optional.ofNullable(versionProperty);
     }
 
-    public Object getValue(BeanProperty property, Object bean) {
+    public <V> V getValue(BeanProperty<T, V> property, T bean) {
         Field field = accessors.get(property.name());
         if (field == null) {
             throw new IllegalArgumentException("Unknown property: " + property.name());
         }
         try {
-            return field.get(bean);
+            return (V) field.get(bean);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void setValue(BeanProperty property, Object bean, Object value) {
+    public <V> void setValue(BeanProperty<T, V> property, T bean, V value) {
         Field field = accessors.get(property.name());
         if (field == null) {
             throw new IllegalArgumentException("Unknown property: " + property.name());
