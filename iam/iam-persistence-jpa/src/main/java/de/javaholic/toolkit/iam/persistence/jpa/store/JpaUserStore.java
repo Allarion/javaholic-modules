@@ -2,53 +2,38 @@ package de.javaholic.toolkit.iam.persistence.jpa.store;
 
 import de.javaholic.toolkit.iam.core.domain.User;
 import de.javaholic.toolkit.iam.core.spi.UserStore;
+import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaUserMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaUserRepository;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaCrudStore;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional(readOnly = true)
-public class JpaUserStore implements UserStore {
+import java.util.Optional;
+import java.util.UUID;
 
-    private final JpaUserRepository repository;
+@Transactional(readOnly = true)
+public class JpaUserStore extends AbstractJpaCrudStore<User, UUID, JpaUserEntity, JpaUserRepository> implements UserStore {
+
     private final JpaUserMapper mapper;
 
-    // TODO: Generell: feeling: @NotNull > Objects.requireNonNull
-    public JpaUserStore(JpaUserRepository userRepository, JpaUserMapper userMapper) {
-        this.repository = Objects.requireNonNull(userRepository, "userRepository");
-        this.mapper = Objects.requireNonNull(userMapper, "userMapper");
+    public JpaUserStore(JpaUserRepository repo, JpaUserMapper mapper) {
+        super(repo);
+        this.mapper = mapper;
     }
 
     @Override
-    public List<User> findAll() {
-        return repository.findAll()
-            .stream()
-            .map(mapper::toDomain)
-            .collect(Collectors.toList());
+    protected User toDomain(JpaUserEntity entity) {
+        return mapper.toDomain(entity);
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
-       return repository.findById(id).map(mapper::toDomain);
+    protected JpaUserEntity toJpa(User domain) {
+        return mapper.toJpa(domain);
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
         return repository.findByUsername(username)
                 .map(mapper::toDomain);
-    }
-
-    @Override
-    public User save(User user) {
-       return mapper.toDomain(repository.save(mapper.toJpa(user)));
-    }
-
-    @Override
-    public void delete(User user) {
-        repository.delete(mapper.toJpa(user));
     }
 }
