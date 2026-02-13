@@ -60,6 +60,7 @@ public class CrudPanel<T> extends VerticalLayout {
         refresh();
     }
 
+    // TODO: fix syntax...CrudPanel.of(type).from(store).oä
     public static <T> CrudPanel<T> of(Class<T> type, CrudStore<T, ?> store) {
         return new CrudPanel<>(type, store);
     }
