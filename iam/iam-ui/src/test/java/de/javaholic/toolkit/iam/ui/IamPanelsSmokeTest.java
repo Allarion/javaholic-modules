@@ -11,6 +11,7 @@ import de.javaholic.toolkit.iam.core.spi.UserStore;
 import de.javaholic.toolkit.iam.ui.adapter.PermissionCrudStoreAdapter;
 import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
 import de.javaholic.toolkit.iam.ui.adapter.UserCrudStoreAdapter;
+import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,13 +30,13 @@ import static org.mockito.Mockito.when;
 class IamPanelsSmokeTest {
 
     @Mock
-    private UserCrudStoreAdapter userStore;
+    private CrudStore<User, UUID> userStore;
 
     @Mock
-    private RoleCrudStoreAdapter roleStore;
+    private CrudStore<Role, UUID> roleStore;
 
     @Mock
-    private PermissionCrudStoreAdapter permissionStore;
+    private CrudStore<Permission, UUID> permissionStore;
 
     @Test
     void usersPanelCreatesAndWiresRoleChoices() {
@@ -44,7 +45,7 @@ class IamPanelsSmokeTest {
         when(userStore.findAll()).thenReturn(List.of(user));
         when(roleStore.findAll()).thenReturn(List.of(admin));
 
-        IamPanels iamPanel = new IamPanels(permissionStore,roleStore,userStore);
+        IamPanels iamPanel = new IamPanels(userStore, roleStore, permissionStore);
         var panel = iamPanel.users();
 
         assertThat(panel).isNotNull();
@@ -57,7 +58,7 @@ class IamPanelsSmokeTest {
         Permission permission = new Permission("user.read");
         when(roleStore.findAll()).thenReturn(List.of(new Role("reader", Set.of(permission))));
         when(permissionStore.findAll()).thenReturn(List.of(permission));
-        IamPanels iamPanel = new IamPanels(permissionStore,roleStore,userStore);
+        IamPanels iamPanel = new IamPanels(userStore, roleStore, permissionStore);
         var panel = iamPanel.roles();
 
         assertThat(panel).isNotNull();
@@ -69,7 +70,7 @@ class IamPanelsSmokeTest {
     void permissionsPanelCreatesAndLoadsItems() {
         Permission permission = new Permission("config.read");
         when(permissionStore.findAll()).thenReturn(List.of(permission));
-        IamPanels iamPanel = new IamPanels(permissionStore,roleStore,userStore);
+        IamPanels iamPanel = new IamPanels(userStore, roleStore, permissionStore);
         var panel = iamPanel.permissions();
         assertThat(panel).isNotNull();
         verify(permissionStore, atLeastOnce()).findAll();
