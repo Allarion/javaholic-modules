@@ -44,7 +44,11 @@ public class CrudPanel<T> extends VerticalLayout {
         this.type = Objects.requireNonNull(type, "type");
         this.meta = BeanIntrospector.inspect(type);
         this.store = Objects.requireNonNull(store, "store");
-        this.grid = new Grid<>(type, false); // TODO: why not use Grids instead?
+        this.grid = new Grid<>(type, false);
+        // TODO: why not use Grids instead? :
+        //  this.grid = Grids.of(type)
+        //        .autoColumns(false) // missing feature (functionality currently resides here)
+        //        .build();
         this.createButton = Buttons.create()
                 .text(Texts.label("Create"))
                 .build();
@@ -151,6 +155,7 @@ public class CrudPanel<T> extends VerticalLayout {
                 .open();
     }
 
+    // TODO:add supplier as alternative to newEmptyBean: .withNewInstanceSupplier(Supplier<T>)
     private T newEmptyBean() {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor();
