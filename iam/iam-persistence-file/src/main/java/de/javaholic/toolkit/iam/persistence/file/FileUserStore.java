@@ -56,6 +56,11 @@ public final class FileUserStore implements UserStore {
         return users;
     }
 
+    @Override
+    public Optional<User> findById(UUID id) {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
     private UsersFile load(String resourcePath, ObjectMapper mapper) {
         try (InputStream inputStream = FileUserStore.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
@@ -124,6 +129,16 @@ public final class FileUserStore implements UserStore {
 
     private UUID defaultIdFor(String username) {
         return UUID.nameUUIDFromBytes(("user:" + username).getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public User save(User user) {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
+    @Override
+    public void delete(User user) {
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     private static final class UsersFile {
