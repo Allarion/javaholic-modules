@@ -1,24 +1,35 @@
 package de.javaholic.toolkit.iam.persistence.jpa.config;
 
+import de.javaholic.toolkit.iam.core.spi.PermissionStore;
 import de.javaholic.toolkit.iam.core.spi.RoleStore;
 import de.javaholic.toolkit.iam.core.spi.UserStore;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaPermissionMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaRoleMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaUserMapper;
+import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaPermissionEntity;
+import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaRoleEntity;
+import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaPermissionRepository;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaRoleRepository;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaUserRepository;
+import de.javaholic.toolkit.iam.persistence.jpa.store.JpaPermissionStore;
 import de.javaholic.toolkit.iam.persistence.jpa.store.JpaRoleStore;
 import de.javaholic.toolkit.iam.persistence.jpa.store.JpaUserStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @Configuration
 @EnableJpaRepositories(basePackageClasses = {
     JpaUserRepository.class,
     JpaRoleRepository.class,
     JpaPermissionRepository.class
+})
+@EntityScan(basePackageClasses = {
+    JpaUserEntity.class,
+    JpaRoleEntity.class,
+    JpaPermissionEntity.class
 })
 public class IamJpaPersistenceConfig {
 
@@ -45,5 +56,10 @@ public class IamJpaPersistenceConfig {
     @Bean
     public RoleStore roleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
         return new JpaRoleStore(roleRepository, roleMapper);
+    }
+
+    @Bean
+    public PermissionStore permissionStore(JpaPermissionRepository permissionRepository, JpaPermissionMapper permissionMapper) {
+        return  new JpaPermissionStore(permissionRepository, permissionMapper);
     }
 }
