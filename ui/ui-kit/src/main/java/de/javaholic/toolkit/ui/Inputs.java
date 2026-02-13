@@ -10,7 +10,6 @@ import de.javaholic.toolkit.i18n.I18n;
 import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.Texts;
 
-import java.lang.reflect.Method;
 
 /**
  * Fluent factories for Vaadin input components.
@@ -56,6 +55,11 @@ public final class Inputs {
         MultiSelectComboBox<E> box = new MultiSelectComboBox<>();
         box.setItems(enumType.getEnumConstants());
         return new InputBuilder<>(box);
+    }
+
+    public static <T>
+    InputBuilder<MultiSelectComboBox<T>> multiselect(Class<T> type) {
+        return new InputBuilder<>(new MultiSelectComboBox<>());
     }
 
     // ---------- Fluent Builder ----------
