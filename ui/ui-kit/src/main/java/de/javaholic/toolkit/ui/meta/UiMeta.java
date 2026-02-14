@@ -23,12 +23,25 @@ import java.util.stream.Stream;
  * <li>Grid/Form/Crud should not duplicate hidden/id/version logic</li>
  * </ul>
  *
+ *  <p>Architectural boundary:</p>
+ *  <ul>
+ *  <li>This class is the only allowed place for UI visibility defaults.</li>
+ *  <li>Components must consume UiMeta instead of performing reflection or filtering.</li>
+ *  </ul>
+ *
  * <p>Phase 1 behavior:</p>
  * <ul>
  * <li>ID property hidden by default</li>
  * <li>Version property hidden by default</li>
  * <li>All others visible by default</li>
  * </ul>
+ *
+ * <p>Planned Phase 2 extensions:</p>
+ * <ul>
+ * <li>Support for {@code @UiHidden}, {@code @UiLabel}, {@code @UiOrder}</li>
+ * <li>Optional dynamic DTO proxy support</li>
+ * </ul>
+ *
  *
  * <p>Example:</p>
  * <pre>{@code
@@ -58,24 +71,12 @@ public final class UiMeta<T> {
 
     public Stream<UiProperty<T>> properties() {
         Set<String> hiddenProperties = hiddenPropertyNames();
-        return beanMeta.properties()
-                .stream()
+        return beanMeta.properties().stream()
                 // TODO phase 2: resolve visibility/label/order defaults from UI annotations.
-                .map(property -> new UiProperty<>(
-                        beanMeta,
-                        property,
-                        !hiddenProperties.contains(property.name()),
-                        property.name(),
-                        Integer.MAX_VALUE
-                ));
+                .map(property -> new UiProperty<>(beanMeta, property, !hiddenProperties.contains(property.name()), property.name(), Integer.MAX_VALUE));
     }
 
     private Set<String> hiddenPropertyNames() {
-        return Stream.concat(
-                        beanMeta.idProperty().stream(),
-                        beanMeta.versionProperty().stream()
-                )
-                .map(BeanProperty::name)
-                .collect(Collectors.toUnmodifiableSet());
+        return Stream.concat(beanMeta.idProperty().stream(), beanMeta.versionProperty().stream()).map(BeanProperty::name).collect(Collectors.toUnmodifiableSet());
     }
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+// TODO: Revisit FieldRegistry/Factory/Context concept.
 public final class FieldRegistry {
 
     private final Map<Class<?>, FieldFactory> defaultByType;
