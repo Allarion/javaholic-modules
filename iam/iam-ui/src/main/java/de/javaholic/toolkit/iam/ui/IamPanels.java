@@ -5,49 +5,26 @@ import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.User;
-import de.javaholic.toolkit.iam.core.spi.PermissionStore;
-import de.javaholic.toolkit.iam.core.spi.RoleStore;
-import de.javaholic.toolkit.iam.core.spi.UserStore;
 import de.javaholic.toolkit.iam.ui.adapter.PermissionCrudStoreAdapter;
 import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
 import de.javaholic.toolkit.iam.ui.adapter.UserCrudStoreAdapter;
-import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Inputs;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 import de.javaholic.toolkit.ui.form.Forms;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import java.util.UUID;
 
-@Component
-public class IamPanels {
+public final class IamPanels {
 
-    private final CrudStore<User, UUID> userStore;
-    private final CrudStore<Role, UUID> roleStore;
-    private final CrudStore<Permission, UUID> permissionStore;
-
-    // TODO: Naming sucks
-    public IamPanels(CrudStore<User, UUID> userStore, CrudStore<Role, UUID> roleStore, CrudStore<Permission, UUID> permissionStore) {
-        this.userStore = userStore;
-        this.roleStore = roleStore;
-        this.permissionStore = permissionStore;
+    // TODO: Naming still sucks
+    private IamPanels() {
     }
 
-    public IamPanels(UserStore userStore,
-                     RoleStore roleStore,
-                     PermissionStore permissionStore) {
-
-        this.userStore = new UserCrudStoreAdapter(userStore);
-        this.roleStore = new RoleCrudStoreAdapter(roleStore);
-        this.permissionStore = new PermissionCrudStoreAdapter(permissionStore);
+    public static CrudPanel<User> users(UserCrudStoreAdapter userStore, RoleCrudStoreAdapter roleStore) {
+        return users(userStore, roleStore, Labels.defaults());
     }
 
-    public CrudPanel<User> users() {
-        return users(Labels.defaults());
-    }
-
-    public CrudPanel<User> users(Labels labels) {
+    public static CrudPanel<User> users(UserCrudStoreAdapter userStore, RoleCrudStoreAdapter roleStore, Labels labels) {
         Objects.requireNonNull(userStore, "userStore");
         Objects.requireNonNull(roleStore, "roleStore");
         Labels effective = Labels.defaults().merge(labels);
@@ -63,11 +40,11 @@ public class IamPanels {
         return panel;
     }
 
-    public CrudPanel<Role> roles() {
-        return roles(Labels.defaults());
+    public static CrudPanel<Role> roles(RoleCrudStoreAdapter roleStore, PermissionCrudStoreAdapter permissionStore) {
+        return roles(roleStore, permissionStore, Labels.defaults());
     }
 
-    public CrudPanel<Role> roles(Labels labels) {
+    public static CrudPanel<Role> roles(RoleCrudStoreAdapter roleStore, PermissionCrudStoreAdapter permissionStore, Labels labels) {
         Labels effective = Labels.defaults().merge(labels);
 
         MultiSelectComboBox<Permission> permissionField = Inputs.multiselect(Permission.class).build();
@@ -80,11 +57,11 @@ public class IamPanels {
         return panel;
     }
 
-    public CrudPanel<Permission> permissions() {
-        return permissions(Labels.defaults());
+    public static CrudPanel<Permission> permissions(PermissionCrudStoreAdapter permissionStore) {
+        return permissions(permissionStore, Labels.defaults());
     }
 
-    public CrudPanel<Permission> permissions(Labels labels) {
+    public static CrudPanel<Permission> permissions(PermissionCrudStoreAdapter permissionStore, Labels labels) {
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
 
