@@ -40,7 +40,6 @@ public final class Forms {
      * <pre>{@code
      * Forms.Form<UserDTO> form =
      *     Forms.of(UserDTO.class)
-     *          .withFieldRegistry(registry)
      *          .withI18n(i18n)
      *          .withValidation()
      *          .build();
@@ -90,15 +89,6 @@ public final class Forms {
 
         private FormBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
-        }
-
-        /**
-         * Sets the FieldRegistry used for auto field creation.
-         * FIXME: Forms.auto(type.class) instead! move to FormBuilderModelFactory.
-         */
-        public FormBuilder<T> withFieldRegistry(FieldRegistry fieldRegistry) {
-            this.fieldRegistry = Objects.requireNonNull(fieldRegistry, "fieldRegistry");
-            return this;
         }
 
         /**
@@ -332,11 +322,6 @@ public final class Forms {
         private AutoFormBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
             this.uiMeta = UiInspector.inspect(type);
-        }
-
-        public AutoFormBuilder<T> withFieldRegistry(FieldRegistry fieldRegistry) {
-            this.fieldRegistry = Objects.requireNonNull(fieldRegistry, "fieldRegistry");
-            return this;
         }
 
         public AutoFormBuilder<T> withI18n(I18n i18n) {
