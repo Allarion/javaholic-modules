@@ -1,18 +1,14 @@
 package de.javaholic.toolkit.ui.form.fields;
 
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.HasValue;
+import de.javaholic.toolkit.ui.Inputs;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public final class DefaultMappings {
 
@@ -27,29 +23,30 @@ public final class DefaultMappings {
         this.aliases = Collections.unmodifiableMap(aliases);
     }
 
-    // TODO: refactor to use Inputs. instead
     public static DefaultMappings defaults() {
         Map<Class<?>, FieldFactory> byType = new LinkedHashMap<>();
-        byType.put(String.class, ctx -> new TextField());
-        byType.put(Boolean.class, ctx -> new Checkbox());
-        byType.put(boolean.class, ctx -> new Checkbox());
-        byType.put(Integer.class, ctx -> new NumberField());
-        byType.put(int.class, ctx -> new NumberField());
-        byType.put(Long.class, ctx -> new NumberField());
-        byType.put(long.class, ctx -> new NumberField());
-        byType.put(BigDecimal.class, ctx -> new NumberField());
-        byType.put(LocalDate.class, ctx -> new DatePicker());
-        byType.put(Enum.class, DefaultMappings::enumCombo);
+        byType.put(String.class, ctx -> Inputs.textField().build());
+        byType.put(Boolean.class, ctx -> Inputs.checkbox().build());
+        byType.put(boolean.class, ctx -> Inputs.checkbox().build());
+        byType.put(Integer.class, ctx -> Inputs.numberField().build());
+        byType.put(int.class, ctx -> Inputs.numberField().build());
+        byType.put(Long.class, ctx -> Inputs.numberField().build());
+        byType.put(long.class, ctx -> Inputs.numberField().build());
+        byType.put(BigDecimal.class, ctx -> Inputs.numberField().build());
+        byType.put(LocalDate.class, ctx -> Inputs.datePicker().build());
+        byType.put(UUID.class, ctx -> Inputs.uuidField().build());
+        byType.put(Enum.class, DefaultMappings::enumSelect);
 
         Map<String, FieldFactory> aliases = new LinkedHashMap<>();
-        aliases.put("text", ctx -> new TextField());
-        aliases.put("textarea", ctx -> new TextArea());
-        aliases.put("email", ctx -> new EmailField());
-        aliases.put("checkbox", ctx -> new Checkbox());
-        aliases.put("number", ctx -> new NumberField());
-        aliases.put("date", ctx -> new DatePicker());
-        aliases.put("enum", DefaultMappings::enumCombo);
-        aliases.put("combo", DefaultMappings::enumCombo);
+        aliases.put("text", ctx -> Inputs.textField().build());
+        aliases.put("textarea", ctx -> Inputs.textArea().build());
+        aliases.put("email", ctx -> Inputs.emailField().build());
+        aliases.put("checkbox", ctx -> Inputs.checkbox().build());
+        aliases.put("number", ctx -> Inputs.numberField().build());
+        aliases.put("date", ctx -> Inputs.datePicker().build());
+        aliases.put("uuid", ctx -> Inputs.uuidField().build());
+        aliases.put("enum", DefaultMappings::enumSelect);
+        aliases.put("combo", DefaultMappings::enumSelect);
 
         return new DefaultMappings(byType, aliases);
     }
@@ -63,13 +60,11 @@ public final class DefaultMappings {
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E>> ComboBox<E> enumCombo(FieldContext ctx) {
-        ComboBox<E> box = new ComboBox<>();
+    private static <E extends Enum<E>> HasValue<?, ?> enumSelect(FieldContext ctx) {
         if (!ctx.fieldType().isEnum()) {
-            return box;
+            return Inputs.textField().build();
         }
         Class<E> enumType = (Class<E>) ctx.fieldType();
-        box.setItems(enumType.getEnumConstants());
-        return box;
+        return Inputs.select(enumType).build();
     }
 }

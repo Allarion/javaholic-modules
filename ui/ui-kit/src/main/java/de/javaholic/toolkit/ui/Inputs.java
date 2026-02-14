@@ -3,12 +3,16 @@ package de.javaholic.toolkit.ui;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import de.javaholic.toolkit.i18n.I18n;
 import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.Texts;
+import de.javaholic.toolkit.ui.component.UuidField;
 
 
 /**
@@ -16,7 +20,7 @@ import de.javaholic.toolkit.i18n.Texts;
  *
  * Usage:
  *   TextField name =
- *     Inputs.text()
+ *     Inputs.textField()
  *           .withI18n(i18n)
  *           .text(Texts.label("user.name"))
  *           .widthFull()
@@ -31,16 +35,32 @@ public final class Inputs {
 
     // ---------- Factories ----------
 
-    public static InputBuilder<TextField> text() {
+    public static InputBuilder<TextField> textField() {
         return new InputBuilder<>(new TextField());
     }
 
-    public static InputBuilder<NumberField> number() {
+    public static InputBuilder<TextArea> textArea() {
+        return new InputBuilder<>(new TextArea());
+    }
+
+    public static InputBuilder<EmailField> emailField() {
+        return new InputBuilder<>(new EmailField());
+    }
+
+    public static InputBuilder<NumberField> numberField() {
         return new InputBuilder<>(new NumberField());
     }
 
     public static InputBuilder<Checkbox> checkbox() {
         return new InputBuilder<>(new Checkbox());
+    }
+
+    public static InputBuilder<DatePicker> datePicker() {
+        return new InputBuilder<>(new DatePicker());
+    }
+
+    public static InputBuilder<UuidField> uuidField() {
+        return new InputBuilder<>(new UuidField());
     }
 
     public static <E extends Enum<E>>
