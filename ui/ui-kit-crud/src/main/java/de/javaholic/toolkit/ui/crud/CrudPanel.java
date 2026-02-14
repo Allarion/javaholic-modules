@@ -6,20 +6,16 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import de.javaholic.toolkit.i18n.Texts;
-import de.javaholic.toolkit.introspection.BeanIntrospector;
-import de.javaholic.toolkit.introspection.BeanMeta;
-import de.javaholic.toolkit.introspection.BeanProperty;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
+import de.javaholic.toolkit.ui.Grids;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
 
 import java.lang.reflect.Constructor;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -34,29 +30,23 @@ import java.util.function.Supplier;
 public class CrudPanel<T> extends VerticalLayout {
 
     private final Class<T> type;
-    private final BeanMeta<T> meta;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
     private final Button createButton;
-    private Supplier<Forms.FormBuilder<T>> formBuilderFactory;
+    private Supplier<Forms.Form<T>> formFactory;
 
     public CrudPanel(Class<T> type, CrudStore<T, ?> store) {
         this.type = Objects.requireNonNull(type, "type");
-        this.meta = BeanIntrospector.inspect(type);
         this.store = Objects.requireNonNull(store, "store");
-        this.grid = new Grid<>(type, false);
-        // TODO: why not use Grids instead? :
-        //  this.grid = Grids.of(type)
-        //        .autoColumns(false) // missing feature (functionality currently resides here)
-        //        .build();
-        // maybe here is another layer? autoConfig.grid(type) ? autoConfig.forms?
+        this.grid = Grids.auto(type)
+                .configure(this::addActionsColumn)
+                .build();
         this.createButton = Buttons.create()
                 .text(Texts.label("Create"))
                 .build();
-        this.formBuilderFactory = () -> Forms.of(type);
+        this.formFactory = () -> Forms.auto(type).build();
 
         configureLayout();
-        configureGrid();
         configureCreateButton();
         refresh();
     }
@@ -67,7 +57,8 @@ public class CrudPanel<T> extends VerticalLayout {
     }
 
     public CrudPanel<T> withFormBuilderFactory(Supplier<Forms.FormBuilder<T>> formBuilderFactory) {
-        this.formBuilderFactory = Objects.requireNonNull(formBuilderFactory, "formBuilderFactory");
+        Objects.requireNonNull(formBuilderFactory, "formBuilderFactory");
+        this.formFactory = () -> formBuilderFactory.get().build();
         return this;
     }
 
@@ -84,20 +75,7 @@ public class CrudPanel<T> extends VerticalLayout {
         expand(grid);
     }
 
-    private void configureGrid() {
-        // TODO: hiddenField processing should be available elsewhere (in Forms too)
-        Set<String> hiddenProperties = new HashSet<>();
-        meta.idProperty().map(BeanProperty::name).ifPresent(hiddenProperties::add);
-        meta.versionProperty().map(BeanProperty::name).ifPresent(hiddenProperties::add);
-
-        for (BeanProperty<T, ?> property : meta.properties()) {
-            if (hiddenProperties.contains(property.name())) {
-                continue;
-            }
-            grid.addColumn(item -> readPropertyValue(property, item))
-                    .setHeader(property.name());
-        }
-
+    private void addActionsColumn(Grid<T> grid) {
         // TODO: add optional selection dialog integration when use-cases need it.
         grid.addColumn(new ComponentRenderer<>(item -> {
                     Button edit = Buttons.create()
@@ -147,7 +125,7 @@ public class CrudPanel<T> extends VerticalLayout {
     }
 
     private void openFormDialog(String title, T bean) {
-        Forms.Form<T> form = formBuilderFactory.get().build();
+        Forms.Form<T> form = formFactory.get();
         form.binder().setBean(bean);
 
         Dialogs.form(form)
@@ -180,10 +158,5 @@ public class CrudPanel<T> extends VerticalLayout {
     void deleteAndRefresh(T bean) {
         store.delete(bean);
         refresh();
-    }
-
-    @SuppressWarnings("unchecked")
-    private String readPropertyValue(BeanProperty<T, ?> property, T item) {
-        return String.valueOf(meta.getValue((BeanProperty<T, Object>) property, item));
     }
 }
