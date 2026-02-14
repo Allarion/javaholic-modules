@@ -14,6 +14,9 @@ import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
+import de.javaholic.toolkit.ui.meta.UiInspector;
+import de.javaholic.toolkit.ui.meta.UiMeta;
+import de.javaholic.toolkit.ui.meta.UiProperty;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import jakarta.validation.constraints.NotBlank;
@@ -47,6 +50,13 @@ public final class Forms {
      */
     public static <T> FormBuilder<T> of(Class<T> type) {
         return new FormBuilder<>(type);
+    }
+
+    /**
+     * Entry point for convention-based auto form creation using {@link UiMeta}.
+     */
+    public static <T> AutoFormBuilder<T> auto(Class<T> type) {
+        return new AutoFormBuilder<>(type);
     }
 
     /**
@@ -289,6 +299,151 @@ public final class Forms {
             public void label(Text label) {
                 this.label = label;
             }
+        }
+    }
+
+    public static final class AutoFormBuilder<T> {
+        private final Class<T> type;
+        private final UiMeta<T> uiMeta;
+        private FieldRegistry fieldRegistry = new FieldRegistry();
+        private I18n i18n;
+        private final Set<String> excluded = new LinkedHashSet<>();
+        private final Map<String, Consumer<HasValue<?, ?>>> overrides = new LinkedHashMap<>();
+        private final List<Consumer<Form<T>>> configurators = new ArrayList<>();
+
+        private AutoFormBuilder(Class<T> type) {
+            this.type = Objects.requireNonNull(type, "type");
+            this.uiMeta = UiInspector.inspect(type);
+        }
+
+        public AutoFormBuilder<T> withFieldRegistry(FieldRegistry fieldRegistry) {
+            this.fieldRegistry = Objects.requireNonNull(fieldRegistry, "fieldRegistry");
+            return this;
+        }
+
+        public AutoFormBuilder<T> withI18n(I18n i18n) {
+            this.i18n = Objects.requireNonNull(i18n, "i18n");
+            return this;
+        }
+
+        public AutoFormBuilder<T> exclude(String... propertyNames) {
+            if (propertyNames == null) {
+                return this;
+            }
+            Arrays.stream(propertyNames)
+                    .filter(Objects::nonNull)
+                    .forEach(excluded::add);
+            return this;
+        }
+
+        public AutoFormBuilder<T> override(String propertyName, Consumer<HasValue<?, ?>> customizer) {
+            Objects.requireNonNull(propertyName, "propertyName");
+            Objects.requireNonNull(customizer, "customizer");
+            overrides.merge(propertyName, customizer, Consumer::andThen);
+            return this;
+        }
+
+        public AutoFormBuilder<T> configure(Consumer<Form<T>> config) {
+            Objects.requireNonNull(config, "config");
+            configurators.add(config);
+            return this;
+        }
+
+        public Form<T> build() {
+            BeanMeta<T> beanMeta = uiMeta.beanMeta();
+            Map<String, BeanProperty<T, ?>> beanProperties = beanMeta.properties().stream()
+                    .collect(LinkedHashMap::new, (map, prop) -> map.put(prop.name(), prop), Map::putAll);
+
+            VerticalLayout layout = new VerticalLayout();
+            Binder<T> binder = new Binder<>(type);
+            Map<String, Component> components = new LinkedHashMap<>();
+
+            Span formErrorLabel = new Span(i18n != null ? i18n.text("form.validation.error") : "Please fix the highlighted fields");
+            formErrorLabel.addClassName("form-error");
+            formErrorLabel.setVisible(false);
+            layout.add(formErrorLabel);
+
+            binder.addStatusChangeListener(event -> formErrorLabel.setVisible(event.hasValidationErrors()));
+
+            uiMeta.properties()
+                    .filter(UiProperty::isVisible)
+                    .filter(property -> !excluded.contains(property.name()))
+                    .forEach(property -> addField(property, beanMeta, beanProperties, layout, binder, components));
+
+            Form<T> form = new Form<>(layout, binder, components);
+            for (Consumer<Form<T>> config : configurators) {
+                config.accept(form);
+            }
+            return form;
+        }
+
+        @SuppressWarnings("unchecked")
+        private void addField(
+                UiProperty<T> property,
+                BeanMeta<T> beanMeta,
+                Map<String, BeanProperty<T, ?>> beanProperties,
+                VerticalLayout layout,
+                Binder<T> binder,
+                Map<String, Component> components
+        ) {
+            BeanProperty<T, ?> beanProperty = beanProperties.get(property.name());
+            if (beanProperty == null) {
+                throw new IllegalStateException("Unknown BeanProperty for UiProperty '" + property.name() + "'");
+            }
+
+            FieldContext ctx = new FieldContext(type, property.name(), property.type(), beanProperty.definition());
+            HasValue<?, ?> value = fieldRegistry.create(ctx);
+            if (!(value instanceof Component component)) {
+                throw new IllegalStateException("FieldFactory returned non-Component for property '" + property.name() + "'");
+            }
+
+            applyLabel(component, property.label());
+            applyRequiredIndicator(component, beanProperty.definition());
+
+            Consumer<HasValue<?, ?>> override = overrides.get(property.name());
+            if (override != null) {
+                override.accept(value);
+            }
+
+            bindAutoFieldUntyped(binder, beanMeta, beanProperty, value);
+
+            layout.add(component);
+            components.put(property.name(), component);
+        }
+
+        private void applyLabel(Component component, String defaultLabel) {
+            if (!(component instanceof HasLabel hasLabel)) {
+                return;
+            }
+            hasLabel.setLabel(Texts.resolve(i18n, Texts.label(defaultLabel)));
+        }
+
+        private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {
+            if (!isRequired(annotations)) {
+                return;
+            }
+            if (component instanceof HasValueAndElement hasValue) {
+                hasValue.setRequiredIndicatorVisible(true);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private <V> void bindAutoFieldUntyped(Binder<T> binder, BeanMeta<T> meta, BeanProperty<T, ?> property, HasValue<?, ?> field) {
+            bindAutoField(binder, meta, (BeanProperty<T, V>) property, (HasValue<?, V>) field);
+        }
+
+        private <V> void bindAutoField(
+                Binder<T> binder,
+                BeanMeta<T> meta,
+                BeanProperty<T, V> property,
+                HasValue<?, V> fieldComponent
+        ) {
+            binder.forField(fieldComponent)
+                    .withValidator(new BeanValidator(type, property.name()))
+                    .bind(
+                            bean -> meta.getValue(property, bean),
+                            (bean, val) -> meta.setValue(property, bean, val)
+                    );
         }
     }
 
