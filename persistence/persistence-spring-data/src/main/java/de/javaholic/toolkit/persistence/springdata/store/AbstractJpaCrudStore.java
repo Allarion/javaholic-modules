@@ -20,7 +20,11 @@ public abstract class AbstractJpaCrudStore<
         this.repository = Objects.requireNonNull(repository, "repository");;
     }
 
-    // TODO: maybe wrap in another interface?
+    // TODO: maybe wrap in another interface Mapper<d,e> ? Vgl. CrudMode?
+    //    enum CrudMode {
+    //        RAPID,   // JPA-first defaults
+    //        CLEAN    // DTO-first defaults
+    //    }
     protected abstract D toDomain(E entity);
     protected abstract E toJpa(D domain);
 

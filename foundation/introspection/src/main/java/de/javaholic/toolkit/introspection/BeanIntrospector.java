@@ -6,6 +6,23 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.*;
 
+/**
+ * Reflection-based factory that builds {@link BeanMeta}.
+ *
+ * <p>Responsibility: inspect fields/record components, resolve {@code @Id}/{@code @Version},
+ * and return a normalized technical metadata model.</p>
+ *
+ * <p>Must not do: infer UI defaults, labels, ordering, or component choices.</p>
+ *
+ * <p>Architecture fit: boundary between raw Java reflection and the toolkit metadata model.
+ * UI code should consume {@code UiInspector}/{@code UiMeta}, not call this from rendering builders.</p>
+ *
+ * <p>Usage:</p>
+ * <pre>{@code
+ * BeanMeta<User> meta = BeanIntrospector.inspect(User.class);
+ * meta.idProperty().ifPresent(id -> System.out.println(id.name()));
+ * }</pre>
+ */
 public final class BeanIntrospector {
 
     private BeanIntrospector() {

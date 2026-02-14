@@ -29,23 +29,42 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-// TODO: Aaron: look into: AUTO-GRID; CRUD (PAID VAADIN)
 /**
- * Fluent builder for {@link Grid} configuration.<br>
+ * Grid builder facade with manual and convention-based auto modes.
  *
- * <p>Example:</p>
+ * <p>Responsibility:</p>
+ * <ul>
+ * <li>Provide fluent APIs for manual column definition ({@link #of(Class)})</li>
+ * <li>Provide convention-based column generation from {@link UiMeta} ({@link #auto(Class)})</li>
+ * </ul>
  *
+ * <p>Must not do: call {@code BeanIntrospector}/{@code BeanMeta} directly in Grid assembly.
+ * UI metadata must come from {@link UiInspector}/{@link UiMeta} to keep layering intact.</p>
+ *
+ * <p>Architecture fit: rendering layer. It consumes UI semantics and renders Vaadin {@link Grid}
+ * components; it does not define metadata policy.</p>
+ *
+ * <p>Manual example:</p>
  * <pre>{@code
- * Grids.of(User.class)
- *     .items(users)
- *     .column(User::getUsername)
- *         .text(Texts.label("user.username"))
- *         .and()
- *     .column(new ComponentRenderer<>(user -> new Icon("vaadin", "user")))
- *         .text(Texts.label("user.icon"))
- *         .and()
+ * Grid<User> manual = Grids.of(User.class)
+ *     .column(User::getUsername).text(Texts.label("user.username")).and()
+ *     .column(User::getEmail).text(Texts.label("user.email")).and()
  *     .build();
  * }</pre>
+ *
+ * <p>Auto example:</p>
+ * <pre>{@code
+ * Grid<User> auto = Grids.auto(User.class).build();
+ * }</pre>
+ *
+ * <p>Auto with overrides:</p>
+ * <pre>{@code
+ * Grid<User> customized = Grids.auto(User.class)
+ *     .exclude("password")
+ *     .override("email", col -> col.setAutoWidth(true))
+ *     .build();
+ * }</pre>
+ *
  */
 public final class Grids {
 
@@ -422,6 +441,7 @@ public final class Grids {
         private AutoGridBuilder(Class<T> type) {
             Objects.requireNonNull(type, "type");
             this.delegate = Grids.of(type);
+            // Architecture boundary: resolve UI metadata through UiInspector only; no direct BeanMeta access in Grid layer.
             this.uiMeta = UiInspector.inspect(type);
         }
 
@@ -641,3 +661,7 @@ public final class Grids {
 //                            .build();
 //                    return Layouts.hbox(edit, delete);
 //                }))
+// TODO (Architecture):
+// Introduce internal ComponentFactory for shared component creation (buttons, fields, layouts).
+// Grid/Form should delegate internally to it, but must NOT expose Inputs builders directly.
+// Goal: reuse + consistency without API-layer merging.

@@ -19,12 +19,21 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * Minimal embeddable CRUD skeleton for Vaadin views.
+ * Embeddable CRUD composition panel for Vaadin views.
  *
+ * <p>Responsibility: orchestrate store operations, grid refresh, and form dialog lifecycle.</p>
+ *
+ * <p>Must not do: decide metadata/rendering policy for fields/columns.
+ * Rendering decisions belong to {@link Grids} and {@link Forms} builders.</p>
+ *
+ * <p>Architecture fit: top-level orchestration layer. It composes existing UI toolkit parts and
+ * persistence abstractions ({@link CrudStore}) without redefining lower-layer rules.</p>
+ *
+ * <p>Usage:</p>
  * <pre>{@code
  * CrudStore<User, UUID> store = ...;
- * CrudView<User> view = CrudView.of(User.class, store);
- * add(view);
+ * CrudPanel<User> panel = CrudPanel.of(User.class, store);
+ * add(panel);
  * }</pre>
  */
 public class CrudPanel<T> extends VerticalLayout {

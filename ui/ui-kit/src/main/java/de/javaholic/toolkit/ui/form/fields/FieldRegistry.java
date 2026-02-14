@@ -8,8 +8,24 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
 // TODO: Revisit FieldRegistry/Factory/Context concept.
+/**
+ * Registry that maps property/type context to Vaadin field factories.
+ *
+ * <p>Responsibility: resolve a {@link FieldFactory} from property overrides, type overrides,
+ * config aliases, and defaults, then create a {@link HasValue} component.</p>
+ *
+ * <p>Must not do: inspect beans, decide visibility/order, or perform binding logic.</p>
+ *
+ * <p>Architecture fit: pluggable field-instantiation backend used by {@code Forms}.</p>
+ *
+ * <p>Usage:</p>
+ * <pre>{@code
+ * FieldRegistry registry = new FieldRegistry();
+ * registry.override(String.class, ctx -> Inputs.text().build());
+ * HasValue<?, ?> field = registry.create(new FieldContext(User.class, "email", String.class, User.class.getDeclaredField("email")));
+ * }</pre>
+ */
 public final class FieldRegistry {
 
     private final Map<Class<?>, FieldFactory> defaultByType;

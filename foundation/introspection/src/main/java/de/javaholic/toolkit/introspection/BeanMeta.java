@@ -9,6 +9,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Technical reflection metadata for a Java bean/record type.
+ *
+ * <p>Responsibility: provide property descriptors plus typed read/write access against an instance.</p>
+ *
+ * <p>Must not do: carry UI semantics (visibility, labels, ordering) or any rendering decisions.</p>
+ *
+ * <p>Architecture fit: {@link BeanIntrospector} produces this as the low-level metadata layer.
+ * Higher UI layers (for example {@code UiMeta}) wrap it and add presentation semantics.</p>
+ *
+ * <p>Usage:</p>
+ * <pre>{@code
+ * BeanMeta<User> meta = BeanIntrospector.inspect(User.class);
+ * BeanProperty<User, ?> first = meta.properties().get(0);
+ * Object value = meta.getValue((BeanProperty<User, Object>) first, user);
+ * }</pre>
+ */
 public final class BeanMeta<T> {
 
     private final Class<T> type;

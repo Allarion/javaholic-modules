@@ -28,6 +28,41 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Form builder facade for Vaadin Binder-based forms.
+ *
+ * <p>Responsibility:</p>
+ * <ul>
+ * <li>Provide fluent manual form construction via {@link #of(Class)}</li>
+ * <li>Provide convention-based auto form creation via {@link #auto(Class)} backed by {@link UiMeta}</li>
+ * </ul>
+ *
+ * <p>Must not do: define UI metadata policy inside form rendering code. Grid/Form layers must consume
+ * {@link UiMeta} rather than performing their own bean-introspection rules for visibility/labels/order.</p>
+ *
+ * <p>Architecture fit: rendering/binding layer. It binds components using metadata prepared by the
+ * introspection/meta layers and keeps policy decisions outside Vaadin component wiring.</p>
+ *
+ * <p>Manual example:</p>
+ * <pre>{@code
+ * Forms.Form<User> manual = Forms.of(User.class)
+ *     .field("email", f -> f.label(Texts.label("user.email")))
+ *     .build();
+ * }</pre>
+ *
+ * <p>Auto example:</p>
+ * <pre>{@code
+ * Forms.Form<User> auto = Forms.auto(User.class).build();
+ * }</pre>
+ *
+ * <p>Auto with overrides:</p>
+ * <pre>{@code
+ * Forms.Form<User> customized = Forms.auto(User.class)
+ *     .exclude("password")
+ *     .override("email", field -> field.setReadOnly(true))
+ *     .build();
+ * }</pre>
+ */
 public final class Forms {
 
     private Forms() {
@@ -321,6 +356,7 @@ public final class Forms {
 
         private AutoFormBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
+            // Architecture boundary: Forms.auto consumes UiMeta; do not introspect BeanMeta directly in UI code.
             this.uiMeta = UiInspector.inspect(type);
         }
 
@@ -353,6 +389,7 @@ public final class Forms {
         }
 
         public Form<T> build() {
+            // UiMeta is the source of UI semantics; BeanMeta is accessed only through this boundary object.
             BeanMeta<T> beanMeta = uiMeta.beanMeta();
             Map<String, BeanProperty<T, ?>> beanProperties = beanMeta.properties().stream()
                     .collect(LinkedHashMap::new, (map, prop) -> map.put(prop.name(), prop), Map::putAll);

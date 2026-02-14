@@ -11,25 +11,25 @@ import java.util.stream.Stream;
 /**
  * Central UI semantic model for a bean type.
  *
- * <p>Responsibilities:</p>
+ * <p>Responsibility:</p>
  * <ul>
- * <li>Single source of truth for default UI visibility decisions</li>
- * <li>Provide {@link UiProperty} stream consumed by Grid/Form auto builders</li>
+ * <li>Centralize UI semantics (visibility, label, order) above technical metadata</li>
+ * <li>Expose {@link UiProperty} values consumed by auto Grid/Form builders</li>
  * </ul>
  *
- * <p>No-go rules enforced by design:</p>
+ * <p>Must not do:</p>
  * <ul>
- * <li>{@link BeanMeta} remains technical; UI semantics are not added there</li>
- * <li>Grid/Form/Crud should not duplicate hidden/id/version logic</li>
+ * <li>Must not push UI rules into {@link BeanMeta}; {@code BeanMeta} is technical only</li>
+ * <li>Must not render components or bind Vaadin widgets directly</li>
  * </ul>
  *
- *  <p>Architectural boundary:</p>
- *  <ul>
- *  <li>This class is the only allowed place for UI visibility defaults.</li>
- *  <li>Components must consume UiMeta instead of performing reflection or filtering.</li>
- *  </ul>
+ * <p>Architecture fit:</p>
+ * <ul>
+ * <li>Wraps {@link BeanMeta} and is the single source of UI defaults for Phase 1</li>
+ * <li>{@code Grids.auto(...)} and {@code Forms.auto(...)} must consume this instead of direct bean introspection</li>
+ * </ul>
  *
- * <p>Phase 1 behavior:</p>
+ * <p>Phase 1 behavior (defaults-only by design):</p>
  * <ul>
  * <li>ID property hidden by default</li>
  * <li>Version property hidden by default</li>
@@ -46,11 +46,9 @@ import java.util.stream.Stream;
  * <p>Example:</p>
  * <pre>{@code
  * UiMeta<User> meta = UiInspector.inspect(User.class);
- * meta.properties().forEach(property -> {
- *     if (property.isVisible()) {
- *         System.out.println(property.label());
- *     }
- * });
+ * meta.properties()
+ *     .filter(UiProperty::isVisible)
+ *     .forEach(p -> System.out.println(p.name()));
  * }</pre>
  */
 public final class UiMeta<T> {
@@ -58,6 +56,7 @@ public final class UiMeta<T> {
     private final BeanMeta<T> beanMeta;
 
     UiMeta(BeanMeta<T> beanMeta) {
+        // Architecture boundary: UiMeta wraps technical BeanMeta so UI layers never use BeanMeta directly.
         this.beanMeta = Objects.requireNonNull(beanMeta, "beanMeta");
     }
 
@@ -72,7 +71,10 @@ public final class UiMeta<T> {
     public Stream<UiProperty<T>> properties() {
         Set<String> hiddenProperties = hiddenPropertyNames();
         return beanMeta.properties().stream()
-                // TODO phase 2: resolve visibility/label/order defaults from UI annotations.
+                // TODO phase 2: support @UiHidden on property/record component and combine with defaults.
+                // TODO phase 2: support @UiLabel, optionally i18n-aware label keys.
+                // TODO phase 2: support @UiOrder for stable ordering before builder-level overrides.
+                // TODO phase 2: support dynamic DTO proxy types that do not expose concrete fields directly.
                 .map(property -> new UiProperty<>(beanMeta, property, !hiddenProperties.contains(property.name()), property.name(), Integer.MAX_VALUE));
     }
 

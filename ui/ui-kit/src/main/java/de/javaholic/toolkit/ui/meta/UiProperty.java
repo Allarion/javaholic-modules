@@ -8,13 +8,18 @@ import java.util.Objects;
 /**
  * UI semantic property wrapper around a technical {@link BeanProperty}.
  *
- * <p>Responsibilities:</p>
+ * <p>Responsibility:</p>
  * <ul>
- * <li>Expose UI defaults ({@code visible}, {@code label}, {@code order})</li>
- * <li>Provide value access via {@link #read(Object)} for render/bind usage</li>
+ * <li>Carry UI defaults ({@code visible}, {@code label}, {@code order}) for one property</li>
+ * <li>Provide read access for Grid/Form rendering and binding</li>
  * </ul>
  *
- * <p>Phase 1 uses defaults only. Annotation-based customizations are planned for Phase 2.</p>
+ * <p>Must not do: mutate bean metadata, run reflection discovery, or create UI components.</p>
+ *
+ * <p>Architecture fit: leaf element of {@link UiMeta}. UI builders consume this type so they stay
+ * independent from direct {@link BeanMeta} / reflection APIs.</p>
+ *
+ * <p>Phase 1 is defaults-only by design. Annotation/custom policy support is deferred to Phase 2.</p>
  *
  * <p>Example:</p>
  * <pre>{@code
@@ -71,12 +76,13 @@ public final class UiProperty<T> {
     }
 
     public String label() {
-        // TODO phase 2: support annotation/i18n-based label resolution.
+        // TODO phase 2: support @UiLabel (and optional i18n key mapping) instead of name fallback only.
         return label;
     }
 
     public int order() {
-        // TODO phase 2: support annotation-based ordering.
+        // TODO phase 2: support @UiOrder instead of Integer.MAX_VALUE default ordering only.
+        // TODO phase 2: revisit ordering for dynamic DTO proxy property models.
         return order;
     }
 }

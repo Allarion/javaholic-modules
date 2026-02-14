@@ -8,11 +8,15 @@ import java.util.Objects;
 /**
  * Factory for UI semantic metadata.
  *
- * <p>Responsibilities:</p>
+ * <p>Responsibility:</p>
  * <ul>
- * <li>Wrap technical {@link BeanMeta} into UI-facing {@link UiMeta}</li>
- * <li>Keep UI semantics out of {@code BeanMeta} (architecture no-go rule)</li>
+ * <li>Bridge technical introspection to UI metadata by wrapping {@link BeanMeta} into {@link UiMeta}</li>
  * </ul>
+ *
+ * <p>Must not do: render components, configure Grid/Form fields, or hold CRUD orchestration logic.</p>
+ *
+ * <p>Architecture fit: single entry point for UI metadata creation. Consumers use this to keep
+ * {@code BeanMeta} technical-only and prevent direct reflection coupling in UI builders.</p>
  *
  * <p>Example:</p>
  * <pre>{@code
