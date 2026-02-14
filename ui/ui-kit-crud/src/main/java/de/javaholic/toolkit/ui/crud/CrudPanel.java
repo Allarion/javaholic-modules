@@ -51,6 +51,7 @@ public class CrudPanel<T> extends VerticalLayout {
         refresh();
     }
 
+
     // TODO: fix syntax...CrudPanel.of(type).from(store).oä
     public static <T> CrudPanel<T> of(Class<T> type, CrudStore<T, ?> store) {
         return new CrudPanel<>(type, store);
@@ -74,7 +75,7 @@ public class CrudPanel<T> extends VerticalLayout {
         add(createButton, grid);
         expand(grid);
     }
-
+    // TODO: gehört eher ins Grids? vll so: Grids.auto(type).withActions(...) ?
     private void addActionsColumn(Grid<T> grid) {
         // TODO: add optional selection dialog integration when use-cases need it.
         grid.addColumn(new ComponentRenderer<>(item -> {
