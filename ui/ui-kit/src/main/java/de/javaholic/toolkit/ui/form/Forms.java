@@ -162,6 +162,11 @@ public final class Forms {
          */
         public Form<T> build() {
             BeanMeta<T> meta = BeanIntrospector.inspect(type);
+            UiMeta<T> uiMeta = UiInspector.inspect(type);
+            Set<String> hiddenByDefault = uiMeta.properties()
+                    .filter(property -> !property.isVisible())
+                    .map(UiProperty::name)
+                    .collect(LinkedHashSet::new, Set::add, Set::addAll);
             VerticalLayout layout = new VerticalLayout();
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
@@ -175,15 +180,9 @@ public final class Forms {
             // TODO: unit test das die auch wirklich weg sind...und hier fiel auf: wir sind auf die nase gefallen: Domain->JPA entity vermischung, im grunde fehlt DTO.
             // weitere Schicht (UIMeta) zur kapselung und dann builder um die (auto, mit override) zu erzeugen: e.g. GridModelFactory die auto das GridModel mit BeanInspection ableitet
             for (BeanProperty<T, ?> property : meta.properties()) {
-
-                if (includeId && meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
+                if (!isIncludedByTechnicalFlags(property, meta, hiddenByDefault)) {
                     continue;
                 }
-
-                if (includeVersion && meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
-                    continue;
-                }
-
 
                 FieldOverride<T> override = overrides.get(property.name());
                 FieldSpec<T> spec = new FieldSpec<>();
@@ -219,6 +218,25 @@ public final class Forms {
                 config.accept(form);
             }
             return form;
+        }
+
+        private boolean isIncludedByTechnicalFlags(
+                BeanProperty<T, ?> property,
+                BeanMeta<T> meta,
+                Set<String> hiddenByDefault
+        ) {
+            if (!hiddenByDefault.contains(property.name())) {
+                return true;
+            }
+            boolean isId = meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false);
+            if (isId) {
+                return includeId;
+            }
+            boolean isVersion = meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false);
+            if (isVersion) {
+                return includeVersion;
+            }
+            return false;
         }
 
         private void applyLabel(Component component, String fieldName, Text overrideLabel) {
