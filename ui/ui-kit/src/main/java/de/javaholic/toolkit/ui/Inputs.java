@@ -12,7 +12,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import de.javaholic.toolkit.i18n.I18n;
 import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.Texts;
-import de.javaholic.toolkit.ui.component.UuidField;
+import de.javaholic.toolkit.ui.component.UUIDField;
 
 
 /**
@@ -59,8 +59,8 @@ public final class Inputs {
         return new InputBuilder<>(new DatePicker());
     }
 
-    public static InputBuilder<UuidField> uuidField() {
-        return new InputBuilder<>(new UuidField());
+    public static InputBuilder<UUIDField> uuidField() {
+        return new InputBuilder<>(new UUIDField());
     }
 
     public static <E extends Enum<E>>
