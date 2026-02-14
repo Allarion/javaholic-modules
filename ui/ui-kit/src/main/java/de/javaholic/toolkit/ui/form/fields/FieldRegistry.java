@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Usage:</p>
  * <pre>{@code
  * FieldRegistry registry = new FieldRegistry();
- * registry.override(String.class, ctx -> Inputs.text().build());
+ * registry.override(String.class, ctx -> Inputs.textField().build());
  * HasValue<?, ?> field = registry.create(new FieldContext(User.class, "email", String.class, User.class.getDeclaredField("email")));
  * }</pre>
  */
@@ -35,10 +35,20 @@ public final class FieldRegistry {
     private final Map<Class<?>, FieldFactory> typeOverrides = new ConcurrentHashMap<>();
     private final Map<PropertyKey, FieldFactory> propertyOverrides = new ConcurrentHashMap<>();
 
+    /**
+     * Creates a registry with built-in default mappings.
+     *
+     * <p>Example: {@code FieldRegistry registry = new FieldRegistry();}</p>
+     */
     public FieldRegistry() {
         this(DefaultMappings.defaults(), Map.of());
     }
 
+    /**
+     * Creates a registry with custom defaults and alias/config mappings.
+     *
+     * <p>Example: {@code new FieldRegistry(DefaultMappings.defaults(), Map.of("Enum", "select"));}</p>
+     */
     public FieldRegistry(DefaultMappings defaults, Map<String, String> configMappings) {
         Objects.requireNonNull(defaults, "defaults");
         this.defaultByType = defaults.byType();
@@ -46,6 +56,11 @@ public final class FieldRegistry {
         this.configMappings = Collections.unmodifiableMap(new LinkedHashMap<>(configMappings));
     }
 
+    /**
+     * Creates a field component for the provided property context.
+     *
+     * <p>Example: {@code HasValue<?, ?> field = registry.create(ctx);}</p>
+     */
     public HasValue<?, ?> create(FieldContext ctx) {
         Objects.requireNonNull(ctx, "ctx");
 
@@ -77,12 +92,22 @@ public final class FieldRegistry {
         );
     }
 
+    /**
+     * Overrides field creation for all properties of a Java type.
+     *
+     * <p>Example: {@code registry.override(UUID.class, ctx -> Inputs.uuidField().build());}</p>
+     */
     public void override(Class<?> type, FieldFactory factory) {
         Objects.requireNonNull(type, "type");
         Objects.requireNonNull(factory, "factory");
         typeOverrides.put(type, factory);
     }
 
+    /**
+     * Overrides field creation for one specific DTO property.
+     *
+     * <p>Example: {@code registry.override(User.class, "email", ctx -> Inputs.emailField().build());}</p>
+     */
     public void override(Class<?> dto, String property, FieldFactory factory) {
         Objects.requireNonNull(dto, "dto");
         Objects.requireNonNull(property, "property");

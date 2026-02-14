@@ -95,11 +95,23 @@ public final class Grids {
      * <p>Visible properties are derived from {@link UiInspector#inspect(Class)} and can be
      * adjusted via {@link AutoGridBuilder#exclude(String...)} and
      * {@link AutoGridBuilder#override(String, Consumer)}.</p>
+     *
+     * <p>Example: {@code Grid<User> grid = Grids.auto(User.class).build();}</p>
      */
     public static <T> AutoGridBuilder<T> auto(Class<T> type) {
         return new AutoGridBuilder<>(type);
     }
 
+    /**
+     * Manual grid builder for explicit column declarations.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * Grid<User> grid = Grids.of(User.class)
+     *     .column(User::getUsername).and()
+     *     .build();
+     * }</pre>
+     */
     public static class GridBuilder<T> {
 
         private final Grid<T> grid;
@@ -336,6 +348,8 @@ public final class Grids {
 
         /**
          * Enables i18n resolution for column texts.
+         *
+         * <p>Example: {@code Grids.of(User.class).withI18n(i18n).build();}</p>
          */
         public GridBuilder<T> withI18n(I18n i18n) {
             this.i18n = i18n;
@@ -343,6 +357,8 @@ public final class Grids {
         }
         /**
          * Sets the width of the component to "100%".
+         *
+         * <p>Example: {@code Grids.of(User.class).fullWidth().build();}</p>
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
         public GridBuilder<T> fullWidth() {
@@ -353,6 +369,8 @@ public final class Grids {
         /**
          * Sets the width of the component.
          * The width should be in a format understood by the browser, e.g. "100px" or "2.5em".
+         *
+         * <p>Example: {@code Grids.of(User.class).width("640px").build();}</p>
          *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
@@ -365,6 +383,8 @@ public final class Grids {
          * Sets the height of the grid
          * The height should be in a format understood by the browser, e.g. "100px" or "2.5em".
          *
+         * <p>Example: {@code Grids.of(User.class).height("420px").build();}</p>
+         *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
         public GridBuilder<T> height(String heightStr) {
@@ -375,6 +395,8 @@ public final class Grids {
         /**
          * empty state component which will be displayed when grid is loaded first without items.
          *
+         * <p>Example: {@code Grids.of(User.class).emptyState(new Span("No users")).build();}</p>
+         *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
         public GridBuilder<T> emptyState(Component content) {
@@ -384,6 +406,8 @@ public final class Grids {
 
         /**
          * empty text (wrapped in a <code>&lt;span&gt;</code>) which will be displayed when grid is loaded first without items.
+         *
+         * <p>Example: {@code Grids.of(User.class).textEmptyState(Texts.description("users.empty")).build();}</p>
          *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
@@ -432,6 +456,16 @@ public final class Grids {
 
     }
 
+    /**
+     * Convention-based grid builder that consumes {@link UiMeta}.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * Grid<User> grid = Grids.auto(User.class)
+     *     .exclude("password")
+     *     .build();
+     * }</pre>
+     */
     public static final class AutoGridBuilder<T> {
         private final GridBuilder<T> delegate;
         private final UiMeta<T> uiMeta;
@@ -445,71 +479,141 @@ public final class Grids {
             this.uiMeta = UiInspector.inspect(type);
         }
 
+        /**
+         * Sets in-memory items for the auto grid.
+         *
+         * <p>Example: {@code Grids.auto(User.class).items(users).build();}</p>
+         */
         public AutoGridBuilder<T> items(Collection<T> items) {
             delegate.items(items);
             return this;
         }
 
+        /**
+         * Sets items using a supplier callback.
+         *
+         * <p>Example: {@code Grids.auto(User.class).items(service::findAll).build();}</p>
+         */
         public AutoGridBuilder<T> items(Supplier<? extends Collection<T>> getter) {
             delegate.items(getter);
             return this;
         }
 
+        /**
+         * Sets a Vaadin data provider.
+         *
+         * <p>Example: {@code Grids.auto(User.class).items(provider).build();}</p>
+         */
         public AutoGridBuilder<T> items(DataProvider<T, ?> provider) {
             delegate.items(provider);
             return this;
         }
 
+        /**
+         * Adds a CSS class to the grid.
+         *
+         * <p>Example: {@code Grids.auto(User.class).withClassName("users-grid").build();}</p>
+         */
         public AutoGridBuilder<T> withClassName(String className) {
             delegate.withClassName(className);
             return this;
         }
 
+        /**
+         * Adds one or more Vaadin theme names.
+         *
+         * <p>Example: {@code Grids.auto(User.class).withTheme("compact").build();}</p>
+         */
         public AutoGridBuilder<T> withTheme(String... themeNames) {
             delegate.withTheme(themeNames);
             return this;
         }
 
+        /**
+         * Enables i18n resolution for grid text helpers.
+         *
+         * <p>Example: {@code Grids.auto(User.class).withI18n(i18n).build();}</p>
+         */
         public AutoGridBuilder<T> withI18n(I18n i18n) {
             delegate.withI18n(i18n);
             return this;
         }
 
+        /**
+         * Sets the grid width to 100%.
+         *
+         * <p>Example: {@code Grids.auto(User.class).fullWidth().build();}</p>
+         */
         public AutoGridBuilder<T> fullWidth() {
             delegate.fullWidth();
             return this;
         }
 
+        /**
+         * Sets a custom CSS width.
+         *
+         * <p>Example: {@code Grids.auto(User.class).width("600px").build();}</p>
+         */
         public AutoGridBuilder<T> width(String width) {
             delegate.width(width);
             return this;
         }
 
+        /**
+         * Sets a custom CSS height.
+         *
+         * <p>Example: {@code Grids.auto(User.class).height("420px").build();}</p>
+         */
         public AutoGridBuilder<T> height(String heightStr) {
             delegate.height(heightStr);
             return this;
         }
 
+        /**
+         * Sets a custom empty state component.
+         *
+         * <p>Example: {@code Grids.auto(User.class).emptyState(new Span("No users")).build();}</p>
+         */
         public AutoGridBuilder<T> emptyState(Component content) {
             delegate.emptyState(content);
             return this;
         }
 
+        /**
+         * Sets an empty state text using the text model.
+         *
+         * <p>Example: {@code Grids.auto(User.class).textEmptyState(Texts.description("users.empty")).build();}</p>
+         */
         public AutoGridBuilder<T> textEmptyState(Text text) {
             delegate.textEmptyState(text);
             return this;
         }
 
+        /**
+         * Enables single-select behavior with callback.
+         *
+         * <p>Example: {@code Grids.auto(User.class).selectable(this::showDetails).build();}</p>
+         */
         public AutoGridBuilder<T> selectable(Consumer<T> onSelect) {
             delegate.selectable(onSelect);
             return this;
         }
 
+        /**
+         * Applies direct access configuration to the underlying grid.
+         *
+         * <p>Example: {@code Grids.auto(User.class).configure(g -> g.setAllRowsVisible(true)).build();}</p>
+         */
         public AutoGridBuilder<T> configure(Consumer<Grid<T>> gridConfig) {
             delegate.configure(gridConfig);
             return this;
         }
 
+        /**
+         * Excludes properties from auto-generated columns.
+         *
+         * <p>Example: {@code Grids.auto(User.class).exclude("password").build();}</p>
+         */
         public AutoGridBuilder<T> exclude(String... propertyNames) {
             if (propertyNames == null) {
                 return this;
@@ -520,6 +624,11 @@ public final class Grids {
             return this;
         }
 
+        /**
+         * Applies custom column configuration for one property key.
+         *
+         * <p>Example: {@code Grids.auto(User.class).override("email", col -> col.setAutoWidth(true)).build();}</p>
+         */
         public AutoGridBuilder<T> override(String propertyName, Consumer<Grid.Column<T>> customizer) {
             Objects.requireNonNull(propertyName, "propertyName");
             Objects.requireNonNull(customizer, "customizer");
@@ -527,6 +636,11 @@ public final class Grids {
             return this;
         }
 
+        /**
+         * Builds the configured auto grid.
+         *
+         * <p>Example: {@code Grid<User> grid = Grids.auto(User.class).build();}</p>
+         */
         public Grid<T> build() {
             uiMeta.properties()
                     .filter(UiProperty::isVisible)
@@ -549,7 +663,14 @@ public final class Grids {
     }
 
     /**
-     * TODO: aaron: doku
+     * Fluent column-level builder returned from {@link GridBuilder#column(ValueProvider)}.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * Grids.of(User.class)
+     *     .column(User::getEmail).width("320px").and()
+     *     .build();
+     * }</pre>
      */
     public static class ColumnBuilder<T, V> {
         private final GridBuilder<T> tGridBuilder;
@@ -575,6 +696,8 @@ public final class Grids {
          * Sets the header text using the Text model.
          *
          * <p>Only LABEL is used; TOOLTIP is ignored.</p>
+         *
+         * <p>Example: {@code column.text(Texts.label("user.email"));}</p>
          */
         public ColumnBuilder<T, V> text(Text text) {
             if (text == null) {

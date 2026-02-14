@@ -1,7 +1,5 @@
 package de.javaholic.toolkit.introspection;
 
-import jakarta.persistence.Id;
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -48,22 +46,47 @@ public final class BeanMeta<T> {
         this.versionProperty = versionProperty;
     }
 
+    /**
+     * Returns the inspected Java type.
+     *
+     * <p>Example: {@code Class<User> t = meta.type();}</p>
+     */
     public Class<T> type() {
         return type;
     }
 
+    /**
+     * Returns all technical properties in declaration order.
+     *
+     * <p>Example: {@code meta.properties().forEach(p -> System.out.println(p.name()));}</p>
+     */
     public List<BeanProperty<T, ?>> properties() {
         return properties;
     }
 
+    /**
+     * Returns the property marked with {@code @Id}, if present.
+     *
+     * <p>Example: {@code meta.idProperty().ifPresent(id -> System.out.println(id.name()));}</p>
+     */
     public Optional<BeanProperty<T, ?>> idProperty() {
         return Optional.ofNullable(idProperty);
     }
 
+    /**
+     * Returns the property marked with {@code @Version}, if present.
+     *
+     * <p>Example: {@code meta.versionProperty().ifPresent(v -> System.out.println(v.name()));}</p>
+     */
     public Optional<BeanProperty<T, ?>> versionProperty() {
         return Optional.ofNullable(versionProperty);
     }
 
+    /**
+     * Reads a property value from a bean instance.
+     *
+     * <p>Example: {@code String name = meta.getValue(nameProperty, user);}</p>
+     */
     public <V> V getValue(BeanProperty<T, V> property, T bean) {
         Field field = accessors.get(property.name());
         if (field == null) {
@@ -76,6 +99,11 @@ public final class BeanMeta<T> {
         }
     }
 
+    /**
+     * Writes a property value to a bean instance.
+     *
+     * <p>Example: {@code meta.setValue(nameProperty, user, "Alice");}</p>
+     */
     public <V> void setValue(BeanProperty<T, V> property, T bean, V value) {
         Field field = accessors.get(property.name());
         if (field == null) {

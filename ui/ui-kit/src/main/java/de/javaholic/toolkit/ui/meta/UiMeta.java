@@ -60,14 +60,29 @@ public final class UiMeta<T> {
         this.beanMeta = Objects.requireNonNull(beanMeta, "beanMeta");
     }
 
+    /**
+     * Returns the inspected model type.
+     *
+     * <p>Example: {@code Class<User> t = uiMeta.type();}</p>
+     */
     public Class<T> type() {
         return beanMeta.type();
     }
 
+    /**
+     * Returns the wrapped technical metadata object.
+     *
+     * <p>Example: {@code BeanMeta<User> technical = uiMeta.beanMeta();}</p>
+     */
     public BeanMeta<T> beanMeta() {
         return beanMeta;
     }
 
+    /**
+     * Returns UI properties with Phase 1 defaults applied.
+     *
+     * <p>Example: {@code uiMeta.properties().filter(UiProperty::isVisible).forEach(p -> {});}</p>
+     */
     public Stream<UiProperty<T>> properties() {
         Set<String> hiddenProperties = hiddenPropertyNames();
         return beanMeta.properties().stream()

@@ -128,6 +128,8 @@ public final class Forms {
 
         /**
          * Enables i18n for labels. If not set, the field name is used as label.
+         *
+         * <p>Example: {@code Forms.of(User.class).withI18n(i18n).build();}</p>
          */
         public FormBuilder<T> withI18n(I18n i18n) {
             this.i18n = Objects.requireNonNull(i18n, "i18n");
@@ -137,6 +139,8 @@ public final class Forms {
         /**
          * Bean Validation is always active; this is kept for fluent symmetry.
          * TODO: why not remove this if always active anyways??
+         *
+         * <p>Example: {@code Forms.of(User.class).withValidation().build();}</p>
          */
         @Deprecated
         public FormBuilder<T> withValidation() {
@@ -145,6 +149,8 @@ public final class Forms {
 
         /**
          * Overrides a single field by name.
+         *
+         * <p>Example: {@code Forms.of(User.class).field("email", f -> f.label(Texts.label("user.email")));}</p>
          */
         public FormBuilder<T> field(String name, Consumer<FieldOverride<T>> spec) {
             Objects.requireNonNull(name, "name");
@@ -154,17 +160,31 @@ public final class Forms {
             return this;
         }
 
-
+        /**
+         * Includes the technical {@code @Id} property in manual form mode.
+         *
+         * <p>Example: {@code Forms.of(User.class).includeId().build();}</p>
+         */
         public FormBuilder<T> includeId() {
             this.includeId = true;
             return this;
         }
 
+        /**
+         * Includes the technical {@code @Version} property in manual form mode.
+         *
+         * <p>Example: {@code Forms.of(User.class).includeVersion().build();}</p>
+         */
         public FormBuilder<T> includeVersion() {
             this.includeVersion = true;
             return this;
         }
 
+        /**
+         * Conditionally includes technical fields based on a supplier.
+         *
+         * <p>Example: {@code Forms.of(User.class).includeTechnicalFields(() -> debugMode).build();}</p>
+         */
         public FormBuilder<T> includeTechnicalFields(Supplier<Boolean> include) {
             if (include.get()) {
                 includeId();
@@ -175,6 +195,8 @@ public final class Forms {
 
         /**
          * Applies additional configuration to the built form.
+         *
+         * <p>Example: {@code Forms.of(User.class).configure(f -> f.layout().addClassName("user-form"));}</p>
          */
         public FormBuilder<T> configure(Consumer<Form<T>> config) {
             Objects.requireNonNull(config, "config");
@@ -184,6 +206,8 @@ public final class Forms {
 
         /**
          * Builds the form in a single pass (override first, then auto field).
+         *
+         * <p>Example: {@code Forms.Form<User> form = Forms.of(User.class).build();}</p>
          */
         public Form<T> build() {
             BeanMeta<T> meta = BeanIntrospector.inspect(type);
@@ -345,6 +369,16 @@ public final class Forms {
         }
     }
 
+    /**
+     * Convention-based form builder that consumes {@link UiMeta}.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * Forms.Form<User> form = Forms.auto(User.class)
+     *     .exclude("password")
+     *     .build();
+     * }</pre>
+     */
     public static final class AutoFormBuilder<T> {
         private final Class<T> type;
         private final UiMeta<T> uiMeta;
@@ -360,11 +394,21 @@ public final class Forms {
             this.uiMeta = UiInspector.inspect(type);
         }
 
+        /**
+         * Enables i18n label resolution for auto-generated fields.
+         *
+         * <p>Example: {@code Forms.auto(User.class).withI18n(i18n).build();}</p>
+         */
         public AutoFormBuilder<T> withI18n(I18n i18n) {
             this.i18n = Objects.requireNonNull(i18n, "i18n");
             return this;
         }
 
+        /**
+         * Excludes properties from auto-generated fields.
+         *
+         * <p>Example: {@code Forms.auto(User.class).exclude("password").build();}</p>
+         */
         public AutoFormBuilder<T> exclude(String... propertyNames) {
             if (propertyNames == null) {
                 return this;
@@ -375,6 +419,11 @@ public final class Forms {
             return this;
         }
 
+        /**
+         * Applies field customization for one auto-generated property.
+         *
+         * <p>Example: {@code Forms.auto(User.class).override("email", v -> v.setReadOnly(true)).build();}</p>
+         */
         public AutoFormBuilder<T> override(String propertyName, Consumer<HasValue<?, ?>> customizer) {
             Objects.requireNonNull(propertyName, "propertyName");
             Objects.requireNonNull(customizer, "customizer");
@@ -382,12 +431,22 @@ public final class Forms {
             return this;
         }
 
+        /**
+         * Applies additional configuration to the final built form.
+         *
+         * <p>Example: {@code Forms.auto(User.class).configure(f -> f.layout().setWidth("600px")).build();}</p>
+         */
         public AutoFormBuilder<T> configure(Consumer<Form<T>> config) {
             Objects.requireNonNull(config, "config");
             configurators.add(config);
             return this;
         }
 
+        /**
+         * Builds the auto form from {@link UiMeta} and default field mappings.
+         *
+         * <p>Example: {@code Forms.Form<User> form = Forms.auto(User.class).build();}</p>
+         */
         public Form<T> build() {
             // UiMeta is the source of UI semantics; BeanMeta is accessed only through this boundary object.
             BeanMeta<T> beanMeta = uiMeta.beanMeta();
@@ -487,6 +546,11 @@ public final class Forms {
         }
     }
 
+    /**
+     * Per-field customization object used by {@link FormBuilder#field(String, Consumer)}.
+     *
+     * <p>Example: {@code .field("email", f -> f.component(Inputs.emailField().build()))}</p>
+     */
     public static final class FieldOverride<T> {
 
         /**
@@ -506,6 +570,8 @@ public final class Forms {
 
         /**
          * Sets the concrete component to use for this field.
+         *
+         * <p>Example: {@code f.component(Inputs.textField().build());}</p>
          */
         public FieldOverride<T> component(Component component) {
             this.component = Objects.requireNonNull(component, "component");
@@ -514,6 +580,8 @@ public final class Forms {
 
         /**
          * Sets the label for this field.
+         *
+         * <p>Example: {@code f.label(Texts.label("user.email"));}</p>
          */
         public FieldOverride<T> label(Text label) {
             this.label = Objects.requireNonNull(label, "label");
@@ -522,6 +590,8 @@ public final class Forms {
 
         /**
          * Adds an additional validator to the field binding.
+         *
+         * <p>Example: {@code f.validate(String.class, b -> b.asRequired("Email required"));}</p>
          */
         // TODO: revisit specifying the valueType here. should be somehow derivied from the BeanMeta
         public <V> FieldOverride<T> validate(Class<V> valueType, Consumer<Binder.BindingBuilder<T, V>> validator) {
@@ -545,6 +615,11 @@ public final class Forms {
     record TypedValidator<T>(Class<?> valueType, Consumer<?> consumer) {
     }
 
+    /**
+     * Built form result containing root layout, binder, and named field map.
+     *
+     * <p>Example: {@code Forms.Form<User> form = Forms.auto(User.class).build();}</p>
+     */
     public static final class Form<T> {
 
         private final Component layout;
@@ -559,6 +634,8 @@ public final class Forms {
 
         /**
          * Root layout component containing all field components.
+         *
+         * <p>Example: {@code add(form.layout());}</p>
          */
         public Component layout() {
             return layout;
@@ -566,6 +643,8 @@ public final class Forms {
 
         /**
          * Binder used for field bindings and validation.
+         *
+         * <p>Example: {@code form.binder().setBean(user);}</p>
          */
         public Binder<T> binder() {
             return binder;
@@ -573,6 +652,8 @@ public final class Forms {
 
         /**
          * Returns a field component by name, if present.
+         *
+         * <p>Example: {@code form.field("email").ifPresent(c -> c.setVisible(true));}</p>
          */
         public Optional<Component> field(String name) {
             return Optional.ofNullable(fields.get(name));

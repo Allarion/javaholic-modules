@@ -44,6 +44,11 @@ public class CrudPanel<T> extends VerticalLayout {
     private final Button createButton;
     private Supplier<Forms.Form<T>> formFactory;
 
+    /**
+     * Creates a CRUD panel for one type and backing store.
+     *
+     * <p>Example: {@code new CrudPanel<>(User.class, store);}</p>
+     */
     public CrudPanel(Class<T> type, CrudStore<T, ?> store) {
         this.type = Objects.requireNonNull(type, "type");
         this.store = Objects.requireNonNull(store, "store");
@@ -62,16 +67,31 @@ public class CrudPanel<T> extends VerticalLayout {
 
 
     // TODO: fix syntax...CrudPanel.of(type).from(store).oä
+    /**
+     * Static factory for a CRUD panel.
+     *
+     * <p>Example: {@code CrudPanel<User> panel = CrudPanel.of(User.class, store);}</p>
+     */
     public static <T> CrudPanel<T> of(Class<T> type, CrudStore<T, ?> store) {
         return new CrudPanel<>(type, store);
     }
 
+    /**
+     * Uses a custom form builder factory instead of the default {@code Forms.auto(...)}.
+     *
+     * <p>Example: {@code panel.withFormBuilderFactory(() -> Forms.of(User.class).includeId());}</p>
+     */
     public CrudPanel<T> withFormBuilderFactory(Supplier<Forms.FormBuilder<T>> formBuilderFactory) {
         Objects.requireNonNull(formBuilderFactory, "formBuilderFactory");
         this.formFactory = () -> formBuilderFactory.get().build();
         return this;
     }
 
+    /**
+     * Reloads all rows from the store into the grid.
+     *
+     * <p>Example: {@code panel.refresh();}</p>
+     */
     public void refresh() {
         // TODO: add paging/filtering/sorting support for large datasets.
         List<T> items = store.findAll();

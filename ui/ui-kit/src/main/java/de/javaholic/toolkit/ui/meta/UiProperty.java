@@ -54,32 +54,67 @@ public final class UiProperty<T> {
         this.order = order;
     }
 
+    /**
+     * Returns the technical property name.
+     *
+     * <p>Example: {@code String key = property.name();}</p>
+     */
     public String name() {
         return beanProperty.name();
     }
 
+    /**
+     * Returns the Java value type for this property.
+     *
+     * <p>Example: {@code Class<?> t = property.type();}</p>
+     */
     public Class<?> type() {
         return beanProperty.type();
     }
 
+    /**
+     * Reads the value from the given instance as {@link Object}.
+     *
+     * <p>Example: {@code Object v = property.read(user);}</p>
+     */
     public Object read(T instance) {
         return readTyped(instance);
     }
 
+    /**
+     * Reads the value from the given instance with a typed return.
+     *
+     * <p>Example: {@code String email = property.readTyped(user);}</p>
+     */
     @SuppressWarnings("unchecked")
     public <V> V readTyped(T instance) {
         return beanMeta.getValue((BeanProperty<T, V>) beanProperty, instance);
     }
 
+    /**
+     * Returns whether this property is visible in Phase 1 defaults.
+     *
+     * <p>Example: {@code if (property.isVisible()) { ... }}</p>
+     */
     public boolean isVisible() {
         return visible;
     }
 
+    /**
+     * Returns the UI label text.
+     *
+     * <p>Example: {@code column.setHeader(property.label());}</p>
+     */
     public String label() {
         // TODO phase 2: support @UiLabel (and optional i18n key mapping) instead of name fallback only.
         return label;
     }
 
+    /**
+     * Returns the ordering value for this property.
+     *
+     * <p>Example: {@code int order = property.order();}</p>
+     */
     public int order() {
         // TODO phase 2: support @UiOrder instead of Integer.MAX_VALUE default ordering only.
         // TODO phase 2: revisit ordering for dynamic DTO proxy property models.

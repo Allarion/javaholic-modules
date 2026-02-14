@@ -31,6 +31,11 @@ public final class UiInspector {
     private UiInspector() {
     }
 
+    /**
+     * Inspects a type and returns the UI semantic metadata wrapper.
+     *
+     * <p>Example: {@code UiMeta<User> meta = UiInspector.inspect(User.class);}</p>
+     */
     public static <T> UiMeta<T> inspect(Class<T> type) {
         Objects.requireNonNull(type, "type");
         return new UiMeta<>(BeanIntrospector.inspect(type));

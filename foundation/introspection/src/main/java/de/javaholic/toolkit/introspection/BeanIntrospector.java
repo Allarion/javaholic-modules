@@ -28,6 +28,14 @@ public final class BeanIntrospector {
     private BeanIntrospector() {
     }
 
+    /**
+     * Builds technical metadata for the given bean/record type.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * BeanMeta<User> meta = BeanIntrospector.inspect(User.class);
+     * }</pre>
+     */
     public static <T> BeanMeta<T> inspect(Class<T> type) {
 
         if (type == null) {
