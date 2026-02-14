@@ -66,7 +66,7 @@ public class CrudPanel<T> extends VerticalLayout {
     }
 
 
-    // TODO: fix syntax...CrudPanel.of(type).from(store).oä
+    // TODO: fix syntax...CrudPanel.of(type).from(store).build()
     /**
      * Static factory for a CRUD panel.
      *

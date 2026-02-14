@@ -8,7 +8,23 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-// TODO: Revisit FieldRegistry/Factory/Context concept.
+/**
+ * TODO (Architecture – Phase 2/3): Revisit FieldRegistry/Factory/Context concept.
+ *
+ * FieldRegistry currently resolves Vaadin components primarily based on
+ * technical property information (type, mappings).
+ *
+ * Future direction:
+ * - FieldRegistry should operate purely on UiProperty / UI semantic context.
+ * - UI annotations (@UiHidden, @UiLabel, @UiOrder, etc.) must be evaluated
+ *   in UiMeta, not here.
+ * - This class should not perform BeanMeta introspection or visibility decisions.
+ *
+ * Long-term goal:
+ * FieldRegistry becomes a UI component resolution strategy,
+ * while UiMeta remains the single source of truth for UI semantics.
+ */
+
 /**
  * Registry that maps property/type context to Vaadin field factories.
  *
@@ -18,6 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Must not do: inspect beans, decide visibility/order, or perform binding logic.</p>
  *
  * <p>Architecture fit: pluggable field-instantiation backend used by {@code Forms}.</p>
+ *
+ *
  *
  * <p>Usage:</p>
  * <pre>{@code
