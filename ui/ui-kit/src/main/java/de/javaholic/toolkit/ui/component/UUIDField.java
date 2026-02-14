@@ -5,13 +5,13 @@ import com.vaadin.flow.component.textfield.TextField;
 
 import java.util.UUID;
 
-public class UuidField extends CustomField<UUID> {
+public class UUIDField extends CustomField<UUID> {
 
     private static final String DEFAULT_ERROR_MESSAGE = "Invalid UUID";
 
     private final TextField textField = new TextField();
 
-    public UuidField() {
+    public UUIDField() {
         add(textField);
         textField.addValueChangeListener(event -> updateValidationState(event.getValue()));
     }

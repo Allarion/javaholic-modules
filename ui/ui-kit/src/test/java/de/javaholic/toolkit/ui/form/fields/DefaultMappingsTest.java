@@ -2,7 +2,7 @@ package de.javaholic.toolkit.ui.form.fields;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.select.Select;
-import de.javaholic.toolkit.ui.component.UuidField;
+import de.javaholic.toolkit.ui.component.UUIDField;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -26,7 +26,7 @@ class DefaultMappingsTest {
         HasValue<?, ?> uuid = registry.create(context("id", UUID.class));
         HasValue<?, ?> status = registry.create(context("status", Status.class));
 
-        assertThat(uuid).isInstanceOf(UuidField.class);
+        assertThat(uuid).isInstanceOf(UUIDField.class);
         assertThat(status).isInstanceOf(Select.class);
     }
 

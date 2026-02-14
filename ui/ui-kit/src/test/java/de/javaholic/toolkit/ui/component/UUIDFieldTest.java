@@ -7,11 +7,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class UuidFieldTest {
+class UUIDFieldTest {
 
     @Test
     void setValueFormatsUuidToTextField() {
-        UuidField field = new UuidField();
+        UUIDField field = new UUIDField();
         UUID uuid = UUID.randomUUID();
 
         field.setValue(uuid);
@@ -23,7 +23,7 @@ class UuidFieldTest {
 
     @Test
     void invalidTextSetsInvalidStateAndNullModelValue() {
-        UuidField field = new UuidField();
+        UUIDField field = new UUIDField();
         TextField text = (TextField) field.getChildren().findFirst().orElseThrow();
 
         text.setValue("not-a-uuid");
