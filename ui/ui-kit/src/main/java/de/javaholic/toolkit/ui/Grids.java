@@ -13,8 +13,17 @@ import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.TextRole;
 import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.ui.component.UnGroupedRadioButton;
+import de.javaholic.toolkit.ui.meta.UiInspector;
+import de.javaholic.toolkit.ui.meta.UiMeta;
+import de.javaholic.toolkit.ui.meta.UiProperty;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -59,6 +68,17 @@ public final class Grids {
      */
     public static <T> GridBuilder<T> of(Class<T> type) {
         return new GridBuilder<>(type);
+    }
+
+    /**
+     * Fluent start point for a convention-based grid using {@link UiMeta}.
+     *
+     * <p>Visible properties are derived from {@link UiInspector#inspect(Class)} and can be
+     * adjusted via {@link AutoGridBuilder#exclude(String...)} and
+     * {@link AutoGridBuilder#override(String, Consumer)}.</p>
+     */
+    public static <T> AutoGridBuilder<T> auto(Class<T> type) {
+        return new AutoGridBuilder<>(type);
     }
 
     public static class GridBuilder<T> {
@@ -391,6 +411,121 @@ public final class Grids {
             return this;
         }
 
+    }
+
+    public static final class AutoGridBuilder<T> {
+        private final GridBuilder<T> delegate;
+        private final UiMeta<T> uiMeta;
+        private final Set<String> excludedProperties = new LinkedHashSet<>();
+        private final Map<String, Consumer<Grid.Column<T>>> overrides = new LinkedHashMap<>();
+
+        private AutoGridBuilder(Class<T> type) {
+            Objects.requireNonNull(type, "type");
+            this.delegate = Grids.of(type);
+            this.uiMeta = UiInspector.inspect(type);
+        }
+
+        public AutoGridBuilder<T> items(Collection<T> items) {
+            delegate.items(items);
+            return this;
+        }
+
+        public AutoGridBuilder<T> items(Supplier<? extends Collection<T>> getter) {
+            delegate.items(getter);
+            return this;
+        }
+
+        public AutoGridBuilder<T> items(DataProvider<T, ?> provider) {
+            delegate.items(provider);
+            return this;
+        }
+
+        public AutoGridBuilder<T> withClassName(String className) {
+            delegate.withClassName(className);
+            return this;
+        }
+
+        public AutoGridBuilder<T> withTheme(String... themeNames) {
+            delegate.withTheme(themeNames);
+            return this;
+        }
+
+        public AutoGridBuilder<T> withI18n(I18n i18n) {
+            delegate.withI18n(i18n);
+            return this;
+        }
+
+        public AutoGridBuilder<T> fullWidth() {
+            delegate.fullWidth();
+            return this;
+        }
+
+        public AutoGridBuilder<T> width(String width) {
+            delegate.width(width);
+            return this;
+        }
+
+        public AutoGridBuilder<T> height(String heightStr) {
+            delegate.height(heightStr);
+            return this;
+        }
+
+        public AutoGridBuilder<T> emptyState(Component content) {
+            delegate.emptyState(content);
+            return this;
+        }
+
+        public AutoGridBuilder<T> textEmptyState(Text text) {
+            delegate.textEmptyState(text);
+            return this;
+        }
+
+        public AutoGridBuilder<T> selectable(Consumer<T> onSelect) {
+            delegate.selectable(onSelect);
+            return this;
+        }
+
+        public AutoGridBuilder<T> configure(Consumer<Grid<T>> gridConfig) {
+            delegate.configure(gridConfig);
+            return this;
+        }
+
+        public AutoGridBuilder<T> exclude(String... propertyNames) {
+            if (propertyNames == null) {
+                return this;
+            }
+            Arrays.stream(propertyNames)
+                    .filter(Objects::nonNull)
+                    .forEach(excludedProperties::add);
+            return this;
+        }
+
+        public AutoGridBuilder<T> override(String propertyName, Consumer<Grid.Column<T>> customizer) {
+            Objects.requireNonNull(propertyName, "propertyName");
+            Objects.requireNonNull(customizer, "customizer");
+            overrides.merge(propertyName, customizer, Consumer::andThen);
+            return this;
+        }
+
+        public Grid<T> build() {
+            uiMeta.properties()
+                    .filter(UiProperty::isVisible)
+                    .filter(property -> !excludedProperties.contains(property.name()))
+                    .forEach(this::addColumn);
+            return delegate.build();
+        }
+
+        private void addColumn(UiProperty<T> property) {
+            ColumnBuilder<T, Object> columnBuilder = delegate.column(item -> property.read(item));
+            columnBuilder.configure(column -> {
+                column.setKey(property.name());
+                column.setHeader(property.label());
+            });
+            Consumer<Grid.Column<T>> override = overrides.get(property.name());
+            if (override != null) {
+                columnBuilder.configure(override);
+            }
+        }
     }
 
     /**
