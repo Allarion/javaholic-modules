@@ -84,6 +84,7 @@ public final class Forms {
 
         /**
          * Sets the FieldRegistry used for auto field creation.
+         * FIXME: Forms.auto(type.class) instead! move to FormBuilderModelFactory.
          */
         public FormBuilder<T> withFieldRegistry(FieldRegistry fieldRegistry) {
             this.fieldRegistry = Objects.requireNonNull(fieldRegistry, "fieldRegistry");
@@ -100,6 +101,7 @@ public final class Forms {
 
         /**
          * Bean Validation is always active; this is kept for fluent symmetry.
+         * TODO: why not remove this if always active anyways??
          */
         @Deprecated
         public FormBuilder<T> withValidation() {
@@ -160,7 +162,8 @@ public final class Forms {
             layout.add(formErrorLabel);
 
             binder.addStatusChangeListener(event -> formErrorLabel.setVisible(event.hasValidationErrors()));
-// TODO: unit test das die auch wirklick weg sind...
+            // TODO: unit test das die auch wirklich weg sind...und hier fiel auf: wir sind auf die nase gefallen: Domain->JPA entity vermischung, im grunde fehlt DTO.
+            // weitere Schicht (UIMeta) zur kapselung und dann builder um die (auto, mit override) zu erzeugen: e.g. GridModelFactory die auto das GridModel mit BeanInspection ableitet
             for (BeanProperty<T, ?> property : meta.properties()) {
 
                 if (includeId && meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)) {

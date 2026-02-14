@@ -49,6 +49,7 @@ public class CrudPanel<T> extends VerticalLayout {
         //  this.grid = Grids.of(type)
         //        .autoColumns(false) // missing feature (functionality currently resides here)
         //        .build();
+        // maybe here is another layer? autoConfig.grid(type) ? autoConfig.forms?
         this.createButton = Buttons.create()
                 .text(Texts.label("Create"))
                 .build();
@@ -84,6 +85,7 @@ public class CrudPanel<T> extends VerticalLayout {
     }
 
     private void configureGrid() {
+        // TODO: hiddenField processing should be available elsewhere (in Forms too)
         Set<String> hiddenProperties = new HashSet<>();
         meta.idProperty().map(BeanProperty::name).ifPresent(hiddenProperties::add);
         meta.versionProperty().map(BeanProperty::name).ifPresent(hiddenProperties::add);

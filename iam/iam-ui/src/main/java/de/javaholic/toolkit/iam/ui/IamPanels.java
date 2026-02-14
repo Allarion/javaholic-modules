@@ -33,10 +33,15 @@ public final class IamPanels {
         roleField.setItems(roleStore.findAll());
 
         CrudPanel<User> panel = CrudPanel.of(User.class, userStore);
-        panel.withFormBuilderFactory(() -> Forms.of(User.class).field("username", field -> field.label(Texts.label(effective.userUsername()))).field("status", field -> field.label(Texts.label(effective.userStatus()))).field("roles", field -> {
+        panel.withFormBuilderFactory(() ->
+                Forms.of(User.class)
+                        .field("username", field -> field.label(Texts.label(effective.userUsername())))
+                        .field("status", field -> field.label(Texts.label(effective.userStatus())))
+                        .field("roles", field -> {
             field.component(roleField);
             field.label(Texts.label(effective.userRoles()));
         }));
+
         return panel;
     }
 
