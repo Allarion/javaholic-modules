@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
@@ -13,9 +12,9 @@ import de.javaholic.toolkit.i18n.I18n;
 import de.javaholic.toolkit.i18n.Text;
 import de.javaholic.toolkit.i18n.TextRole;
 import de.javaholic.toolkit.i18n.Texts;
+import de.javaholic.toolkit.ui.component.UnGroupedRadioButton;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -490,17 +489,6 @@ public final class Grids {
         }
     }
 
-
-    public static class UnGroupedRadioButton extends RadioButtonGroup<String> {
-
-        public UnGroupedRadioButton() {
-            this.setItems(List.of(""));
-        }
-
-        public void setChecked(final boolean checked) {
-            super.setValue(checked ? "" : null);
-        }
-    }
 }
 // TODO: Grids.column.button
 //  //
