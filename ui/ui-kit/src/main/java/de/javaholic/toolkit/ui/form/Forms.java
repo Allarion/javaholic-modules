@@ -160,14 +160,14 @@ public final class Forms {
             layout.add(formErrorLabel);
 
             binder.addStatusChangeListener(event -> formErrorLabel.setVisible(event.hasValidationErrors()));
-
+// TODO: unit test das die auch wirklick weg sind...
             for (BeanProperty<T, ?> property : meta.properties()) {
 
-                if (!includeId && meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
+                if (includeId && meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
                     continue;
                 }
 
-                if (!includeVersion && meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
+                if (includeVersion && meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false)) {
                     continue;
                 }
 
