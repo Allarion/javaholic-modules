@@ -12,7 +12,10 @@ import java.util.Objects;
  */
 public final class Permission {
 
-    private final String code;
+    private String code;
+
+    public Permission() {
+    }
 
     public Permission(String code) {
         this.code = Objects.requireNonNull(code, "code");
@@ -22,6 +25,9 @@ public final class Permission {
         return code;
     }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
     /**
      * Equality is based on permission code, which is the stable identifier.
      */

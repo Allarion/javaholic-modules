@@ -17,18 +17,26 @@ import java.util.Set;
  */
 public final class Role {
 
-    private final String name;
-    private final Set<Permission> permissions;
+    private String name;
+
+    private Set<Permission> permissions;
+
+    public Role() {}
 
     public Role(String name, Set<Permission> permissions) {
         this.name = Objects.requireNonNull(name, "name");
         this.permissions = Set.copyOf(Objects.requireNonNull(permissions, "permissions"));
     }
-
+    public void setName(String name) {
+        this.name = name;
+    }
     public String getName() {
         return name;
     }
 
+    public void setPermissions(Set<Permission> permissions) {
+        this.permissions = permissions;
+    }
     public Set<Permission> getPermissions() {
         return permissions;
     }
