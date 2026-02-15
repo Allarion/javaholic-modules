@@ -33,14 +33,14 @@ public final class IAMCrudPanels {
 
         return CrudPanels.of(User.class)
                 .withStore(userStore)
-                .withFormBuilderFactory(() ->
-                        Forms.of(User.class)
-                                .field("username", field -> field.label(effective.userUsername()))
-                                .field("status", field -> field.label(effective.userStatus()))
-                                .field("roles", field -> {
-                                    field.component(roleField);
-                                    field.label(effective.userRoles());
-                                }))
+                .withForm(Forms.of(User.class)
+                        .field("username", field -> field.label(effective.userUsername()))
+                        .field("status", field -> field.label(effective.userStatus()))
+                        .field("roles", field -> {
+                            field.component(roleField);
+                            field.label(effective.userRoles());
+                        })
+                        .build())
                 .build();
     }
 
@@ -55,12 +55,13 @@ public final class IAMCrudPanels {
         permissionField.setItems(permissionStore.findAll());
         return CrudPanels.of(Role.class)
                 .withStore(roleStore)
-                .withFormBuilderFactory(() -> Forms.of(Role.class)
+                .withForm(Forms.of(Role.class)
                         .field("name", field -> field.label(effective.roleName()))
                         .field("permissions", field -> {
                             field.component(permissionField);
                             field.label(effective.rolePermissions());
-                        }))
+                        })
+                        .build())
                 .build();
     }
 
@@ -74,8 +75,9 @@ public final class IAMCrudPanels {
 
         return CrudPanels.of(Permission.class)
                 .withStore(permissionStore)
-                .withFormBuilderFactory(() -> Forms.of(Permission.class)
-                        .field("code", field -> field.label(effective.permissionName())))
+                .withForm(Forms.of(Permission.class)
+                        .field("code", field -> field.label(effective.permissionName()))
+                        .build())
                 .build();
     }
     

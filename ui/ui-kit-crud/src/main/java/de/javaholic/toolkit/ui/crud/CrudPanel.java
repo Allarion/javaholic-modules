@@ -8,17 +8,12 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
-import de.javaholic.toolkit.ui.Grids;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
-import de.javaholic.toolkit.ui.meta.UiInspector;
-import de.javaholic.toolkit.ui.meta.UiProperty;
-import de.javaholic.toolkit.ui.text.TextResolver;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -27,7 +22,7 @@ import java.util.function.Supplier;
  * <p>Responsibility: orchestrate store operations, grid refresh, and form dialog lifecycle.</p>
  *
  * <p>Must not do: decide metadata/rendering policy for fields/columns.
- * Rendering decisions belong to {@link Grids} and {@link Forms} builders.</p>
+ * Rendering decisions belong to dedicated builders and factories.</p>
  *
  * <p>Architecture fit: top-level orchestration layer. It composes existing UI toolkit parts and
  * persistence abstractions ({@link CrudStore}) without redefining lower-layer rules.</p>
@@ -35,7 +30,7 @@ import java.util.function.Supplier;
  * <p>Usage:</p>
  * <pre>{@code
  * CrudStore<User, UUID> store = ...;
- * CrudPanel<User> panel = CrudPanels.of(User.class)
+ * CrudPanel<User> panel = CrudPanels.auto(User.class)
  *         .withStore(store)
  *         .build();
  * add(panel);
@@ -47,39 +42,27 @@ public final class CrudPanel<T> extends VerticalLayout {
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
     private final Button createButton;
-    private Supplier<Forms.Form<T>> formFactory;
+    private final Supplier<Forms.Form<T>> formFactory;
 
     /**
      * Creates a CRUD panel for one type and backing store.
      *
-     * <p>Use {@link CrudPanels} staged factory instead of calling this constructor directly.</p>
+     * <p>Use {@link CrudPanels} builders instead of calling this constructor directly.</p>
      */
     CrudPanel(
             Class<T> type,
             CrudStore<T, ?> store,
-            TextResolver textResolver,
-            Predicate<UiProperty<T>> propertyFilter,
-            Supplier<Forms.Form<T>> preparedFormFactory
+            Grid<T> grid,
+            Supplier<Forms.Form<T>> formFactory
     ) {
         this.type = Objects.requireNonNull(type, "type");
         this.store = Objects.requireNonNull(store, "store");
-        TextResolver nonNullTextResolver = Objects.requireNonNull(textResolver, "textResolver");
-        Predicate<UiProperty<T>> nonNullPropertyFilter = Objects.requireNonNull(propertyFilter, "propertyFilter");
+        this.grid = Objects.requireNonNull(grid, "grid");
+        this.formFactory = Objects.requireNonNull(formFactory, "formFactory");
 
-        String[] excludedProperties = excludedPropertyNames(type, nonNullPropertyFilter);
-        this.grid = Grids.auto(type)
-                .withTextResolver(nonNullTextResolver)
-                .exclude(excludedProperties)
-                .configure(this::addActionsColumn)
-                .build();
+        addActionsColumn();
         this.createButton = Buttons.create()
                 .label("Create")
-                .build();
-        this.formFactory = preparedFormFactory != null
-                ? preparedFormFactory
-                : () -> Forms.auto(type)
-                .withTextResolver(nonNullTextResolver)
-                .exclude(excludedProperties)
                 .build();
 
         configureLayout();
@@ -104,8 +87,9 @@ public final class CrudPanel<T> extends VerticalLayout {
         add(createButton, grid);
         expand(grid);
     }
-    // TODO: gehört eher ins Grids? vll so: Grids.auto(type).withActions(...) ?
-    private void addActionsColumn(Grid<T> grid) {
+
+    private void addActionsColumn() {
+        // TODO: gehört eher ins Grids? vll so: Grids.auto(type).withActions(...) ?
         // TODO: add optional selection dialog integration when use-cases need it.
         grid.addColumn(new ComponentRenderer<>(item -> {
                     Button edit = Buttons.create()
@@ -188,12 +172,5 @@ public final class CrudPanel<T> extends VerticalLayout {
     void deleteAndRefresh(T bean) {
         store.delete(bean);
         refresh();
-    }
-
-    private static <T> String[] excludedPropertyNames(Class<T> type, Predicate<UiProperty<T>> propertyFilter) {
-        return UiInspector.inspect(type).properties()
-                .filter(property -> !propertyFilter.test(property))
-                .map(UiProperty::name)
-                .toArray(String[]::new);
     }
 }
