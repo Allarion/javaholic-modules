@@ -3,6 +3,7 @@ package de.javaholic.toolkit.ui.meta;
 import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
+import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiPermission;
 import de.javaholic.toolkit.ui.annotations.UiHidden;
 import de.javaholic.toolkit.ui.annotations.UiLabel;
@@ -63,6 +64,11 @@ public final class UiInspector {
             // deterministic no-op classification branch for future UI semantic extensions
         }
 
+        // ------------------------------------------------------------------
+        // UI semantic annotation evaluation happens *only* in UiMeta.
+        // Label resolution to actual display text happens *only* via TextResolver.
+        // FieldRegistry consumes resolved attributes, but never evaluates annotations.
+        // ------------------------------------------------------------------
         for (BeanProperty<T, ?> property : beanMeta.properties()) {
             Optional<AnnotatedElement> field = findField(type, property.name());
             Optional<AnnotatedElement> getter = findGetter(type, property.name());
@@ -74,9 +80,11 @@ public final class UiInspector {
                     .map(UiPermission::value)
                     .filter(value -> !value.isBlank())
                     .orElse(null);
-            boolean required = findAnnotation(Column.class, getter, field, recordComponent)
+            boolean requiredByColumn = findAnnotation(Column.class, getter, field, recordComponent)
                     .map(column -> !column.nullable())
                     .orElse(false);
+            boolean requiredByUiAnnotation = findAnnotation(UIRequired.class, getter, field, recordComponent).isPresent();
+            boolean required = requiredByColumn || requiredByUiAnnotation;
             String labelKey = findAnnotation(UiLabel.class, getter, field, recordComponent)
                     .map(UiLabel::value)
                     .filter(key -> !key.isBlank())
