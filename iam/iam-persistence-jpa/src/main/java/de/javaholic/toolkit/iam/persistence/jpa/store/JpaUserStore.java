@@ -17,18 +17,8 @@ public class JpaUserStore extends AbstractJpaCrudStore<User, UUID, JpaUserEntity
     private final JpaUserMapper mapper;
 
     public JpaUserStore(JpaUserRepository repo, JpaUserMapper mapper) {
-        super(repo);
+        super(repo, mapper);
         this.mapper = mapper;
-    }
-
-    @Override
-    protected User toDomain(JpaUserEntity entity) {
-        return mapper.toDomain(entity);
-    }
-
-    @Override
-    protected JpaUserEntity toJpa(User domain) {
-        return mapper.toJpa(domain);
     }
 
     @Override

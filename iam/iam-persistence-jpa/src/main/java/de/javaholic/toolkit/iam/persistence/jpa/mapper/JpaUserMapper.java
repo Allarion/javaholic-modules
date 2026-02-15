@@ -4,11 +4,12 @@ import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.User;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaRoleEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
+import de.javaholic.toolkit.persistence.core.EntityMapper;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public final class JpaUserMapper {
+public final class JpaUserMapper implements EntityMapper<User, JpaUserEntity> {
 
     private final JpaRoleMapper roleMapper;
 
@@ -16,6 +17,7 @@ public final class JpaUserMapper {
         this.roleMapper = Objects.requireNonNull(roleMapper, "roleMapper");
     }
 
+    @Override
     public User toDomain(JpaUserEntity entity) {
         Objects.requireNonNull(entity, "entity");
         return new User(
@@ -26,7 +28,8 @@ public final class JpaUserMapper {
         );
     }
 
-    public JpaUserEntity toJpa(User user) {
+    @Override
+    public JpaUserEntity toEntity(User user) {
         Objects.requireNonNull(user, "user");
         JpaUserEntity entity = new JpaUserEntity();
         entity.setId(user.getId());
@@ -49,7 +52,7 @@ public final class JpaUserMapper {
         Set<Role> source = roles != null ? roles : Set.of();
         Set<JpaRoleEntity> result = new HashSet<>(source.size());
         for (Role role : source) {
-            result.add(roleMapper.toJpa(role));
+            result.add(roleMapper.toEntity(role));
         }
         return result;
     }

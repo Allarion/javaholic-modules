@@ -4,13 +4,14 @@ import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaPermissionEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaRoleEntity;
+import de.javaholic.toolkit.persistence.core.EntityMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public final class JpaRoleMapper {
+public final class JpaRoleMapper implements EntityMapper<Role, JpaRoleEntity> {
 
     private final JpaPermissionMapper permissionMapper;
 
@@ -18,12 +19,14 @@ public final class JpaRoleMapper {
         this.permissionMapper = Objects.requireNonNull(permissionMapper, "permissionMapper");
     }
 
+    @Override
     public Role toDomain(JpaRoleEntity entity) {
         Objects.requireNonNull(entity, "entity");
         return new Role(entity.getName(), toDomainPermissions(entity.getPermissions()));
     }
 
-    public JpaRoleEntity toJpa(Role role) {
+    @Override
+    public JpaRoleEntity toEntity(Role role) {
         Objects.requireNonNull(role, "role");
         JpaRoleEntity entity = new JpaRoleEntity();
         entity.setId(deterministicId("role:", role.getName()));
@@ -45,7 +48,7 @@ public final class JpaRoleMapper {
         Set<Permission> source = permissions != null ? permissions : Set.of();
         Set<JpaPermissionEntity> result = new HashSet<>(source.size());
         for (Permission permission : source) {
-            result.add(permissionMapper.toJpa(permission));
+            result.add(permissionMapper.toEntity(permission));
         }
         return result;
     }
