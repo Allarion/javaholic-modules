@@ -1,6 +1,9 @@
 package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.grid.Grid;
+import de.javaholic.toolkit.ui.annotations.UiHidden;
+import de.javaholic.toolkit.ui.annotations.UiLabel;
+import de.javaholic.toolkit.ui.annotations.UiOrder;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,18 @@ class GridsAutoTest {
         @Version
         private long version;
         private String email;
+    }
+
+    static class AnnotatedEntity {
+        @UiOrder(20)
+        private String lastName;
+
+        @UiOrder(10)
+        @UiLabel(key = "user.first.label")
+        private String firstName;
+
+        @UiHidden
+        private String hiddenCode;
     }
 
     @Test
@@ -50,7 +65,35 @@ class GridsAutoTest {
         assertThat(nameColumn.getWidth()).isEqualTo("321px");
     }
 
-    private static List<String> columnKeys(Grid<Entity> grid) {
+    @Test
+    void hiddenAnnotationHidesColumn() {
+        Grid<AnnotatedEntity> grid = Grids.auto(AnnotatedEntity.class).build();
+
+        assertThat(columnKeys(grid)).containsExactly("firstName", "lastName");
+    }
+
+    @Test
+    void labelKeyIsResolvedToText() {
+        Grid<AnnotatedEntity> grid = Grids.auto(AnnotatedEntity.class)
+                .withTextResolver(key -> "resolved:" + key)
+                .build();
+
+        Grid.Column<AnnotatedEntity> firstNameColumn = grid.getColumns().stream()
+                .filter(column -> "firstName".equals(column.getKey()))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(firstNameColumn.getHeaderText()).isEqualTo("resolved:user.first.label");
+    }
+
+    @Test
+    void orderAnnotationSortsColumns() {
+        Grid<AnnotatedEntity> grid = Grids.auto(AnnotatedEntity.class).build();
+
+        assertThat(columnKeys(grid)).containsExactly("firstName", "lastName");
+    }
+
+    private static List<String> columnKeys(Grid<?> grid) {
         return grid.getColumns().stream()
                 .map(Grid.Column::getKey)
                 .toList();

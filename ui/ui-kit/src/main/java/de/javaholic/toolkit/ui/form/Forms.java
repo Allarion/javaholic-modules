@@ -19,11 +19,14 @@ import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
+import de.javaholic.toolkit.ui.text.DefaultTextResolver;
+import de.javaholic.toolkit.ui.text.TextResolver;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.lang.reflect.AnnotatedElement;
+import java.util.Comparator;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -62,6 +65,13 @@ import java.util.function.Supplier;
  *     .override("email", field -> field.setReadOnly(true))
  *     .build();
  * }</pre>
+ *
+ * <p>Auto with annotation + text resolver:</p>
+ * <pre>{@code
+ * Forms.Form<User> form = Forms.auto(User.class)
+ *     .withTextResolver(key -> messages.getOrDefault(key, key))
+ *     .build();
+ * }</pre>
  */
 public final class Forms {
 
@@ -88,6 +98,9 @@ public final class Forms {
 
     /**
      * Entry point for convention-based auto form creation using {@link UiMeta}.
+     *
+     * <p>Supports semantic annotations like {@code @UiHidden}, {@code @UiLabel},
+     * {@code @UiOrder}, and {@code @UiReadOnly} through UiMeta.</p>
      */
     public static <T> AutoFormBuilder<T> auto(Class<T> type) {
         return new AutoFormBuilder<>(type);
@@ -384,13 +397,18 @@ public final class Forms {
         private final UiMeta<T> uiMeta;
         private FieldRegistry fieldRegistry = new FieldRegistry();
         private I18n i18n;
+        private TextResolver textResolver = new DefaultTextResolver();
         private final Set<String> excluded = new LinkedHashSet<>();
         private final Map<String, Consumer<HasValue<?, ?>>> overrides = new LinkedHashMap<>();
         private final List<Consumer<Form<T>>> configurators = new ArrayList<>();
 
         private AutoFormBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
-            // Architecture boundary: Forms.auto consumes UiMeta; do not introspect BeanMeta directly in UI code.
+            // ------------------------------------------------------------------
+            // UI semantic annotation evaluation happens *only* in UiMeta.
+            // Label resolution to actual display text happens *only* via TextResolver.
+            // FieldRegistry consumes resolved attributes, but never evaluates annotations.
+            // ------------------------------------------------------------------
             this.uiMeta = UiInspector.inspect(type);
         }
 
@@ -401,6 +419,22 @@ public final class Forms {
          */
         public AutoFormBuilder<T> withI18n(I18n i18n) {
             this.i18n = Objects.requireNonNull(i18n, "i18n");
+            this.textResolver = key -> i18n.text(key);
+            return this;
+        }
+
+        /**
+         * Sets a custom resolver for semantic text keys.
+         *
+         * <p>Example:</p>
+         * <pre>{@code
+         * Forms.auto(User.class)
+         *     .withTextResolver(key -> bundle.getString(key))
+         *     .build();
+         * }</pre>
+         */
+        public AutoFormBuilder<T> withTextResolver(TextResolver textResolver) {
+            this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
             return this;
         }
 
@@ -467,6 +501,7 @@ public final class Forms {
             uiMeta.properties()
                     .filter(UiProperty::isVisible)
                     .filter(property -> !excluded.contains(property.name()))
+                    .sorted(Comparator.comparingInt(UiProperty::order))
                     .forEach(property -> addField(property, beanMeta, beanProperties, layout, binder, components));
 
             Form<T> form = new Form<>(layout, binder, components);
@@ -491,12 +526,12 @@ public final class Forms {
             }
 
             FieldContext ctx = new FieldContext(type, property.name(), property.type(), beanProperty.definition());
-            HasValue<?, ?> value = fieldRegistry.create(ctx);
+            HasValue<?, ?> value = fieldRegistry.create(ctx, property.labelKey(), property.isReadOnly());
             if (!(value instanceof Component component)) {
                 throw new IllegalStateException("FieldFactory returned non-Component for property '" + property.name() + "'");
             }
 
-            applyLabel(component, property.label());
+            applyLabel(component, property.labelKey());
             applyRequiredIndicator(component, beanProperty.definition());
 
             Consumer<HasValue<?, ?>> override = overrides.get(property.name());
@@ -510,11 +545,12 @@ public final class Forms {
             components.put(property.name(), component);
         }
 
-        private void applyLabel(Component component, String defaultLabel) {
+        private void applyLabel(Component component, String labelKey) {
             if (!(component instanceof HasLabel hasLabel)) {
                 return;
             }
-            hasLabel.setLabel(Texts.resolve(i18n, Texts.label(defaultLabel)));
+            String resolved = textResolver.resolve(labelKey);
+            hasLabel.setLabel(resolved != null ? resolved : labelKey);
         }
 
         private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {

@@ -16,9 +16,12 @@ import de.javaholic.toolkit.ui.component.UnGroupedRadioButton;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
+import de.javaholic.toolkit.ui.text.DefaultTextResolver;
+import de.javaholic.toolkit.ui.text.TextResolver;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -65,6 +68,13 @@ import java.util.function.Supplier;
  *     .build();
  * }</pre>
  *
+ * <p>Auto with annotation + text resolver:</p>
+ * <pre>{@code
+ * Grid<User> grid = Grids.auto(User.class)
+ *     .withTextResolver(key -> messages.getOrDefault(key, key))
+ *     .build();
+ * }</pre>
+ *
  */
 public final class Grids {
 
@@ -95,6 +105,9 @@ public final class Grids {
      * <p>Visible properties are derived from {@link UiInspector#inspect(Class)} and can be
      * adjusted via {@link AutoGridBuilder#exclude(String...)} and
      * {@link AutoGridBuilder#override(String, Consumer)}.</p>
+     *
+     * <p>Supports semantic annotations like {@code @UiLabel}, {@code @UiOrder}, and
+     * {@code @UiHidden} through UiMeta.</p>
      *
      * <p>Example: {@code Grid<User> grid = Grids.auto(User.class).build();}</p>
      */
@@ -471,11 +484,16 @@ public final class Grids {
         private final UiMeta<T> uiMeta;
         private final Set<String> excludedProperties = new LinkedHashSet<>();
         private final Map<String, Consumer<Grid.Column<T>>> overrides = new LinkedHashMap<>();
+        private TextResolver textResolver = new DefaultTextResolver();
 
         private AutoGridBuilder(Class<T> type) {
             Objects.requireNonNull(type, "type");
             this.delegate = Grids.of(type);
-            // Architecture boundary: resolve UI metadata through UiInspector only; no direct BeanMeta access in Grid layer.
+            // ------------------------------------------------------------------
+            // UI semantic annotation evaluation happens *only* in UiMeta.
+            // Label resolution to actual display text happens *only* via TextResolver.
+            // FieldRegistry consumes resolved attributes, but never evaluates annotations.
+            // ------------------------------------------------------------------
             this.uiMeta = UiInspector.inspect(type);
         }
 
@@ -535,7 +553,24 @@ public final class Grids {
          * <p>Example: {@code Grids.auto(User.class).withI18n(i18n).build();}</p>
          */
         public AutoGridBuilder<T> withI18n(I18n i18n) {
-            delegate.withI18n(i18n);
+            I18n nonNullI18n = Objects.requireNonNull(i18n, "i18n");
+            delegate.withI18n(nonNullI18n);
+            this.textResolver = nonNullI18n::text;
+            return this;
+        }
+
+        /**
+         * Sets a custom resolver for semantic text keys.
+         *
+         * <p>Example:</p>
+         * <pre>{@code
+         * Grids.auto(User.class)
+         *     .withTextResolver(key -> bundle.getString(key))
+         *     .build();
+         * }</pre>
+         */
+        public AutoGridBuilder<T> withTextResolver(TextResolver textResolver) {
+            this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
             return this;
         }
 
@@ -645,6 +680,7 @@ public final class Grids {
             uiMeta.properties()
                     .filter(UiProperty::isVisible)
                     .filter(property -> !excludedProperties.contains(property.name()))
+                    .sorted(Comparator.comparingInt(UiProperty::order))
                     .forEach(this::addColumn);
             return delegate.build();
         }
@@ -653,12 +689,17 @@ public final class Grids {
             ColumnBuilder<T, Object> columnBuilder = delegate.column(item -> property.read(item));
             columnBuilder.configure(column -> {
                 column.setKey(property.name());
-                column.setHeader(property.label());
+                column.setHeader(resolveLabel(property.labelKey()));
             });
             Consumer<Grid.Column<T>> override = overrides.get(property.name());
             if (override != null) {
                 columnBuilder.configure(override);
             }
+        }
+
+        private String resolveLabel(String labelKey) {
+            String resolved = textResolver.resolve(labelKey);
+            return resolved != null ? resolved : labelKey;
         }
     }
 

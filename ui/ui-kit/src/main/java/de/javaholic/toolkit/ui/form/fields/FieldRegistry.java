@@ -1,5 +1,6 @@
 package de.javaholic.toolkit.ui.form.fields;
 
+import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.HasValue;
 
 import java.util.Collections;
@@ -45,6 +46,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * }</pre>
  */
 public final class FieldRegistry {
+    // ------------------------------------------------------------------
+    // UI semantic annotation evaluation happens *only* in UiMeta.
+    // Label resolution to actual display text happens *only* via TextResolver.
+    // FieldRegistry consumes resolved attributes, but never evaluates annotations.
+    // ------------------------------------------------------------------
 
     private final Map<Class<?>, FieldFactory> defaultByType;
     private final Map<String, FieldFactory> aliasFactories;
@@ -80,26 +86,35 @@ public final class FieldRegistry {
      * <p>Example: {@code HasValue<?, ?> field = registry.create(ctx);}</p>
      */
     public HasValue<?, ?> create(FieldContext ctx) {
+        return create(ctx, null, false);
+    }
+
+    /**
+     * Creates a field component for the provided property context and consumes semantic hints.
+     *
+     * <p>Example: {@code HasValue<?, ?> field = registry.create(ctx, "user.email.label", true);}</p>
+     */
+    public HasValue<?, ?> create(FieldContext ctx, String labelKey, boolean readOnly) {
         Objects.requireNonNull(ctx, "ctx");
 
         FieldFactory factory = propertyOverrides.get(PropertyKey.of(ctx.declaringType(), ctx.property()));
         if (factory != null) {
-            return requireFactoryResult(factory, ctx);
+            return applySemanticHints(requireFactoryResult(factory, ctx), labelKey, readOnly);
         }
 
         factory = resolveByType(typeOverrides, ctx.fieldType());
         if (factory != null) {
-            return requireFactoryResult(factory, ctx);
+            return applySemanticHints(requireFactoryResult(factory, ctx), labelKey, readOnly);
         }
 
         factory = resolveByConfig(ctx);
         if (factory != null) {
-            return requireFactoryResult(factory, ctx);
+            return applySemanticHints(requireFactoryResult(factory, ctx), labelKey, readOnly);
         }
 
         factory = resolveByType(defaultByType, ctx.fieldType());
         if (factory != null) {
-            return requireFactoryResult(factory, ctx);
+            return applySemanticHints(requireFactoryResult(factory, ctx), labelKey, readOnly);
         }
 
         throw new IllegalStateException(
@@ -234,6 +249,14 @@ public final class FieldRegistry {
                             ctx.declaringType().getSimpleName() +
                             "#" + ctx.property()
             );
+        }
+        return value;
+    }
+
+    private static HasValue<?, ?> applySemanticHints(HasValue<?, ?> value, String labelKey, boolean readOnly) {
+        value.setReadOnly(readOnly);
+        if (labelKey != null && !labelKey.isBlank() && value instanceof HasLabel hasLabel) {
+            hasLabel.setLabel(labelKey);
         }
         return value;
     }

@@ -97,3 +97,34 @@ Phase 7: AdminWorkbench
 
 This repository is under active development.
 APIs may evolve until the first integrated AdminWorkbench is complete.
+
+---
+##  UI Semantic Annotations & i18n Integration
+
+The toolkit now supports declarative UI annotations to influence
+visibility, label keys, ordering, and readOnly semantics.
+
+Annotations:
+
+- `@UiHidden`
+- `@UiLabel(key="...")`
+- `@UiOrder(value=...)`
+- `@UiReadOnly`
+
+`UiMeta` is responsible for evaluation.
+Builders use `labelKey` resolved via `TextResolver`.
+
+Example:
+
+```java
+@UiHidden
+private UUID id;
+
+@UiLabel(key = "user.email.label")
+@UiOrder(10)
+private String email;
+```
+
+i18n integration:
+Provide a `TextResolver` to `Grids.auto()` / `Forms.auto()` to
+resolve these keys to display text.

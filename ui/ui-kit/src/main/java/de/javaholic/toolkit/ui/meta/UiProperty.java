@@ -10,7 +10,7 @@ import java.util.Objects;
  *
  * <p>Responsibility:</p>
  * <ul>
- * <li>Carry UI defaults ({@code visible}, {@code label}, {@code order}) for one property</li>
+ * <li>Carry UI semantics ({@code visible}, {@code labelKey}, {@code order}, {@code readOnly}) for one property</li>
  * <li>Provide read access for Grid/Form rendering and binding</li>
  * </ul>
  *
@@ -19,7 +19,8 @@ import java.util.Objects;
  * <p>Architecture fit: leaf element of {@link UiMeta}. UI builders consume this type so they stay
  * independent from direct {@link BeanMeta} / reflection APIs.</p>
  *
- * <p>Phase 1 is defaults-only by design. Annotation/custom policy support is deferred to Phase 2.</p>
+ * <p>UiProperty stores semantic keys only. Text resolution is handled in UI builders through
+ * TextResolver and is intentionally outside metadata evaluation.</p>
  *
  * <p>Example:</p>
  * <pre>{@code
@@ -37,21 +38,24 @@ public final class UiProperty<T> {
     private final BeanMeta<T> beanMeta;
     private final BeanProperty<T, ?> beanProperty;
     private final boolean visible;
-    private final String label;
+    private final String labelKey;
     private final int order;
+    private final boolean readOnly;
 
     UiProperty(
             BeanMeta<T> beanMeta,
             BeanProperty<T, ?> beanProperty,
             boolean visible,
-            String label,
-            int order
+            String labelKey,
+            int order,
+            boolean readOnly
     ) {
         this.beanMeta = Objects.requireNonNull(beanMeta, "beanMeta");
         this.beanProperty = Objects.requireNonNull(beanProperty, "beanProperty");
         this.visible = visible;
-        this.label = Objects.requireNonNull(label, "label");
+        this.labelKey = Objects.requireNonNull(labelKey, "labelKey");
         this.order = order;
+        this.readOnly = readOnly;
     }
 
     /**
@@ -101,13 +105,23 @@ public final class UiProperty<T> {
     }
 
     /**
-     * Returns the UI label text.
+     * Returns the semantic label key.
+     *
+     * <p>This key is resolved to display text later by a TextResolver.</p>
+     *
+     * <p>Example: {@code String key = property.labelKey();}</p>
+     */
+    public String labelKey() {
+        return labelKey;
+    }
+
+    /**
+     * Compatibility alias for {@link #labelKey()}.
      *
      * <p>Example: {@code column.setHeader(property.label());}</p>
      */
     public String label() {
-        // TODO phase 2: support @UiLabel (and optional i18n key mapping) instead of name fallback only.
-        return label;
+        return labelKey();
     }
 
     /**
@@ -116,8 +130,15 @@ public final class UiProperty<T> {
      * <p>Example: {@code int order = property.order();}</p>
      */
     public int order() {
-        // TODO phase 2: support @UiOrder instead of Integer.MAX_VALUE default ordering only.
-        // TODO phase 2: revisit ordering for dynamic DTO proxy property models.
         return order;
+    }
+
+    /**
+     * Returns whether auto forms should render this property as read-only.
+     *
+     * <p>Example: {@code if (property.isReadOnly()) { ... }}</p>
+     */
+    public boolean isReadOnly() {
+        return readOnly;
     }
 }
