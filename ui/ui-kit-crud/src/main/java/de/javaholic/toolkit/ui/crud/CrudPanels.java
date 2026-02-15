@@ -1,17 +1,22 @@
 package de.javaholic.toolkit.ui.crud;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
-import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValueAndElement;
 import com.vaadin.flow.component.grid.Grid;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.meta.UiInspector;
+import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
+import de.javaholic.toolkit.ui.meta.UiPropertyConfig;
 import de.javaholic.toolkit.ui.text.DefaultTextResolver;
 import de.javaholic.toolkit.ui.text.TextResolver;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -139,11 +144,16 @@ public final class CrudPanels {
         AutoCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
         /**
-         * Overrides one auto-generated property for both grid and form contexts.
+         * Overrides one auto-generated property before grid/form generation.
+         *
+         * <p>This method applies only to the auto builder variant and configures UI metadata
+         * semantics before concrete components are built.</p>
+         *
+         * <p>Unknown property names cause {@link IllegalArgumentException} during {@link #build()}.</p>
          *
          * <p>Example: {@code builder.override("email", cfg -> cfg.label("user.email"));}</p>
          */
-        AutoCrudBuilder<T> override(String propertyName, Consumer<PropertyConfig<T>> config);
+        AutoCrudBuilder<T> override(String propertyName, Consumer<UiPropertyConfig<T>> config);
 
         /**
          * Builds the CRUD panel.
@@ -151,49 +161,6 @@ public final class CrudPanels {
          * <p>Example: {@code CrudPanel<User> panel = builder.build();}</p>
          */
         CrudPanel<T> build();
-    }
-
-    /**
-     * Shared semantic override definition for auto properties.
-     *
-     * <p>Example: {@code cfg.label("user.email");}</p>
-     */
-    public static final class PropertyConfig<T> {
-        private String labelKey;
-        private Consumer<Grid.Column<T>> gridCustomizer;
-        private Consumer<HasValue<?, ?>> formCustomizer;
-
-        /**
-         * Sets a semantic label key for both grid header and form field label.
-         *
-         * <p>Example: {@code cfg.label("user.email");}</p>
-         */
-        public PropertyConfig<T> label(String labelKey) {
-            this.labelKey = Objects.requireNonNull(labelKey, "labelKey");
-            return this;
-        }
-
-        /**
-         * Adds grid-specific column customization.
-         *
-         * <p>Example: {@code cfg.grid(col -> col.setAutoWidth(true));}</p>
-         */
-        public PropertyConfig<T> grid(Consumer<Grid.Column<T>> customizer) {
-            Objects.requireNonNull(customizer, "customizer");
-            this.gridCustomizer = this.gridCustomizer == null ? customizer : this.gridCustomizer.andThen(customizer);
-            return this;
-        }
-
-        /**
-         * Adds form-specific field customization.
-         *
-         * <p>Example: {@code cfg.form(field -> field.setReadOnly(true));}</p>
-         */
-        public PropertyConfig<T> form(Consumer<HasValue<?, ?>> customizer) {
-            Objects.requireNonNull(customizer, "customizer");
-            this.formCustomizer = this.formCustomizer == null ? customizer : this.formCustomizer.andThen(customizer);
-            return this;
-        }
     }
 
     private static final class ManualBuilder<T> implements CrudBuilder<T> {
@@ -258,8 +225,8 @@ public final class CrudPanels {
         private final Class<T> type;
         private CrudStore<T, ?> store;
         private TextResolver textResolver = new DefaultTextResolver();
-        private Predicate<UiProperty<T>> propertyFilter = UiProperty::isVisible;
-        private final Map<String, PropertyConfig<T>> overrides = new LinkedHashMap<>();
+        private Predicate<UiProperty<T>> propertyFilter = property -> true;
+        private final Map<String, Consumer<UiPropertyConfig<T>>> overrides = new LinkedHashMap<>();
 
         private AutoBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -284,50 +251,91 @@ public final class CrudPanels {
         }
 
         @Override
-        public AutoCrudBuilder<T> override(String propertyName, Consumer<PropertyConfig<T>> config) {
+        public AutoCrudBuilder<T> override(String propertyName, Consumer<UiPropertyConfig<T>> config) {
             Objects.requireNonNull(propertyName, "propertyName");
             Objects.requireNonNull(config, "config");
-            PropertyConfig<T> propertyConfig = overrides.computeIfAbsent(propertyName, key -> new PropertyConfig<>());
-            config.accept(propertyConfig);
+            overrides.merge(propertyName, config, Consumer::andThen);
             return this;
         }
 
         @Override
         public CrudPanel<T> build() {
             Objects.requireNonNull(store, "store");
-            String[] excluded = excludedPropertyNames(type, propertyFilter);
-            Grid<T> grid = buildGrid(excluded);
-            return new CrudPanel<>(type, store, grid, () -> buildForm(excluded));
+            Map<String, UiPropertyConfig<T>> effectiveConfigs = buildEffectiveConfigs();
+            String[] excluded = excludedPropertyNames(effectiveConfigs);
+            Grid<T> grid = buildGrid(excluded, effectiveConfigs);
+            return new CrudPanel<>(type, store, grid, () -> buildForm(excluded, effectiveConfigs));
         }
 
-        private Grid<T> buildGrid(String[] excluded) {
+        private Grid<T> buildGrid(String[] excluded, Map<String, UiPropertyConfig<T>> configs) {
             Grids.AutoGridBuilder<T> builder = Grids.auto(type)
                     .withTextResolver(textResolver)
                     .exclude(excluded);
-            overrides.forEach((propertyName, config) -> builder.override(propertyName, column -> {
-                if (config.labelKey != null) {
-                    column.setHeader(resolve(config.labelKey));
+            overrides.keySet().forEach(propertyName -> {
+                UiPropertyConfig<T> config = configs.get(propertyName);
+                if (config == null || !config.hasLabelOverride()) {
+                    return;
                 }
-                if (config.gridCustomizer != null) {
-                    config.gridCustomizer.accept(column);
-                }
-            }));
+                builder.override(propertyName, column -> column.setHeader(resolve(config.labelKey())));
+            });
             return builder.build();
         }
 
-        private Forms.Form<T> buildForm(String[] excluded) {
+        private Forms.Form<T> buildForm(String[] excluded, Map<String, UiPropertyConfig<T>> configs) {
             Forms.AutoFormBuilder<T> builder = Forms.auto(type)
                     .withTextResolver(textResolver)
                     .exclude(excluded);
-            overrides.forEach((propertyName, config) -> builder.override(propertyName, field -> {
-                if (config.labelKey != null && field instanceof HasLabel hasLabel) {
-                    hasLabel.setLabel(resolve(config.labelKey));
+            overrides.keySet().forEach(propertyName -> {
+                UiPropertyConfig<T> config = configs.get(propertyName);
+                if (config == null) {
+                    return;
                 }
-                if (config.formCustomizer != null) {
-                    config.formCustomizer.accept(field);
-                }
-            }));
+                builder.override(propertyName, field -> {
+                    if (config.hasLabelOverride() && field instanceof HasLabel hasLabel) {
+                        hasLabel.setLabel(resolve(config.labelKey()));
+                    }
+                    if (config.hasRequiredOverride() && field instanceof HasValueAndElement<?, ?> valueAndElement) {
+                        valueAndElement.setRequiredIndicatorVisible(config.isRequired());
+                    }
+                    if (config.hasTooltipOverride() && field instanceof Component component) {
+                        component.getElement().setProperty("title", resolve(config.tooltipKey()));
+                    }
+                });
+            });
             return builder.build();
+        }
+
+        private Map<String, UiPropertyConfig<T>> buildEffectiveConfigs() {
+            UiMeta<T> uiMeta = UiInspector.inspect(type);
+            Map<String, UiPropertyConfig<T>> configs = new LinkedHashMap<>();
+            uiMeta.properties().forEach(property -> {
+                UiPropertyConfig<T> config = new UiPropertyConfig<>(property);
+                Consumer<UiPropertyConfig<T>> override = overrides.get(property.name());
+                if (override != null) {
+                    override.accept(config);
+                }
+                configs.put(property.name(), config);
+            });
+
+            List<String> unknownProperties = new ArrayList<>();
+            for (String propertyName : overrides.keySet()) {
+                if (!configs.containsKey(propertyName)) {
+                    unknownProperties.add(propertyName);
+                }
+            }
+            if (!unknownProperties.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Unknown property override(s) for type " + type.getName() + ": " + String.join(", ", unknownProperties)
+                );
+            }
+            return configs;
+        }
+
+        private String[] excludedPropertyNames(Map<String, UiPropertyConfig<T>> configs) {
+            return configs.values().stream()
+                    .filter(config -> !config.isVisible() || !propertyFilter.test(config.property()))
+                    .map(config -> config.property().name())
+                    .toArray(String[]::new);
         }
 
         private String resolve(String key) {
