@@ -19,11 +19,30 @@
         <module name="ui-kit" />
         <module name="iam-persistence-jpa" />
         <module name="iam-persistence-file" />
+        <module name="iam-ui" />
+        <module name="ui-kit-crud" />
         <module name="config-forms-ui" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="iam-ui" target="21" />
-    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="audit-core" options="-Xlint:all" />
+      <module name="config-core" options="-Xlint:all" />
+      <module name="config-forms-ui" options="-Xlint:all" />
+      <module name="i18n-core" options="-Xlint:all" />
+      <module name="i18n-editor-ui" options="-Xlint:all" />
+      <module name="i18n-spring" options="-Xlint:all" />
+      <module name="iam-core" options="-Xlint:all" />
+      <module name="iam-persistence-file" options="-Xlint:all" />
+      <module name="iam-persistence-jpa" options="-Xlint:all" />
+      <module name="iam-security-spring" options="-Xlint:all" />
+      <module name="iam-ui" options="-Xlint:all" />
+      <module name="introspection" options="-Xlint:all" />
+      <module name="persistence-core" options="-Xlint:all" />
+      <module name="persistence-spring-data" options="-Xlint:all" />
+      <module name="ui-kit" options="-Xlint:all" />
+      <module name="ui-kit-crud" options="-Xlint:all" />
+    </option>
   </component>
 </project>
