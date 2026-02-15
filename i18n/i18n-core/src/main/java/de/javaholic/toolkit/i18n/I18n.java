@@ -15,3 +15,6 @@ package de.javaholic.toolkit.i18n;
 public interface I18n {
     String text(String key);
 }
+
+
+// TODO; I1N8 UI Feature:  @UILabel Scanning.
