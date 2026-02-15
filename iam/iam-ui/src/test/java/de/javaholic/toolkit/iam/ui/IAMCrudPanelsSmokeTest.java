@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class IamPanelsSmokeTest {
+class IAMCrudPanelsSmokeTest {
 
     @Mock
     private UserCrudStoreAdapter userStore;
@@ -38,7 +38,7 @@ class IamPanelsSmokeTest {
         when(userStore.findAll()).thenReturn(List.of(user));
         when(roleStore.findAll()).thenReturn(List.of(admin));
 
-        var panel = IamPanels.users(userStore, roleStore);
+        var panel = IAMCrudPanels.users(userStore, roleStore);
 
         assertThat(panel).isNotNull();
         verify(userStore, atLeastOnce()).findAll();
@@ -51,7 +51,7 @@ class IamPanelsSmokeTest {
         when(roleStore.findAll()).thenReturn(List.of(new Role("reader", Set.of(permission))));
         when(permissionStore.findAll()).thenReturn(List.of(permission));
 
-        var panel = IamPanels.roles(roleStore,permissionStore);
+        var panel = IAMCrudPanels.roles(roleStore,permissionStore);
 
         assertThat(panel).isNotNull();
         verify(roleStore, atLeastOnce()).findAll();
@@ -62,7 +62,7 @@ class IamPanelsSmokeTest {
     void permissionsPanelCreatesAndLoadsItems() {
         Permission permission = new Permission("config.read");
         when(permissionStore.findAll()).thenReturn(List.of(permission));
-        var panel = IamPanels.permissions(permissionStore);
+        var panel = IAMCrudPanels.permissions(permissionStore);
         assertThat(panel).isNotNull();
         verify(permissionStore, atLeastOnce()).findAll();
     }

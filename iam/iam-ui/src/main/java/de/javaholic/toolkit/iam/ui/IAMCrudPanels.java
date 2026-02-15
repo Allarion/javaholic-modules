@@ -13,10 +13,9 @@ import de.javaholic.toolkit.ui.form.Forms;
 
 import java.util.Objects;
 
-public final class IamPanels {
+public final class IAMCrudPanels {
 
-    // TODO: Naming still sucks
-    private IamPanels() {
+    private IAMCrudPanels() {
     }
 
     public static CrudPanel<User> users(UserCrudStoreAdapter userStore, RoleCrudStoreAdapter roleStore) {
@@ -73,12 +72,11 @@ public final class IamPanels {
         panel.withFormBuilderFactory(() -> Forms.of(Permission.class).field("code", field -> field.label(effective.permissionName())));
         return panel;
     }
-
-    // TODO: revisit this...
+    
     public record Labels(String userUsername, String userStatus, String userRoles, String roleName,
                          String rolePermissions, String permissionName) {
 
-        // TODO: revisit!
+        // TODO: revisit i18n keys!
         public static Labels defaults() {
             return new Labels("user.username", "user.status", "user.roles", "role.name", "role.permissions", "permission.name");
         }
