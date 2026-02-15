@@ -66,6 +66,7 @@ Das reduziert:
 - `Grids.auto(type)` → auto builder über `UiMeta`
 - `Forms.of(type)` → manuell
 - `Forms.auto(type)` → auto builder über `UiMeta`
+- `CrudPanels.of(type).withStore(store)...build()` → staged CRUD panel builder
 
 **Builder müssen Overrides unterstützen (ab Phase 1):**
 - `.exclude("password")`

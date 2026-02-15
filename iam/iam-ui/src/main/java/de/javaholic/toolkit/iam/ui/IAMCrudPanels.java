@@ -9,6 +9,7 @@ import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
 import de.javaholic.toolkit.iam.ui.adapter.UserCrudStoreAdapter;
 import de.javaholic.toolkit.ui.Inputs;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
+import de.javaholic.toolkit.ui.crud.CrudPanels;
 import de.javaholic.toolkit.ui.form.Forms;
 
 import java.util.Objects;
@@ -30,17 +31,17 @@ public final class IAMCrudPanels {
         MultiSelectComboBox<Role> roleField = Inputs.multiselect(Role.class).build();
         roleField.setItems(roleStore.findAll());
 
-        CrudPanel<User> panel = CrudPanel.of(User.class, userStore);
-        panel.withFormBuilderFactory(() ->
-                Forms.of(User.class)
-                        .field("username", field -> field.label(effective.userUsername()))
-                        .field("status", field -> field.label(effective.userStatus()))
-                        .field("roles", field -> {
-            field.component(roleField);
-            field.label(effective.userRoles());
-        }));
-
-        return panel;
+        return CrudPanels.of(User.class)
+                .withStore(userStore)
+                .withFormBuilderFactory(() ->
+                        Forms.of(User.class)
+                                .field("username", field -> field.label(effective.userUsername()))
+                                .field("status", field -> field.label(effective.userStatus()))
+                                .field("roles", field -> {
+                                    field.component(roleField);
+                                    field.label(effective.userRoles());
+                                }))
+                .build();
     }
 
     public static CrudPanel<Role> roles(RoleCrudStoreAdapter roleStore, PermissionCrudStoreAdapter permissionStore) {
@@ -52,12 +53,15 @@ public final class IAMCrudPanels {
 
         MultiSelectComboBox<Permission> permissionField = Inputs.multiselect(Permission.class).build();
         permissionField.setItems(permissionStore.findAll());
-        CrudPanel<Role> panel = CrudPanel.of(Role.class, roleStore);
-        panel.withFormBuilderFactory(() -> Forms.of(Role.class).field("name", field -> field.label(effective.roleName())).field("permissions", field -> {
-            field.component(permissionField);
-            field.label(effective.rolePermissions());
-        }));
-        return panel;
+        return CrudPanels.of(Role.class)
+                .withStore(roleStore)
+                .withFormBuilderFactory(() -> Forms.of(Role.class)
+                        .field("name", field -> field.label(effective.roleName()))
+                        .field("permissions", field -> {
+                            field.component(permissionField);
+                            field.label(effective.rolePermissions());
+                        }))
+                .build();
     }
 
     public static CrudPanel<Permission> permissions(PermissionCrudStoreAdapter permissionStore) {
@@ -68,9 +72,11 @@ public final class IAMCrudPanels {
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
 
-        CrudPanel<Permission> panel = CrudPanel.of(Permission.class, permissionStore);
-        panel.withFormBuilderFactory(() -> Forms.of(Permission.class).field("code", field -> field.label(effective.permissionName())));
-        return panel;
+        return CrudPanels.of(Permission.class)
+                .withStore(permissionStore)
+                .withFormBuilderFactory(() -> Forms.of(Permission.class)
+                        .field("code", field -> field.label(effective.permissionName())))
+                .build();
     }
     
     public record Labels(String userUsername, String userStatus, String userRoles, String roleName,

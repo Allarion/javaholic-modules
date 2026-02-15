@@ -11,10 +11,14 @@ import de.javaholic.toolkit.ui.Dialogs;
 import de.javaholic.toolkit.ui.Grids;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
+import de.javaholic.toolkit.ui.meta.UiInspector;
+import de.javaholic.toolkit.ui.meta.UiProperty;
+import de.javaholic.toolkit.ui.text.TextResolver;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -31,11 +35,13 @@ import java.util.function.Supplier;
  * <p>Usage:</p>
  * <pre>{@code
  * CrudStore<User, UUID> store = ...;
- * CrudPanel<User> panel = CrudPanel.of(User.class, store);
+ * CrudPanel<User> panel = CrudPanels.of(User.class)
+ *         .withStore(store)
+ *         .build();
  * add(panel);
  * }</pre>
  */
-public class CrudPanel<T> extends VerticalLayout {
+public final class CrudPanel<T> extends VerticalLayout {
 
     private final Class<T> type;
     private final CrudStore<T, ?> store;
@@ -46,44 +52,39 @@ public class CrudPanel<T> extends VerticalLayout {
     /**
      * Creates a CRUD panel for one type and backing store.
      *
-     * <p>Example: {@code new CrudPanel<>(User.class, store);}</p>
+     * <p>Use {@link CrudPanels} staged factory instead of calling this constructor directly.</p>
      */
-    public CrudPanel(Class<T> type, CrudStore<T, ?> store) {
+    CrudPanel(
+            Class<T> type,
+            CrudStore<T, ?> store,
+            TextResolver textResolver,
+            Predicate<UiProperty<T>> propertyFilter,
+            Supplier<Forms.Form<T>> preparedFormFactory
+    ) {
         this.type = Objects.requireNonNull(type, "type");
         this.store = Objects.requireNonNull(store, "store");
+        TextResolver nonNullTextResolver = Objects.requireNonNull(textResolver, "textResolver");
+        Predicate<UiProperty<T>> nonNullPropertyFilter = Objects.requireNonNull(propertyFilter, "propertyFilter");
+
+        String[] excludedProperties = excludedPropertyNames(type, nonNullPropertyFilter);
         this.grid = Grids.auto(type)
+                .withTextResolver(nonNullTextResolver)
+                .exclude(excludedProperties)
                 .configure(this::addActionsColumn)
                 .build();
         this.createButton = Buttons.create()
                 .label("Create")
                 .build();
-        this.formFactory = () -> Forms.auto(type).build();
+        this.formFactory = preparedFormFactory != null
+                ? preparedFormFactory
+                : () -> Forms.auto(type)
+                .withTextResolver(nonNullTextResolver)
+                .exclude(excludedProperties)
+                .build();
 
         configureLayout();
         configureCreateButton();
         refresh();
-    }
-
-
-    // TODO: fix syntax...CrudPanel.of(type).from(store).build()
-    /**
-     * Static factory for a CRUD panel.
-     *
-     * <p>Example: {@code CrudPanel<User> panel = CrudPanel.of(User.class, store);}</p>
-     */
-    public static <T> CrudPanel<T> of(Class<T> type, CrudStore<T, ?> store) {
-        return new CrudPanel<>(type, store);
-    }
-
-    /**
-     * Uses a custom form builder factory instead of the default {@code Forms.auto(...)}.
-     *
-     * <p>Example: {@code panel.withFormBuilderFactory(() -> Forms.of(User.class).includeId());}</p>
-     */
-    public CrudPanel<T> withFormBuilderFactory(Supplier<Forms.FormBuilder<T>> formBuilderFactory) {
-        Objects.requireNonNull(formBuilderFactory, "formBuilderFactory");
-        this.formFactory = () -> formBuilderFactory.get().build();
-        return this;
     }
 
     /**
@@ -187,5 +188,12 @@ public class CrudPanel<T> extends VerticalLayout {
     void deleteAndRefresh(T bean) {
         store.delete(bean);
         refresh();
+    }
+
+    private static <T> String[] excludedPropertyNames(Class<T> type, Predicate<UiProperty<T>> propertyFilter) {
+        return UiInspector.inspect(type).properties()
+                .filter(property -> !propertyFilter.test(property))
+                .map(UiProperty::name)
+                .toArray(String[]::new);
     }
 }

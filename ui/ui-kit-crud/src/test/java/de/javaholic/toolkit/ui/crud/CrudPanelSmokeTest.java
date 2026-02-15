@@ -27,7 +27,7 @@ class CrudPanelSmokeTest {
     void refreshLoadsItemsFromStore() {
         when(store.findAll()).thenReturn(List.of(new User()));
 
-        CrudPanel<User> view = CrudPanel.of(User.class, store);
+        CrudPanel<User> view = CrudPanels.of(User.class).withStore(store).build();
 
         assertThatCode(view::refresh).doesNotThrowAnyException();
         verify(store, atLeastOnce()).findAll();
@@ -36,7 +36,7 @@ class CrudPanelSmokeTest {
     @Test
     void saveAndRefreshDelegatesToStore() {
         when(store.findAll()).thenReturn(List.of());
-        CrudPanel<User> view = CrudPanel.of(User.class, store);
+        CrudPanel<User> view = CrudPanels.of(User.class).withStore(store).build();
         User user = new User();
 
         view.saveAndRefresh(user);
@@ -48,7 +48,7 @@ class CrudPanelSmokeTest {
     @Test
     void deleteAndRefreshDelegatesToStore() {
         when(store.findAll()).thenReturn(List.of());
-        CrudPanel<User> view = CrudPanel.of(User.class, store);
+        CrudPanel<User> view = CrudPanels.of(User.class).withStore(store).build();
         User user = new User();
 
         view.deleteAndRefresh(user);
@@ -60,20 +60,13 @@ class CrudPanelSmokeTest {
     @Test
     void createFailsFastWithoutNoArgsConstructor() {
         when(storeWithoutDefaultCtor.findAll()).thenReturn(List.of());
-        ExposedCrudPanel<NoDefaultConstructorUser> view =
-                new ExposedCrudPanel<>(NoDefaultConstructorUser.class, storeWithoutDefaultCtor);
+        CrudPanel<NoDefaultConstructorUser> view = CrudPanels.of(NoDefaultConstructorUser.class)
+                .withStore(storeWithoutDefaultCtor)
+                .build();
 
-        assertThatThrownBy(view::triggerCreate)
+        assertThatThrownBy(view::onCreate)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("no-args constructor");
-    }
-    private static class ExposedCrudPanel<T> extends CrudPanel<T> {
-            private ExposedCrudPanel(Class<T> type, CrudStore<T, ?> store) {
-            super(type, store);
-        }
-        private void triggerCreate() {
-            onCreate();
-        }
     }
 
     static class User {
