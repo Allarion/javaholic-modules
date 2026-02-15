@@ -10,7 +10,8 @@ import java.util.Objects;
  *
  * <p>Responsibility:</p>
  * <ul>
- * <li>Carry UI semantics ({@code visible}, {@code labelKey}, {@code order}, {@code readOnly}) for one property</li>
+ * <li>Carry UI semantics ({@code hidden}, {@code technical}, {@code required}, {@code permissionKey},
+ * {@code labelKey}, {@code order}, {@code readOnly}) for one property</li>
  * <li>Provide read access for Grid/Form rendering and binding</li>
  * </ul>
  *
@@ -37,7 +38,10 @@ public final class UiProperty<T> {
 
     private final BeanMeta<T> beanMeta;
     private final BeanProperty<T, ?> beanProperty;
-    private final boolean visible;
+    private final boolean hidden;
+    private final boolean technical;
+    private final boolean required;
+    private final String permissionKey;
     private final String labelKey;
     private final int order;
     private final boolean readOnly;
@@ -45,14 +49,20 @@ public final class UiProperty<T> {
     UiProperty(
             BeanMeta<T> beanMeta,
             BeanProperty<T, ?> beanProperty,
-            boolean visible,
+            boolean hidden,
+            boolean technical,
+            boolean required,
+            String permissionKey,
             String labelKey,
             int order,
             boolean readOnly
     ) {
         this.beanMeta = Objects.requireNonNull(beanMeta, "beanMeta");
         this.beanProperty = Objects.requireNonNull(beanProperty, "beanProperty");
-        this.visible = visible;
+        this.hidden = hidden;
+        this.technical = technical;
+        this.required = required;
+        this.permissionKey = permissionKey;
         this.labelKey = Objects.requireNonNull(labelKey, "labelKey");
         this.order = order;
         this.readOnly = readOnly;
@@ -96,12 +106,48 @@ public final class UiProperty<T> {
     }
 
     /**
-     * Returns whether this property is visible in Phase 1 defaults.
+     * Returns whether this property is visible.
      *
      * <p>Example: {@code if (property.isVisible()) { ... }}</p>
      */
     public boolean isVisible() {
-        return visible;
+        return !hidden;
+    }
+
+    /**
+     * Returns whether this property is marked as hidden by UI semantics.
+     *
+     * <p>Example: {@code if (property.isHidden()) { ... }}</p>
+     */
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    /**
+     * Returns whether this property is marked as technical (id/version).
+     *
+     * <p>Example: {@code if (property.isTechnical()) { ... }}</p>
+     */
+    public boolean isTechnical() {
+        return technical;
+    }
+
+    /**
+     * Returns whether this property is marked as required.
+     *
+     * <p>Example: {@code if (property.isRequired()) { ... }}</p>
+     */
+    public boolean isRequired() {
+        return required;
+    }
+
+    /**
+     * Returns an optional permission key annotation value.
+     *
+     * <p>Example: {@code property.permissionKey().ifPresent(this::checkPermission);}</p>
+     */
+    public java.util.Optional<String> permissionKey() {
+        return java.util.Optional.ofNullable(permissionKey);
     }
 
     /**
