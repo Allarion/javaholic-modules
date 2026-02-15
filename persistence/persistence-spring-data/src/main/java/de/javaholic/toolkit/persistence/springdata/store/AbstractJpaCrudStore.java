@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+// TODO: add mapper on this lavel too? or better AbstractMappingJpaCrudStore
 public abstract class AbstractJpaCrudStore<
         D,        // Domain
         ID,
