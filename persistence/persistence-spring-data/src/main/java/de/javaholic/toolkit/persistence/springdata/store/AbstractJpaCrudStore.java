@@ -1,6 +1,7 @@
 package de.javaholic.toolkit.persistence.springdata.store;
 
 import de.javaholic.toolkit.persistence.core.CrudStore;
+import de.javaholic.toolkit.persistence.core.EntityMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,40 +16,34 @@ public abstract class AbstractJpaCrudStore<
         > implements CrudStore<D, ID> {
 
     protected final R repository;
+    protected final EntityMapper<D, E> mapper;
 
-    protected AbstractJpaCrudStore(R repository) {
-        this.repository = Objects.requireNonNull(repository, "repository");;
+    protected AbstractJpaCrudStore(R repository, EntityMapper<D, E> mapper) {
+        this.repository = Objects.requireNonNull(repository, "repository");
+        this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
-
-    // TODO: maybe wrap in another interface Mapper<d,e> ? Vgl. CrudMode?
-    //    enum CrudMode {
-    //        RAPID,   // JPA-first defaults
-    //        CLEAN    // DTO-first defaults
-    //    }
-    protected abstract D toDomain(E entity);
-    protected abstract E toJpa(D domain);
 
     @Override
     public List<D> findAll() {
         return repository.findAll().stream()
-                .map(this::toDomain)
+                .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
     public Optional<D> findById(ID id) {
         return repository.findById(id)
-                .map(this::toDomain);
+                .map(mapper::toDomain);
     }
 
     @Override
     public D save(D entity) {
-        E saved = repository.save(toJpa(entity));
-        return toDomain(saved);
+        E saved = repository.save(mapper.toEntity(entity));
+        return mapper.toDomain(saved);
     }
 
     @Override
     public void delete(D entity) {
-        repository.delete(toJpa(entity));
+        repository.delete(mapper.toEntity(entity));
     }
 }
