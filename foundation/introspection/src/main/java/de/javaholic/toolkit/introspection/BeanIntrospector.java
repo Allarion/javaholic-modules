@@ -130,6 +130,7 @@ public final class BeanIntrospector {
         }
     }
 
+    // FIXME: Foundation darf kein JPA kennen. similar functionality (@Entity) is handled in ui-kit/...BeanCharacteristics
     private static boolean isId(AnnotatedElement element) {
         return element.isAnnotationPresent(jakarta.persistence.Id.class);
     }
