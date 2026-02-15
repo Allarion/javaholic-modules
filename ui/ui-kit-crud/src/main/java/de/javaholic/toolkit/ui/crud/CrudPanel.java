@@ -5,7 +5,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
@@ -56,7 +55,7 @@ public class CrudPanel<T> extends VerticalLayout {
                 .configure(this::addActionsColumn)
                 .build();
         this.createButton = Buttons.create()
-                .text(Texts.label("Create"))
+                .label("Create")
                 .build();
         this.formFactory = () -> Forms.auto(type).build();
 
@@ -109,12 +108,12 @@ public class CrudPanel<T> extends VerticalLayout {
         // TODO: add optional selection dialog integration when use-cases need it.
         grid.addColumn(new ComponentRenderer<>(item -> {
                     Button edit = Buttons.create()
-                            .text(Texts.label("Edit"))
+                            .label("Edit")
                             .style(ButtonVariant.LUMO_TERTIARY_INLINE)
                             .action(() -> onEdit(item))
                             .build();
                     Button delete = Buttons.create()
-                            .text(Texts.label("Delete"))
+                            .label("Delete")
                             .style(ButtonVariant.LUMO_ERROR)
                             .style(ButtonVariant.LUMO_TERTIARY_INLINE)
                             .action(() -> onDelete(item))
@@ -141,10 +140,10 @@ public class CrudPanel<T> extends VerticalLayout {
 
     protected void onDelete(T item) {
         Dialogs.confirm()
-                .text(Texts.header("Delete " + type.getSimpleName()))
-                .text(Texts.description("Really delete this item?"))
-                .textConfirm(Texts.label("Delete"))
-                .textCancel()
+                .header("Delete " + type.getSimpleName())
+                .description("Really delete this item?")
+                .confirmLabel("Delete")
+                .cancelLabel("cancel")
                 .open(confirmed -> {
                     if (!confirmed) {
                         return;
@@ -159,9 +158,9 @@ public class CrudPanel<T> extends VerticalLayout {
         form.binder().setBean(bean);
 
         Dialogs.form(form)
-                .text(Texts.header(title))
-                .textConfirm(Texts.label("Save"))
-                .textCancel()
+                .header(title)
+                .confirmLabel("Save")
+                .cancelLabel("cancel")
                 .onOk(f -> saveAndRefresh(f.binder().getBean()))
                 .open();
     }

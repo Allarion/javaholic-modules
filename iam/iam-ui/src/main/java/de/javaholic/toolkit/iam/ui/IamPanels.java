@@ -1,7 +1,6 @@
 package de.javaholic.toolkit.iam.ui;
 
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
-import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.User;
@@ -35,11 +34,11 @@ public final class IamPanels {
         CrudPanel<User> panel = CrudPanel.of(User.class, userStore);
         panel.withFormBuilderFactory(() ->
                 Forms.of(User.class)
-                        .field("username", field -> field.label(Texts.label(effective.userUsername())))
-                        .field("status", field -> field.label(Texts.label(effective.userStatus())))
+                        .field("username", field -> field.label(effective.userUsername()))
+                        .field("status", field -> field.label(effective.userStatus()))
                         .field("roles", field -> {
             field.component(roleField);
-            field.label(Texts.label(effective.userRoles()));
+            field.label(effective.userRoles());
         }));
 
         return panel;
@@ -55,9 +54,9 @@ public final class IamPanels {
         MultiSelectComboBox<Permission> permissionField = Inputs.multiselect(Permission.class).build();
         permissionField.setItems(permissionStore.findAll());
         CrudPanel<Role> panel = CrudPanel.of(Role.class, roleStore);
-        panel.withFormBuilderFactory(() -> Forms.of(Role.class).field("name", field -> field.label(Texts.label(effective.roleName()))).field("permissions", field -> {
+        panel.withFormBuilderFactory(() -> Forms.of(Role.class).field("name", field -> field.label(effective.roleName())).field("permissions", field -> {
             field.component(permissionField);
-            field.label(Texts.label(effective.rolePermissions()));
+            field.label(effective.rolePermissions());
         }));
         return panel;
     }
@@ -71,11 +70,11 @@ public final class IamPanels {
         Labels effective = Labels.defaults().merge(labels);
 
         CrudPanel<Permission> panel = CrudPanel.of(Permission.class, permissionStore);
-        panel.withFormBuilderFactory(() -> Forms.of(Permission.class).field("code", field -> field.label(Texts.label(effective.permissionName()))));
+        panel.withFormBuilderFactory(() -> Forms.of(Permission.class).field("code", field -> field.label(effective.permissionName())));
         return panel;
     }
 
-    // TODO: revisit this vs Texts...
+    // TODO: revisit this...
     public record Labels(String userUsername, String userStatus, String userRoles, String roleName,
                          String rolePermissions, String permissionName) {
 

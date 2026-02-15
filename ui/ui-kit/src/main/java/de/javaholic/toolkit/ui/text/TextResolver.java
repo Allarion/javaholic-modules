@@ -1,18 +1,15 @@
 package de.javaholic.toolkit.ui.text;
 
 /**
- * Resolves semantic text keys to display text in UI builders.
+ * Boundary interface for semantic UI text keys.
  *
- * <p>UiMeta stores keys only. Builders resolve those keys at render time through
- * this interface.</p>
+ * <p>UI builders store keys and resolve them when applying values to Vaadin components.</p>
  */
 @FunctionalInterface
 public interface TextResolver {
 
     /**
-     * Resolves a semantic key to display text.
-     *
-     * <p>Implementations may call i18n backends, message bundles, or custom logic.</p>
+     * Resolves the key to display text.
      */
     String resolve(String key);
 }

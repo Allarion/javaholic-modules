@@ -8,19 +8,16 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.BeanValidator;
-import de.javaholic.toolkit.i18n.I18n;
-import de.javaholic.toolkit.i18n.Text;
-import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
-import de.javaholic.toolkit.ui.form.fields.FieldContext;
-import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import de.javaholic.toolkit.ui.text.DefaultTextResolver;
 import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.ui.form.fields.FieldContext;
+import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -49,7 +46,7 @@ import java.util.function.Supplier;
  * <p>Manual example:</p>
  * <pre>{@code
  * Forms.Form<User> manual = Forms.of(User.class)
- *     .field("email", f -> f.label(Texts.label("user.email")))
+ *     .field("email", f -> f.label("user.email"))
  *     .build();
  * }</pre>
  *
@@ -85,7 +82,7 @@ public final class Forms {
      * <pre>{@code
      * Forms.Form<UserDTO> form =
      *     Forms.of(UserDTO.class)
-     *          .withI18n(i18n)
+     *          .withTextResolver(key -> key)
      *          .withValidation()
      *          .build();
      *
@@ -114,13 +111,13 @@ public final class Forms {
      * Forms.Form<UserConfig> form =
      *     Forms.of(UserConfig.class)
      *          .field("name", f -> {
-     *              f.component(Inputs.text().widthFull().build());
-     *              f.label(Texts.label("user.name"));
-     *              f.validate(b -> b.asRequired(Texts.resolve(i18n, Texts.error("user.name.required"))));
+     *              f.component(Inputs.textField().widthFull().build());
+     *              f.label("user.name");
+     *              f.validate(b -> b.asRequired("user.name.required"));
      *          })
      *          .field("enabled", f -> {
      *              f.component(Inputs.checkbox().build());
-     *              f.label(Texts.label("user.enabled"));
+     *              f.label("user.enabled");
      *          })
      *          .build();
      * }</pre>
@@ -129,7 +126,8 @@ public final class Forms {
 
         private final Class<T> type;
         private FieldRegistry fieldRegistry = new FieldRegistry();
-        private I18n i18n;
+        // UI boundary: FormBuilder stores label keys and resolves them while wiring Vaadin fields.
+        private TextResolver textResolver = new DefaultTextResolver();
         private final Map<String, FieldOverride<T>> overrides = new LinkedHashMap<>();
         private final List<Consumer<Form<T>>> configurators = new ArrayList<>();
         private boolean includeId = false;
@@ -140,12 +138,10 @@ public final class Forms {
         }
 
         /**
-         * Enables i18n for labels. If not set, the field name is used as label.
-         *
-         * <p>Example: {@code Forms.of(User.class).withI18n(i18n).build();}</p>
+         * Sets a key resolver for labels.
          */
-        public FormBuilder<T> withI18n(I18n i18n) {
-            this.i18n = Objects.requireNonNull(i18n, "i18n");
+        public FormBuilder<T> withTextResolver(TextResolver textResolver) {
+            this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
             return this;
         }
 
@@ -163,7 +159,7 @@ public final class Forms {
         /**
          * Overrides a single field by name.
          *
-         * <p>Example: {@code Forms.of(User.class).field("email", f -> f.label(Texts.label("user.email")));}</p>
+         * <p>Example: {@code Forms.of(User.class).field("email", f -> f.label("user.email"));}</p>
          */
         public FormBuilder<T> field(String name, Consumer<FieldOverride<T>> spec) {
             Objects.requireNonNull(name, "name");
@@ -233,7 +229,8 @@ public final class Forms {
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
 
-            Span formErrorLabel = new Span(i18n != null ? i18n.text("form.validation.error") : "Please fix the highlighted fields");
+            String formError = resolve("form.validation.error");
+            Span formErrorLabel = new Span(formError != null ? formError : "form.validation.error");
             formErrorLabel.addClassName("form-error");
             formErrorLabel.setVisible(false);
             layout.add(formErrorLabel);
@@ -267,7 +264,7 @@ public final class Forms {
                     throw new IllegalStateException("Component for property '" + property.name() + "' is not a HasValue");
                 }
 
-                applyLabel(component, property.name(), spec.label);
+                applyLabel(component, property.name(), spec.labelKey);
                 applyRequiredIndicator(component, property.definition());
                 bindUntyped(binder, meta, property, value, spec.validators);
 
@@ -301,12 +298,18 @@ public final class Forms {
             return false;
         }
 
-        private void applyLabel(Component component, String fieldName, Text overrideLabel) {
+        private void applyLabel(Component component, String fieldName, String overrideLabelKey) {
             if (!(component instanceof HasLabel hasLabel)) {
                 return;
             }
-            Text label = overrideLabel != null ? overrideLabel : Texts.label(fieldName);
-            hasLabel.setLabel(Texts.resolve(i18n, label));
+            String labelKey = overrideLabelKey != null ? overrideLabelKey : fieldName;
+            String resolved = textResolver.resolve(labelKey);
+            hasLabel.setLabel(resolved != null ? resolved : labelKey);
+        }
+
+        private String resolve(String key) {
+            String resolved = textResolver.resolve(key);
+            return resolved != null ? resolved : key;
         }
 
         private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {
@@ -362,7 +365,7 @@ public final class Forms {
          */
         static final class FieldSpec<T> implements FieldOverride.Applier<T> {
             Component component;
-            Text label;
+            String labelKey;
             final List<TypedValidator<T>> validators = new ArrayList<>();
 
             @Override
@@ -376,8 +379,8 @@ public final class Forms {
             }
 
             @Override
-            public void label(Text label) {
-                this.label = label;
+            public void label(String labelKey) {
+                this.labelKey = labelKey;
             }
         }
     }
@@ -396,7 +399,7 @@ public final class Forms {
         private final Class<T> type;
         private final UiMeta<T> uiMeta;
         private FieldRegistry fieldRegistry = new FieldRegistry();
-        private I18n i18n;
+        // UiMeta provides keys only; auto forms resolve keys only while rendering fields.
         private TextResolver textResolver = new DefaultTextResolver();
         private final Set<String> excluded = new LinkedHashSet<>();
         private final Map<String, Consumer<HasValue<?, ?>>> overrides = new LinkedHashMap<>();
@@ -410,17 +413,6 @@ public final class Forms {
             // FieldRegistry consumes resolved attributes, but never evaluates annotations.
             // ------------------------------------------------------------------
             this.uiMeta = UiInspector.inspect(type);
-        }
-
-        /**
-         * Enables i18n label resolution for auto-generated fields.
-         *
-         * <p>Example: {@code Forms.auto(User.class).withI18n(i18n).build();}</p>
-         */
-        public AutoFormBuilder<T> withI18n(I18n i18n) {
-            this.i18n = Objects.requireNonNull(i18n, "i18n");
-            this.textResolver = key -> i18n.text(key);
-            return this;
         }
 
         /**
@@ -491,7 +483,8 @@ public final class Forms {
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
 
-            Span formErrorLabel = new Span(i18n != null ? i18n.text("form.validation.error") : "Please fix the highlighted fields");
+            String formError = textResolver.resolve("form.validation.error");
+            Span formErrorLabel = new Span(formError != null ? formError : "form.validation.error");
             formErrorLabel.addClassName("form-error");
             formErrorLabel.setVisible(false);
             layout.add(formErrorLabel);
@@ -595,13 +588,13 @@ public final class Forms {
         interface Applier<T> {
             void component(Component component);
 
-            void label(Text label);
+            void label(String labelKey);
 
             void validate(TypedValidator<T> validator);
         }
 
         private Component component;
-        private Text label;
+        private String labelKey;
         private final List<TypedValidator<T>> validators = new ArrayList<>();
 
         /**
@@ -617,10 +610,10 @@ public final class Forms {
         /**
          * Sets the label for this field.
          *
-         * <p>Example: {@code f.label(Texts.label("user.email"));}</p>
+         * <p>Example: {@code f.label("user.email");}</p>
          */
-        public FieldOverride<T> label(Text label) {
-            this.label = Objects.requireNonNull(label, "label");
+        public FieldOverride<T> label(String labelKey) {
+            this.labelKey = Objects.requireNonNull(labelKey, "labelKey");
             return this;
         }
 
@@ -639,8 +632,8 @@ public final class Forms {
             if (component != null) {
                 applier.component(component);
             }
-            if (label != null) {
-                applier.label(label);
+            if (labelKey != null) {
+                applier.label(labelKey);
             }
             for (TypedValidator<T> v : validators) {
                 applier.validate(v);
@@ -700,3 +693,5 @@ public final class Forms {
         return annotations.isAnnotationPresent(NotNull.class) || annotations.isAnnotationPresent(NotBlank.class) || annotations.isAnnotationPresent(NotEmpty.class);
     }
 }
+
+

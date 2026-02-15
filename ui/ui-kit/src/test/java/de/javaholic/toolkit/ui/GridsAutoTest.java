@@ -28,7 +28,7 @@ class GridsAutoTest {
         private String lastName;
 
         @UiOrder(10)
-        @UiLabel(key = "user.first.label")
+        @UiLabel("user.first.label")
         private String firstName;
 
         @UiHidden
@@ -99,3 +99,4 @@ class GridsAutoTest {
                 .toList();
     }
 }
+

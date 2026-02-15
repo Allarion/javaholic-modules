@@ -9,29 +9,29 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import de.javaholic.toolkit.i18n.I18n;
-import de.javaholic.toolkit.i18n.Text;
-import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.ui.component.UUIDField;
+import de.javaholic.toolkit.ui.text.DefaultTextResolver;
+import de.javaholic.toolkit.ui.text.TextResolver;
 
 
 /**
  * Fluent factories for Vaadin input components.
- *
+ * <p>
  * Usage:
- *   TextField name =
- *     Inputs.textField()
- *           .withI18n(i18n)
- *           .text(Texts.label("user.name"))
- *           .widthFull()
- *           .withClassName("config-field")
- *           .build();
- *
+ * TextField name =
+ * Inputs.textField()
+ * .label("user.name")
+ * .placeholder("user.name.placeholder")
+ * .widthFull()
+ * .withClassName("config-field")
+ * .build();
+ * <p>
  * You can always skip this and use Vaadin directly.
  */
 public final class Inputs {
 
-    private Inputs() {}
+    private Inputs() {
+    }
 
     // ---------- Factories ----------
 
@@ -87,49 +87,51 @@ public final class Inputs {
     public static final class InputBuilder<T extends Component> {
 
         private final T component;
-        private I18n i18n;
-        private Text labelText;
-        private Text descriptionText;
-        private Text tooltipText;
-        private Text errorText;
+        // UI boundary: keys remain semantic until component build/apply time.
+        private TextResolver textResolver = new DefaultTextResolver();
+        private String labelKey;
+        private String descriptionKey;
+        private String tooltipKey;
+        private String errorKey;
+        private String placeholderKey;
 
         private InputBuilder(T component) {
             this.component = component;
         }
 
-        /** Sets the i18n instance used by {@link #text(Text...)}. */
-        public InputBuilder<T> withI18n(I18n i18n) {
-            this.i18n = i18n;
+        public InputBuilder<T> withTextResolver(TextResolver textResolver) {
+            this.textResolver = java.util.Objects.requireNonNull(textResolver, "textResolver");
+            return this;
+        }
+
+        public InputBuilder<T> label(String key) {
+            this.labelKey = key;
+            return this;
+        }
+
+        public InputBuilder<T> description(String key) {
+            this.descriptionKey = key;
+            return this;
+        }
+
+        public InputBuilder<T> tooltip(String key) {
+            this.tooltipKey = key;
+            return this;
+        }
+
+        public InputBuilder<T> error(String key) {
+            this.errorKey = key;
+            return this;
+        }
+
+        public InputBuilder<T> placeholder(String key) {
+            this.placeholderKey = key;
             return this;
         }
 
         /**
-         * Sets input texts using the Text model.
-         *
-         * <p>Supported roles: LABEL, DESCRIPTION, TOOLTIP, ERROR.</p>
+         * Sets width to 100% if the component supports sizing.
          */
-        public InputBuilder<T> text(Text... texts) {
-            if (texts == null) {
-                return this;
-            }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                switch (text.role()) {
-                    case LABEL -> this.labelText = text;
-                    case DESCRIPTION -> this.descriptionText = text;
-                    case TOOLTIP -> this.tooltipText = text;
-                    case ERROR -> this.errorText = text;
-                    default -> {
-                        // ignore unsupported roles
-                    }
-                }
-            }
-            return this;
-        }
-
-        /** Sets width to 100% if the component supports sizing. */
         public InputBuilder<T> widthFull() {
             if (component instanceof HasSize hs) {
                 hs.setWidthFull();
@@ -137,43 +139,52 @@ public final class Inputs {
             return this;
         }
 
-        /** Adds a CSS class name. */
+        /**
+         * Adds a CSS class name.
+         */
         public InputBuilder<T> withClassName(String className) {
             component.addClassName(className);
             return this;
         }
 
-        /** Adds a theme name to the element. */
+        /**
+         * Adds a theme name to the element.
+         */
         public InputBuilder<T> withTheme(String theme) {
             component.getElement().getThemeList().add(theme);
             return this;
         }
 
-        /** Returns the underlying Vaadin component. */
+        /**
+         * Returns the underlying Vaadin component.
+         */
         public T build() {
             applyTexts();
             return component;
         }
 
         private void applyTexts() {
-            if (labelText != null && component instanceof HasLabel hasLabel) {
-                hasLabel.setLabel(Texts.resolve(i18n, labelText));
+            if (labelKey != null && component instanceof HasLabel hasLabel) {
+                hasLabel.setLabel(textResolver.resolve(labelKey));
             }
 
-            if (descriptionText != null && component instanceof HasHelper hasHelper) {
-                hasHelper.setHelperText(Texts.resolve(i18n, descriptionText));
+            if (descriptionKey != null && component instanceof HasHelper hasHelper) {
+                hasHelper.setHelperText(textResolver.resolve(descriptionKey));
             }
 
-            if (tooltipText != null) {
-                // component.setTooltipText(Texts.resolve(i18n, tooltipText));
+            if (tooltipKey != null) {
+                // component.setTooltipText(resolve(tooltipKey));
                 component.getElement()
-                        .setProperty("title", Texts.resolve(i18n, tooltipText));
+                        .setProperty("title", textResolver.resolve(tooltipKey));
             }
 
-            if (errorText != null && component instanceof HasValidation hasValidation) {
-                hasValidation.setErrorMessage(Texts.resolve(i18n, errorText));
+            if (errorKey != null && component instanceof HasValidation hasValidation) {
+                hasValidation.setErrorMessage(textResolver.resolve(errorKey));
+            }
+
+            if (placeholderKey != null && component instanceof HasPlaceholder hasPlaceholder) {
+                hasPlaceholder.setPlaceholder(textResolver.resolve(placeholderKey));
             }
         }
-
     }
 }

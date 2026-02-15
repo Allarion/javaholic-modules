@@ -1,7 +1,6 @@
 package de.javaholic.toolkit.ui.form;
 
 import com.vaadin.flow.component.textfield.TextField;
-import de.javaholic.toolkit.i18n.Texts;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +18,7 @@ class FormsOverrideTest {
         Forms.Form<User> form = Forms.of(User.class)
                 .field("name", f -> {
                     f.component(custom);
-                    f.label(Texts.label("custom.name"));
+                    f.label("custom.name");
                     f.validate(String.class, b -> b.withValidator(
                             value -> value != null && value.length() >= 2,
                             "too short"

@@ -24,7 +24,7 @@ class FormsAutoTest {
 
     static class AnnotatedEntity {
         @UiOrder(20)
-        @UiLabel(key = "user.email.label")
+        @UiLabel("user.email.label")
         private String email;
 
         @UiOrder(10)
@@ -99,3 +99,4 @@ class FormsAutoTest {
         assertThat(form.layout().getChildren().toList()).containsSubsequence(first, second);
     }
 }
+

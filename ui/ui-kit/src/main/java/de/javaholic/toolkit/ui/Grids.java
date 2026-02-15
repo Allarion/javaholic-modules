@@ -8,10 +8,6 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.function.ValueProvider;
-import de.javaholic.toolkit.i18n.I18n;
-import de.javaholic.toolkit.i18n.Text;
-import de.javaholic.toolkit.i18n.TextRole;
-import de.javaholic.toolkit.i18n.Texts;
 import de.javaholic.toolkit.ui.component.UnGroupedRadioButton;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
@@ -50,8 +46,8 @@ import java.util.function.Supplier;
  * <p>Manual example:</p>
  * <pre>{@code
  * Grid<User> manual = Grids.of(User.class)
- *     .column(User::getUsername).text(Texts.label("user.username")).and()
- *     .column(User::getEmail).text(Texts.label("user.email")).and()
+ *     .column(User::getUsername).header("user.username").and()
+ *     .column(User::getEmail).header("user.email").and()
  *     .build();
  * }</pre>
  *
@@ -128,7 +124,8 @@ public final class Grids {
     public static class GridBuilder<T> {
 
         private final Grid<T> grid;
-        private I18n i18n;
+        // GridBuilder keeps semantic keys and resolves only when applying column headers/empty state.
+        private TextResolver textResolver = new DefaultTextResolver();
 
         private GridBuilder(Class<T> type) {
             this.grid = new Grid<>(type, false);
@@ -146,8 +143,8 @@ public final class Grids {
          * <pre>{@code
          * Grid<User> grid =
          *     Grids.of(User.class)
-         *          .column(User::getId).text(Texts.label("user.id")).and()
-         *          .column(User::getName).text(Texts.label("user.name")).and()
+         *          .column(User::getId).header("user.id").and()
+         *          .column(User::getName).header("user.name").and()
          *          .build();
          * }</pre>
          *
@@ -222,10 +219,10 @@ public final class Grids {
          * <pre>{@code
          * Grid<User> grid = Grids.of(User.class)
          *     .column(User::getUsername)
-         *         .text(Texts.label("user.username"))
+         *         .header("user.username")
          *         .and()
          *     .column(user -> user.getAddress().getCity())
-         *         .text(Texts.label("user.city"))
+         *         .header("user.city")
          *         .and()
          *     .build();
          * }</pre>
@@ -251,7 +248,7 @@ public final class Grids {
          *           );
          *            return badge;
          *        }))
-         *         .text(Texts.label("user.status"))
+         *         .header("user.status")
          *         .and()
          *     .build();
          * }</pre>
@@ -270,9 +267,9 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> grid = Grids.of(SalesForceContactDTO.class)
-         *        .textEmptyState(Texts.description("grid.description"))
-         *        .column(SalesForceContactDTO::getDisplayName).text(Texts.label("salesforce.displayName")).width("400px").and()
-         *        .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.customerNumber")).and()
+         *        .textEmptyState("grid.description")
+         *        .column(SalesForceContactDTO::getDisplayName).header("salesforce.displayName").width("400px").and()
+         *        .column(SalesForceContactDTO::getCustomerNumber).header("salesforce.customerNumber").and()
          *        .selectionColumnRadio().and()
          *        .build();
          * }</pre>
@@ -311,9 +308,9 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> grid = Grids.of(SalesForceContactDTO.class)
-         *        .textEmptyState(Texts.description("grid.description"))
-         *        .column(SalesForceContactDTO::getDisplayName).text(Texts.label("salesforce.displayName")).width("400px").and()
-         *        .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.customerNumber")).and()
+         *        .textEmptyState("grid.description")
+         *        .column(SalesForceContactDTO::getDisplayName).header("salesforce.displayName").width("400px").and()
+         *        .column(SalesForceContactDTO::getCustomerNumber).header("salesforce.customerNumber").and()
          *        .selectionColumnRadio().and()
          *        .build();
          * }</pre>
@@ -360,12 +357,12 @@ public final class Grids {
         }
 
         /**
-         * Enables i18n resolution for column texts.
+         * Sets a key resolver for grid text.
          *
-         * <p>Example: {@code Grids.of(User.class).withI18n(i18n).build();}</p>
+         * <p>Example: {@code Grids.of(User.class).withTextResolver(key -> key).build();}</p>
          */
-        public GridBuilder<T> withI18n(I18n i18n) {
-            this.i18n = i18n;
+        public GridBuilder<T> withTextResolver(TextResolver textResolver) {
+            this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
             return this;
         }
         /**
@@ -420,19 +417,24 @@ public final class Grids {
         /**
          * empty text (wrapped in a <code>&lt;span&gt;</code>) which will be displayed when grid is loaded first without items.
          *
-         * <p>Example: {@code Grids.of(User.class).textEmptyState(Texts.description("users.empty")).build();}</p>
+         * <p>Example: {@code Grids.of(User.class).textEmptyState("users.empty").build();}</p>
          *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
-        public GridBuilder<T> textEmptyState(Text text) {
-            return emptyState(new Span(Texts.resolve(i18n, text)));
+        public GridBuilder<T> textEmptyState(String key) {
+            return emptyState(new Span(resolve(key)));
+        }
+
+        private String resolve(String key) {
+            String resolved = textResolver.resolve(key);
+            return resolved != null ? resolved : key;
         }
 
         /**
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> sfGrid = Grids.of(SalesForceContactDTO.class)
-         *                 .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.number")).and()
+         *                 .column(SalesForceContactDTO::getCustomerNumber).header("salesforce.number").and()
          *                 .selectable( selectedContact -> { doSomething(selectedContact); } )
          *                 .build();
          * }</pre>
@@ -451,7 +453,7 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> sfGrid = Grids.of(SalesForceContactDTO.class)
-         *    .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.number")).and()
+         *    .column(SalesForceContactDTO::getCustomerNumber).header("salesforce.number").and()
          *    .selectable(selectedContact-> { doSomething(selectedContact);})
          *     .configure(grid ->{
          *             grid.setWidth("400px");
@@ -548,18 +550,6 @@ public final class Grids {
         }
 
         /**
-         * Enables i18n resolution for grid text helpers.
-         *
-         * <p>Example: {@code Grids.auto(User.class).withI18n(i18n).build();}</p>
-         */
-        public AutoGridBuilder<T> withI18n(I18n i18n) {
-            I18n nonNullI18n = Objects.requireNonNull(i18n, "i18n");
-            delegate.withI18n(nonNullI18n);
-            this.textResolver = nonNullI18n::text;
-            return this;
-        }
-
-        /**
          * Sets a custom resolver for semantic text keys.
          *
          * <p>Example:</p>
@@ -570,7 +560,9 @@ public final class Grids {
          * }</pre>
          */
         public AutoGridBuilder<T> withTextResolver(TextResolver textResolver) {
-            this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
+            TextResolver nonNullResolver = Objects.requireNonNull(textResolver, "textResolver");
+            this.textResolver = nonNullResolver;
+            this.delegate.withTextResolver(nonNullResolver);
             return this;
         }
 
@@ -617,10 +609,10 @@ public final class Grids {
         /**
          * Sets an empty state text using the text model.
          *
-         * <p>Example: {@code Grids.auto(User.class).textEmptyState(Texts.description("users.empty")).build();}</p>
+         * <p>Example: {@code Grids.auto(User.class).textEmptyState("users.empty").build();}</p>
          */
-        public AutoGridBuilder<T> textEmptyState(Text text) {
-            delegate.textEmptyState(text);
+        public AutoGridBuilder<T> textEmptyState(String key) {
+            delegate.textEmptyState(key);
             return this;
         }
 
@@ -734,19 +726,15 @@ public final class Grids {
         }
 
         /**
-         * Sets the header text using the Text model.
+         * Sets the header text key.
          *
-         * <p>Only LABEL is used; TOOLTIP is ignored.</p>
-         *
-         * <p>Example: {@code column.text(Texts.label("user.email"));}</p>
+         * <p>Example: {@code column.header("user.email");}</p>
          */
-        public ColumnBuilder<T, V> text(Text text) {
-            if (text == null) {
+        public ColumnBuilder<T, V> header(String key) {
+            if (key == null) {
                 return this;
             }
-            if (text.role() == TextRole.LABEL) {
-                tColumn.setHeader(Texts.resolve(tGridBuilder.i18n, text));
-            }
+            tColumn.setHeader(tGridBuilder.resolve(key));
             return this;
         }
         /**
@@ -777,7 +765,7 @@ public final class Grids {
          *
          * <pre>{@code
          * Grid<SalesForceContactDTO> sfGrid = Grids.of(SalesForceContactDTO.class)
-         *      .column(SalesForceContactDTO::getCustomerNumber).text(Texts.label("salesforce.number"))
+         *      .column(SalesForceContactDTO::getCustomerNumber).header("salesforce.number")
          *      .configure(column-> column.setFlexGrow(0)).and()
          *      .build();
          * }</pre>
@@ -795,10 +783,10 @@ public final class Grids {
          *<pre>{@code
          * Grid<ApprovalDetailsForSalesForceDTO> grid = Grids.of(ApprovalDetailsForSalesForceDTO.class)
          *                 .columnIndexDot(r -> r.salesForceContactDTO().getDisplayName()).and()
-         *                 .column(r -> r.salesForceContactDTO().getDisplayName()).text(Texts.label("salesforce.displayName")).and()
-         *                 .column(r -> r.item().getCustomerNumber()).text(Texts.label("salesforce.customerNumber")).and()
-         *                 .column(this::renderValidity).text(Texts.label("salesforce.validity")).and()
-         *                 .column(this::renderStatus).text(Texts.label("salesforce.status")).and()
+         *                 .column(r -> r.salesForceContactDTO().getDisplayName()).header("salesforce.displayName").and()
+         *                 .column(r -> r.item().getCustomerNumber()).header("salesforce.customerNumber").and()
+         *                 .column(this::renderValidity).header("salesforce.validity").and()
+         *                 .column(this::renderStatus).header("salesforce.status").and()
          *                 .build();}</pre>
          *
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
@@ -813,12 +801,12 @@ public final class Grids {
 //  //
 //  (vgl. CrudView: grid.addColumn(new ComponentRenderer<>(item -> {
 //                    Button edit = Buttons.create()
-//                            .text(Texts.label("Edit"))
+//                            .label("Edit")
 //                            .style(ButtonVariant.LUMO_TERTIARY_INLINE)
 //                            .action(() -> onEdit(item))
 //                            .build();
 //                    Button delete = Buttons.create()
-//                            .text(Texts.label("Delete"))
+//                            .label("Delete")
 //                            .style(ButtonVariant.LUMO_ERROR)
 //                            .style(ButtonVariant.LUMO_TERTIARY_INLINE)
 //                            .action(() -> onDelete(item))
@@ -829,3 +817,5 @@ public final class Grids {
 // Introduce internal ComponentFactory for shared component creation (buttons, fields, layouts).
 // Grid/Form should delegate internally to it, but must NOT expose Inputs builders directly.
 // Goal: reuse + consistency without API-layer merging.
+
+

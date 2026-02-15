@@ -4,9 +4,8 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.Notification;
-import de.javaholic.toolkit.i18n.I18n;
-import de.javaholic.toolkit.i18n.Text;
-import de.javaholic.toolkit.i18n.Texts;
+import de.javaholic.toolkit.ui.text.DefaultTextResolver;
+import de.javaholic.toolkit.ui.text.TextResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.function.Supplier;
  * <pre>{@code
  * Button save =
  *     Buttons.create()
- *            .text(Texts.label("save"))
+ *            .label("save")
  *            .action(this::onSave)
  *            .build();
  * }</pre>
@@ -33,7 +32,7 @@ import java.util.function.Supplier;
  * <pre>{@code
  * Button ok =
  *     Buttons.create()
- *            .text(Texts.label("ok"))
+ *            .label("ok")
  *            .enabledWhen(form::isValid)
  *                .revalidateOn(nameField)
  *                .revalidateOn(enabledCheckbox)
@@ -68,12 +67,13 @@ public final class Buttons {
      */
     public static final class Builder {
 
-        private Text labelText;
-        private Text tooltipText;
+        private String labelKey;
+        private String tooltipKey;
         private Runnable action;
         private EnablementBinding enablement;
         private final List<ButtonVariant> themeVariants = new ArrayList<>();
-        private I18n i18n;
+        // UI boundary: keys are stored in the builder and resolved only when applying to Vaadin.
+        private TextResolver textResolver = new DefaultTextResolver();
 
         /** notification duration for action errors */
         private int errorNotificationMs = 5_000;
@@ -81,35 +81,24 @@ public final class Buttons {
         private Builder() {
         }
 
-        /**
-         * Sets the i18n instance used by {@link #text(Text...)}.
-         */
-        public Builder withI18n(I18n i18n) {
-            this.i18n = i18n;
+        public Builder withTextResolver(TextResolver textResolver) {
+            this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
             return this;
         }
 
         /**
-         * Sets button texts using the Text model.
-         *
-         * <p>Supported roles: LABEL, TOOLTIP. Others are ignored.</p>
+         * Sets the button label key.
          */
-        public Builder text(Text... texts) {
-            if (texts == null) {
-                return this;
-            }
-            for (Text text : texts) {
-                if (text == null) {
-                    continue;
-                }
-                switch (text.role()) {
-                    case LABEL -> this.labelText = text;
-                    case TOOLTIP -> this.tooltipText = text;
-                    default -> {
-                        // ignore unsupported roles
-                    }
-                }
-            }
+        public Builder label(String key) {
+            this.labelKey = key;
+            return this;
+        }
+
+        /**
+         * Sets the button tooltip key.
+         */
+        public Builder tooltip(String key) {
+            this.tooltipKey = key;
             return this;
         }
 
@@ -162,11 +151,11 @@ public final class Buttons {
 
             themeVariants.forEach(button::addThemeVariants);
 
-            if (labelText != null) {
-                button.setText(Texts.resolve(i18n, labelText));
+            if (labelKey != null) {
+                button.setText(resolve(labelKey));
             }
-            if (tooltipText != null) {
-                button.setTooltipText(Texts.resolve(i18n, tooltipText));
+            if (tooltipKey != null) {
+                button.setTooltipText(resolve(tooltipKey));
             }
 
             if (action != null) {
@@ -178,6 +167,11 @@ public final class Buttons {
             }
 
             return button;
+        }
+
+        private String resolve(String key) {
+            String resolved = textResolver.resolve(key);
+            return resolved != null ? resolved : key;
         }
 
         /**
