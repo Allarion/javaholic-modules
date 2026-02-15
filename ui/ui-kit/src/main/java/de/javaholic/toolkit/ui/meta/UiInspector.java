@@ -65,7 +65,7 @@ public final class UiInspector {
             boolean defaultHidden = isTechnicalHidden(property, beanMeta);
             boolean hidden = findAnnotation(UiHidden.class, getter, field).isPresent() || defaultHidden;
             String labelKey = findAnnotation(UiLabel.class, getter, field)
-                    .map(UiLabel::key)
+                    .map(UiLabel::value)
                     .filter(key -> !key.isBlank())
                     .orElse(property.name());
             int order = findAnnotation(UiOrder.class, getter, field)

@@ -26,7 +26,7 @@ class UiMetaTest {
         @UiHidden
         private String secret;
 
-        @UiLabel(key = "user.email.label")
+        @UiLabel("user.email.label")
         private String email;
 
         private String displayName;
@@ -100,3 +100,4 @@ class UiMetaTest {
         assertThat(externalId.isReadOnly()).isTrue();
     }
 }
+

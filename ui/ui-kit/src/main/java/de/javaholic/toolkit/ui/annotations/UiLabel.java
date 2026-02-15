@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * <p>Example:</p>
  * <pre>{@code
  * public final class UserDto {
- *     @UiLabel(key = "user.email.label")
+ *     @UiLabel("user.email.label")
  *     private String email;
  * }
  * }</pre>
@@ -30,5 +30,5 @@ public @interface UiLabel {
     /**
      * The i18n key used to resolve display text.
      */
-    String key();
+    String value();
 }
