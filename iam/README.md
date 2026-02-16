@@ -27,3 +27,22 @@ Example:
 CurrentUser currentUser = new SpringCurrentUser(List.of(adapter));
 PermissionChecker checker = new DefaultPermissionChecker(currentUser);
 ```
+-------------------------------------------------------------------
+|                             UI Layer                             |
+| CrudPanels.auto(UserDto.class)                                   |
+|   → UiMeta ← TextResolver                                         |
+|   → DtoCrudStore                                                  |
+-------------------------------------------------------------------
+                ↑                          
+-------------------------------------------------------------------
+|                      Domain + Business Layer                     |
+| User (Domain)                                                     |
+| Business Logic                                                  |
+-------------------------------------------------------------------
+                ↑                                 
+-------------------------------------------------------------------
+|                        Persistence Layer                         |
+| JpaUserEntity                                                    |
+| JpaUserRepository                                                |
+| JpaDomainUserStore (JpaDomainCrudStore)                           |
+-------------------------------------------------------------------
