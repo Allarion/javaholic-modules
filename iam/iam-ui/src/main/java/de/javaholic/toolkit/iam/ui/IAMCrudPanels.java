@@ -1,83 +1,62 @@
 package de.javaholic.toolkit.iam.ui;
 
-import com.vaadin.flow.component.combobox.MultiSelectComboBox;
-import de.javaholic.toolkit.iam.core.domain.Permission;
-import de.javaholic.toolkit.iam.core.domain.Role;
-import de.javaholic.toolkit.iam.core.domain.User;
-import de.javaholic.toolkit.iam.ui.adapter.PermissionCrudStoreAdapter;
+import de.javaholic.toolkit.iam.core.dto.PermissionDto;
+import de.javaholic.toolkit.iam.core.dto.RoleDto;
+import de.javaholic.toolkit.iam.core.dto.UserDto;
 import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
-import de.javaholic.toolkit.iam.ui.adapter.UserCrudStoreAdapter;
-import de.javaholic.toolkit.ui.Inputs;
+import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 import de.javaholic.toolkit.ui.crud.CrudPanels;
-import de.javaholic.toolkit.ui.form.Forms;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public final class IAMCrudPanels {
 
     private IAMCrudPanels() {
     }
 
-    public static CrudPanel<User> users(UserCrudStoreAdapter userStore, RoleCrudStoreAdapter roleStore) {
+    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore, RoleCrudStoreAdapter roleStore) {
         return users(userStore, roleStore, Labels.defaults());
     }
 
-    public static CrudPanel<User> users(UserCrudStoreAdapter userStore, RoleCrudStoreAdapter roleStore, Labels labels) {
+    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore, RoleCrudStoreAdapter roleStore, Labels labels) {
         Objects.requireNonNull(userStore, "userStore");
         Objects.requireNonNull(roleStore, "roleStore");
         Labels effective = Labels.defaults().merge(labels);
-
-        MultiSelectComboBox<Role> roleField = Inputs.multiselect(Role.class).build();
-        roleField.setItems(roleStore.findAll());
-
-        return CrudPanels.of(User.class)
+        return CrudPanels.auto(UserDto.class)
                 .withStore(userStore)
-                .withForm(Forms.of(User.class)
-                        .field("username", field -> field.label(effective.userUsername()))
-                        .field("status", field -> field.label(effective.userStatus()))
-                        .field("roles", field -> {
-                            field.component(roleField);
-                            field.label(effective.userRoles());
-                        })
-                        .build())
+                .override("username", cfg -> cfg.label(effective.userUsername()))
+                .override("status", cfg -> cfg.label(effective.userStatus()))
+                .override("roles", cfg -> cfg.label(effective.userRoles()))
                 .build();
     }
 
-    public static CrudPanel<Role> roles(RoleCrudStoreAdapter roleStore, PermissionCrudStoreAdapter permissionStore) {
+    public static CrudPanel<RoleDto> roles(CrudStore<RoleDto, UUID> roleStore, CrudStore<PermissionDto, UUID> permissionStore) {
         return roles(roleStore, permissionStore, Labels.defaults());
     }
 
-    public static CrudPanel<Role> roles(RoleCrudStoreAdapter roleStore, PermissionCrudStoreAdapter permissionStore, Labels labels) {
+    public static CrudPanel<RoleDto> roles(CrudStore<RoleDto, UUID> roleStore, CrudStore<PermissionDto, UUID> permissionStore, Labels labels) {
+        Objects.requireNonNull(roleStore, "roleStore");
+        Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
-
-        MultiSelectComboBox<Permission> permissionField = Inputs.multiselect(Permission.class).build();
-        permissionField.setItems(permissionStore.findAll());
-        return CrudPanels.of(Role.class)
+        return CrudPanels.auto(RoleDto.class)
                 .withStore(roleStore)
-                .withForm(Forms.of(Role.class)
-                        .field("name", field -> field.label(effective.roleName()))
-                        .field("permissions", field -> {
-                            field.component(permissionField);
-                            field.label(effective.rolePermissions());
-                        })
-                        .build())
+                .override("name", cfg -> cfg.label(effective.roleName()))
+                .override("permissions", cfg -> cfg.label(effective.rolePermissions()))
                 .build();
     }
 
-    public static CrudPanel<Permission> permissions(PermissionCrudStoreAdapter permissionStore) {
+    public static CrudPanel<PermissionDto> permissions(CrudStore<PermissionDto, UUID> permissionStore) {
         return permissions(permissionStore, Labels.defaults());
     }
 
-    public static CrudPanel<Permission> permissions(PermissionCrudStoreAdapter permissionStore, Labels labels) {
+    public static CrudPanel<PermissionDto> permissions(CrudStore<PermissionDto, UUID> permissionStore, Labels labels) {
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
-
-        return CrudPanels.of(Permission.class)
+        return CrudPanels.auto(PermissionDto.class)
                 .withStore(permissionStore)
-                .withForm(Forms.of(Permission.class)
-                        .field("code", field -> field.label(effective.permissionName()))
-                        .build())
+                .override("code", cfg -> cfg.label(effective.permissionName()))
                 .build();
     }
     

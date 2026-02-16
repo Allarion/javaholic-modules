@@ -1,12 +1,12 @@
 package de.javaholic.toolkit.iam.ui;
 
-import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
-import de.javaholic.toolkit.iam.core.domain.User;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
-import de.javaholic.toolkit.iam.ui.adapter.PermissionCrudStoreAdapter;
+import de.javaholic.toolkit.iam.core.dto.PermissionDto;
+import de.javaholic.toolkit.iam.core.dto.RoleDto;
+import de.javaholic.toolkit.iam.core.dto.UserDto;
 import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
-import de.javaholic.toolkit.iam.ui.adapter.UserCrudStoreAdapter;
+import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,47 +23,48 @@ import static org.mockito.Mockito.*;
 class IAMCrudPanelsSmokeTest {
 
     @Mock
-    private UserCrudStoreAdapter userStore;
+    private CrudStore<UserDto, UUID> userStore;
 
     @Mock
     private RoleCrudStoreAdapter roleStore;
 
     @Mock
-    private PermissionCrudStoreAdapter permissionStore;
+    private CrudStore<RoleDto, UUID> roleDtoStore;
+
+    @Mock
+    private CrudStore<PermissionDto, UUID> permissionDtoStore;
 
     @Test
     void usersPanelCreatesAndWiresRoleChoices() {
         Role admin = new Role("admin", Set.of());
-        User user = new User(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
+        UserDto user = new UserDto(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
         when(userStore.findAll()).thenReturn(List.of(user));
-        when(roleStore.findAll()).thenReturn(List.of(admin));
 
         var panel = IAMCrudPanels.users(userStore, roleStore);
 
         assertThat(panel).isNotNull();
         verify(userStore, atLeastOnce()).findAll();
-        verify(roleStore).findAll();
+        verify(roleStore, never()).findAll();
     }
 
     @Test
     void rolesPanelCreatesAndWiresPermissionChoices() {
-        Permission permission = new Permission("user.read");
-        when(roleStore.findAll()).thenReturn(List.of(new Role("reader", Set.of(permission))));
-        when(permissionStore.findAll()).thenReturn(List.of(permission));
+        PermissionDto permission = new PermissionDto("user.read");
+        when(roleDtoStore.findAll()).thenReturn(List.of(new RoleDto("reader", Set.of(permission))));
 
-        var panel = IAMCrudPanels.roles(roleStore,permissionStore);
+        var panel = IAMCrudPanels.roles(roleDtoStore, permissionDtoStore);
 
         assertThat(panel).isNotNull();
-        verify(roleStore, atLeastOnce()).findAll();
-        verify(permissionStore).findAll();
+        verify(roleDtoStore, atLeastOnce()).findAll();
+        verify(permissionDtoStore, never()).findAll();
     }
 
     @Test
     void permissionsPanelCreatesAndLoadsItems() {
-        Permission permission = new Permission("config.read");
-        when(permissionStore.findAll()).thenReturn(List.of(permission));
-        var panel = IAMCrudPanels.permissions(permissionStore);
+        PermissionDto permission = new PermissionDto("config.read");
+        when(permissionDtoStore.findAll()).thenReturn(List.of(permission));
+        var panel = IAMCrudPanels.permissions(permissionDtoStore);
         assertThat(panel).isNotNull();
-        verify(permissionStore, atLeastOnce()).findAll();
+        verify(permissionDtoStore, atLeastOnce()).findAll();
     }
 }
