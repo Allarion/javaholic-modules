@@ -4,8 +4,8 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.Notification;
-import de.javaholic.toolkit.ui.text.DefaultTextResolver;
-import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
+import de.javaholic.toolkit.i18n.TextResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -170,7 +170,8 @@ public final class Buttons {
         }
 
         private String resolve(String key) {
-            String resolved = textResolver.resolve(key);
+            String resolved = textResolver.resolve(key).orElse(key);
+                    //?1 .orElseThrow(() -> new IllegalStateException("resolver ought to return 'key' (if not able to resolve) but didn't"));
             return resolved != null ? resolved : key;
         }
 

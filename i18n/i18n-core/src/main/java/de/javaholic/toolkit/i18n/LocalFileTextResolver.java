@@ -13,17 +13,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class LocalFileI18nProvider implements I18nProvider {
+public final class LocalFileTextResolver implements TextResolver {
 
     private final String baseName;
     private final ClassLoader classLoader;
     private final ConcurrentMap<String, Optional<Properties>> cache = new ConcurrentHashMap<>();
 
-    public LocalFileI18nProvider(String baseName) {
+    public LocalFileTextResolver(String baseName) {
         this(baseName, Thread.currentThread().getContextClassLoader());
     }
 
-    public LocalFileI18nProvider(String baseName, ClassLoader classLoader) {
+    public LocalFileTextResolver(String baseName, ClassLoader classLoader) {
         this.baseName = normalizeBaseName(Objects.requireNonNull(baseName, "baseName"));
         this.classLoader = Objects.requireNonNull(classLoader, "classLoader");
     }

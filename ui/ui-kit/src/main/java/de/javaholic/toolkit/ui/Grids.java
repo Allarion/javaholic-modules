@@ -8,12 +8,12 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.function.ValueProvider;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.ui.component.UnGroupedRadioButton;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
-import de.javaholic.toolkit.ui.text.DefaultTextResolver;
-import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -426,8 +426,7 @@ public final class Grids {
         }
 
         private String resolve(String key) {
-            String resolved = textResolver.resolve(key);
-            return resolved != null ? resolved : key;
+            return textResolver.resolve(key).orElse(key);
         }
 
         /**
@@ -690,8 +689,8 @@ public final class Grids {
         }
 
         private String resolveLabel(String labelKey) {
-            String resolved = textResolver.resolve(labelKey);
-            return resolved != null ? resolved : labelKey;
+            // TODO: revisit i18n key, see HierarchicalTextResolver for concept
+            return textResolver.resolve(labelKey).orElse(labelKey);
         }
     }
 

@@ -3,25 +3,26 @@ package de.javaholic.toolkit.i18n;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
-public final class CompositeI18n implements I18n {
+public final class CompositeTextResolver implements TextResolver {
 
-    private final List<I18nProvider> providers;
+    private final List<TextResolver> providers;
 
-    public CompositeI18n(List<I18nProvider> providers) {
+    public CompositeTextResolver(List<TextResolver> providers) {
         this.providers = List.copyOf(Objects.requireNonNull(providers, "providers"));
     }
 
     @Override
-    public String resolve(String key, Locale locale) {
+    public Optional<String> resolve(String key, Locale locale) {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(locale, "locale");
-        for (I18nProvider provider : providers) {
+        for (TextResolver provider : providers) {
             var resolved = provider.resolve(key, locale);
             if (resolved.isPresent()) {
-                return resolved.get();
+                return resolved;
             }
         }
-        return key;
+        return Optional.of(key);
     }
 }

@@ -8,22 +8,21 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.BeanValidator;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
+import de.javaholic.toolkit.ui.form.fields.FieldContext;
+import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
-import de.javaholic.toolkit.ui.text.DefaultTextResolver;
-import de.javaholic.toolkit.ui.text.TextResolver;
-import de.javaholic.toolkit.ui.form.fields.FieldContext;
-import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.lang.reflect.AnnotatedElement;
-import java.util.Comparator;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -125,7 +124,7 @@ public final class Forms {
     public static final class FormBuilder<T> {
 
         private final Class<T> type;
-        private FieldRegistry fieldRegistry = new FieldRegistry();
+        private final FieldRegistry fieldRegistry = new FieldRegistry();
         // UI boundary: FormBuilder stores label keys and resolves them while wiring Vaadin fields.
         private TextResolver textResolver = new DefaultTextResolver();
         private final Map<String, FieldOverride<T>> overrides = new LinkedHashMap<>();
@@ -174,6 +173,7 @@ public final class Forms {
          *
          * <p>Example: {@code Forms.of(User.class).includeId().build();}</p>
          */
+        // TODO: revisit, vgl @UiHidden usw
         public FormBuilder<T> includeId() {
             this.includeId = true;
             return this;
@@ -184,6 +184,7 @@ public final class Forms {
          *
          * <p>Example: {@code Forms.of(User.class).includeVersion().build();}</p>
          */
+        // TODO: revisit, vgl @UiHidden usw
         public FormBuilder<T> includeVersion() {
             this.includeVersion = true;
             return this;
@@ -303,12 +304,12 @@ public final class Forms {
                 return;
             }
             String labelKey = overrideLabelKey != null ? overrideLabelKey : fieldName;
-            String resolved = textResolver.resolve(labelKey);
+            String resolved = textResolver.resolve(labelKey).orElse(labelKey);
             hasLabel.setLabel(resolved != null ? resolved : labelKey);
         }
 
         private String resolve(String key) {
-            String resolved = textResolver.resolve(key);
+            String resolved = textResolver.resolve(key).orElse(key);
             return resolved != null ? resolved : key;
         }
 
@@ -482,9 +483,9 @@ public final class Forms {
             VerticalLayout layout = new VerticalLayout();
             Binder<T> binder = new Binder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
-
-            String formError = textResolver.resolve("form.validation.error");
-            Span formErrorLabel = new Span(formError != null ? formError : "form.validation.error");
+            // TODO: revisit i18n key, see HierarchicalTextResolver for concept
+            String formError = textResolver.resolve("form.validation.error").orElse("form.validation.error");
+            Span formErrorLabel = new Span(formError);
             formErrorLabel.addClassName("form-error");
             formErrorLabel.setVisible(false);
             layout.add(formErrorLabel);
@@ -542,8 +543,7 @@ public final class Forms {
             if (!(component instanceof HasLabel hasLabel)) {
                 return;
             }
-            String resolved = textResolver.resolve(labelKey);
-            hasLabel.setLabel(resolved != null ? resolved : labelKey);
+            hasLabel.setLabel(textResolver.resolve(labelKey).orElse(labelKey));
         }
 
         private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {

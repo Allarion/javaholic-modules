@@ -22,7 +22,7 @@ class CrudFluentApiContractTest {
 
         CrudPanels.CrudBuilder<UserDto> chained = builder
                 .withStore(store)
-                .withTextResolver(key -> key)
+                .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible);
 
         CrudPanel<UserDto> result = chained.build();
@@ -38,7 +38,7 @@ class CrudFluentApiContractTest {
 
         CrudPanels.AutoCrudBuilder<UserDto> chained = builder
                 .withStore(store)
-                .withTextResolver(key -> key)
+                .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
                 .override("email", property -> property.label("user.email.label"));
 

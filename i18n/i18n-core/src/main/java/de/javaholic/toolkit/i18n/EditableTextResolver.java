@@ -7,8 +7,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-public final class EditableI18nProvider implements I18nProvider {
+// TODO rename class! I28nprovider =>
+public final class EditableTextResolver implements TextResolver {
 
     private final Map<String, Map<String, String>> entries = new ConcurrentHashMap<>();
 

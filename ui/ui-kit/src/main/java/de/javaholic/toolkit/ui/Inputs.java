@@ -9,9 +9,9 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.ui.component.UUIDField;
-import de.javaholic.toolkit.ui.text.DefaultTextResolver;
-import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
 
 
 /**
@@ -165,25 +165,25 @@ public final class Inputs {
 
         private void applyTexts() {
             if (labelKey != null && component instanceof HasLabel hasLabel) {
-                hasLabel.setLabel(textResolver.resolve(labelKey));
+                hasLabel.setLabel(textResolver.resolve(labelKey).orElse(labelKey));
             }
 
             if (descriptionKey != null && component instanceof HasHelper hasHelper) {
-                hasHelper.setHelperText(textResolver.resolve(descriptionKey));
+                hasHelper.setHelperText(textResolver.resolve(descriptionKey).orElse(descriptionKey));
             }
 
             if (tooltipKey != null) {
                 // component.setTooltipText(resolve(tooltipKey));
                 component.getElement()
-                        .setProperty("title", textResolver.resolve(tooltipKey));
+                        .setProperty("title", textResolver.resolve(tooltipKey).orElse(tooltipKey));
             }
 
             if (errorKey != null && component instanceof HasValidation hasValidation) {
-                hasValidation.setErrorMessage(textResolver.resolve(errorKey));
+                hasValidation.setErrorMessage(textResolver.resolve(errorKey).orElse(errorKey));
             }
 
             if (placeholderKey != null && component instanceof HasPlaceholder hasPlaceholder) {
-                hasPlaceholder.setPlaceholder(textResolver.resolve(placeholderKey));
+                hasPlaceholder.setPlaceholder(textResolver.resolve(placeholderKey).orElse(placeholderKey));
             }
         }
     }

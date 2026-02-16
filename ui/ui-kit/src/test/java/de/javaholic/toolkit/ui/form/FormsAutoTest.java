@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FormsAutoTest {
@@ -68,7 +70,7 @@ class FormsAutoTest {
     @Test
     void labelKeyIsResolvedToText() {
         Forms.Form<AnnotatedEntity> form = Forms.auto(AnnotatedEntity.class)
-                .withTextResolver(key -> "resolved:" + key)
+                .withTextResolver((key,locale) -> Optional.of("resolved:" + key))
                 .build();
 
         TextField field = (TextField) form.field("email").orElseThrow();

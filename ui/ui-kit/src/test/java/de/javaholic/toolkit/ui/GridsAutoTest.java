@@ -9,6 +9,7 @@ import jakarta.persistence.Version;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,7 +76,7 @@ class GridsAutoTest {
     @Test
     void labelKeyIsResolvedToText() {
         Grid<AnnotatedEntity> grid = Grids.auto(AnnotatedEntity.class)
-                .withTextResolver(key -> "resolved:" + key)
+                .withTextResolver((key, locale) -> Optional.of("resolved:" + key))
                 .build();
 
         Grid.Column<AnnotatedEntity> firstNameColumn = grid.getColumns().stream()

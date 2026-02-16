@@ -31,3 +31,18 @@ Clean Mode: DTO → Store → Domain → JPA
 Rapid Mode: JPA Entity used directly in UI.
 
 Both are supported intentionally.
+
+## I18N
+Scope prefixes allow app-level overrides.
+
+Example:
+ProjectA.AdminWorkbench
+AdminWorkbench
+
+These prefixes are optionally passed to the resolver,
+so that keys in these scopes are tested before core keys.
+
+e.g.:
+ProjectA.AdminWorkbench.crud.user.title
+AdminWorkbench.crud.user.title
+crud.user.title

@@ -9,6 +9,8 @@ import de.javaholic.toolkit.ui.Inputs;
 import de.javaholic.toolkit.ui.form.Forms;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FluentApiContractTest {
@@ -20,7 +22,7 @@ class FluentApiContractTest {
         Buttons.Builder chained = builder
                 .label("save")
                 .tooltip("save.tooltip")
-                .withTextResolver(key -> key);
+                .withTextResolver((key, locale) -> Optional.of(key));
 
         Button result = chained.build();
 
@@ -60,7 +62,7 @@ class FluentApiContractTest {
         Grids.AutoGridBuilder<UserDto> builder = Grids.auto(UserDto.class);
 
         Grids.AutoGridBuilder<UserDto> chained = builder
-                .withTextResolver(key -> key);
+                .withTextResolver((key, locale) -> Optional.of(key));
 
         Grid<UserDto> result = chained.build();
 

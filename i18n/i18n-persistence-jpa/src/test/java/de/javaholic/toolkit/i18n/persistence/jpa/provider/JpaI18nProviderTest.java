@@ -17,16 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JpaI18nProviderTest {
+class JpaTextResolverTest {
 
     @Mock
     private JpaI18nEntryStore store;
 
-    private JpaI18nProvider provider;
+    private JpaTextResolver provider;
 
     @BeforeEach
     void setUp() {
-        provider = new JpaI18nProvider(store);
+        provider = new JpaTextResolver(store);
     }
 
     @Test

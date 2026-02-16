@@ -2,8 +2,10 @@ package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.grid.Grid;
 
-import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.i18n.TextResolver;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -15,7 +17,7 @@ class DialogsSmokeTest {
 
     @Test
     void confirmAndSelectBuildersDoNotThrow() {
-        TextResolver resolver = key -> "i18n:" + key;
+        TextResolver resolver = (key, locale) -> Optional.of("i18n:" + key);
         Grid<User> grid = new Grid<>(User.class, false);
 
         assertThatCode(() -> Dialogs.confirm()

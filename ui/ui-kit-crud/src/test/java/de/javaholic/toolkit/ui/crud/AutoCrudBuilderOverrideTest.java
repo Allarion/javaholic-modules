@@ -21,7 +21,7 @@ class AutoCrudBuilderOverrideTest {
     void overrideLabelIsAppliedToAutoGridColumn() throws Exception {
         CrudPanel<UserDto> panel = CrudPanels.auto(UserDto.class)
                 .withStore(new StubCrudStore<>())
-                .withTextResolver(key -> "resolved:" + key)
+                .withTextResolver((key,locale) -> Optional.of("resolved:" + key))
                 .override("email", config -> config.label("user.email.label"))
                 .build();
 
@@ -48,7 +48,7 @@ class AutoCrudBuilderOverrideTest {
     void overrideRequiredAndTooltipAreAppliedToAutoFormField() throws Exception {
         CrudPanel<UserDto> panel = CrudPanels.auto(UserDto.class)
                 .withStore(new StubCrudStore<>())
-                .withTextResolver(key -> "resolved:" + key)
+                .withTextResolver((key,locale) -> Optional.of("resolved:" + key))
                 .override("email", config -> config
                         .required(true)
                         .tooltip("user.email.tooltip"))

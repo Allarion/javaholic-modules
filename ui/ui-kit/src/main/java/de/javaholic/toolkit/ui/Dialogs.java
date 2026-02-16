@@ -7,10 +7,10 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
-import de.javaholic.toolkit.ui.text.DefaultTextResolver;
-import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -566,8 +566,7 @@ public final class Dialogs {
     }
 
     private static String resolve(TextResolver resolver, String key) {
-        String resolved = resolver.resolve(key);
-        return resolved != null ? resolved : key;
+        return resolver.resolve(key).orElse(key);
     }
 
 }

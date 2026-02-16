@@ -1,6 +1,6 @@
 package de.javaholic.toolkit.i18n.persistence.jpa.provider;
 
-import de.javaholic.toolkit.i18n.I18nProvider;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.i18n.persistence.jpa.domain.I18nEntry;
 import de.javaholic.toolkit.i18n.persistence.jpa.store.JpaI18nEntryStore;
 
@@ -10,16 +10,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public class JpaI18nProvider implements I18nProvider {
+public class JpaTextResolver implements TextResolver {
 
     private final JpaI18nEntryStore store;
     private final Locale defaultLocale;
 
-    public JpaI18nProvider(JpaI18nEntryStore store) {
+    public JpaTextResolver(JpaI18nEntryStore store) {
         this(store, Locale.ROOT);
     }
 
-    public JpaI18nProvider(JpaI18nEntryStore store, Locale defaultLocale) {
+    public JpaTextResolver(JpaI18nEntryStore store, Locale defaultLocale) {
         this.store = Objects.requireNonNull(store, "store");
         this.defaultLocale = Objects.requireNonNull(defaultLocale, "defaultLocale");
     }

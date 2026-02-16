@@ -61,7 +61,7 @@ public final class FieldRegistry {
 
     /**
      * Creates a registry with built-in default mappings.
-     *
+     *  // TODO: check: should this be availble as framework bean?
      * <p>Example: {@code FieldRegistry registry = new FieldRegistry();}</p>
      */
     public FieldRegistry() {

@@ -6,11 +6,11 @@ import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EditableI18nProviderTest {
+class EditableTextResolverTest {
 
     @Test
     void resolvesInMemoryEntriesWithFallback() {
-        EditableI18nProvider provider = new EditableI18nProvider();
+        EditableTextResolver provider = new EditableTextResolver();
         provider.put("title", Locale.ROOT, "Default");
         provider.put("title", Locale.GERMAN, "Deutsch");
         provider.put("title", Locale.GERMANY, "Deutschland");

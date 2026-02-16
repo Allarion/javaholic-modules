@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.HasValueAndElement;
 import com.vaadin.flow.component.grid.Grid;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
 import de.javaholic.toolkit.ui.form.Forms;
@@ -11,8 +12,7 @@ import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import de.javaholic.toolkit.ui.meta.UiPropertyConfig;
-import de.javaholic.toolkit.ui.text.DefaultTextResolver;
-import de.javaholic.toolkit.ui.text.TextResolver;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -339,8 +339,7 @@ public final class CrudPanels {
         }
 
         private String resolve(String key) {
-            String resolved = textResolver.resolve(key);
-            return resolved != null ? resolved : key;
+            return textResolver.resolve(key).orElse(key);
         }
     }
 

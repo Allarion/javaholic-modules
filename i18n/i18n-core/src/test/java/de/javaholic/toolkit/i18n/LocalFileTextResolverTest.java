@@ -10,11 +10,11 @@ import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class LocalFileI18nProviderTest {
+class LocalFileTextResolverTest {
 
     @Test
     void resolvesFromClasspathWithLocaleFallback() {
-        LocalFileI18nProvider provider = new LocalFileI18nProvider("i18n/messages");
+        LocalFileTextResolver provider = new LocalFileTextResolver("i18n/messages");
 
         assertThat(provider.resolve("greeting", Locale.GERMANY)).hasValue("Guten Tag");
         assertThat(provider.resolve("languageOnly", Locale.GERMANY)).hasValue("Deutsch");
@@ -28,7 +28,7 @@ class LocalFileI18nProviderTest {
         write(tempDir.resolve("bundle_de.properties"), "greeting=Deutsch");
         write(tempDir.resolve("bundle_de_DE.properties"), "greeting=Bundesrepublik");
 
-        LocalFileI18nProvider provider = new LocalFileI18nProvider(tempDir.resolve("bundle").toString());
+        LocalFileTextResolver provider = new LocalFileTextResolver(tempDir.resolve("bundle").toString());
 
         assertThat(provider.resolve("greeting", Locale.GERMANY)).hasValue("Bundesrepublik");
         assertThat(provider.resolve("greeting", Locale.GERMAN)).hasValue("Deutsch");
