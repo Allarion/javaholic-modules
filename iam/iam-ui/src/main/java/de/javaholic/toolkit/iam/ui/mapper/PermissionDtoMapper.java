@@ -1,7 +1,7 @@
-package de.javaholic.toolkit.iam.persistence.jpa.mapper;
+package de.javaholic.toolkit.iam.ui.mapper;
 
 import de.javaholic.toolkit.iam.core.domain.Permission;
-import de.javaholic.toolkit.iam.core.dto.PermissionDto;
+import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
 import de.javaholic.toolkit.persistence.core.DtoMapper;
 
 public class PermissionDtoMapper implements DtoMapper<PermissionDto, Permission> {

@@ -1,8 +1,8 @@
 package de.javaholic.toolkit.iam.ui;
 
-import de.javaholic.toolkit.iam.core.dto.PermissionDto;
-import de.javaholic.toolkit.iam.core.dto.RoleDto;
-import de.javaholic.toolkit.iam.core.dto.UserDto;
+import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
+import de.javaholic.toolkit.iam.ui.dto.RoleDto;
+import de.javaholic.toolkit.iam.ui.dto.UserDto;
 import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
@@ -65,7 +65,14 @@ public final class IAMCrudPanels {
 
         // TODO: revisit i18n keys!
         public static Labels defaults() {
-            return new Labels("user.username", "user.status", "user.roles", "role.name", "role.permissions", "permission.name");
+            return new Labels(
+                "form.user.email.label",
+                "form.user.active.label",
+                "form.user.roles.label",
+                "form.role.name.label",
+                "form.role.permissions.label",
+                "form.permission.code.label"
+            );
         }
 
         public Labels merge(Labels override) {

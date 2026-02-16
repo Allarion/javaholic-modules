@@ -1,7 +1,7 @@
-package de.javaholic.toolkit.iam.persistence.jpa.mapper;
+package de.javaholic.toolkit.iam.ui.mapper;
 
 import de.javaholic.toolkit.iam.core.domain.User;
-import de.javaholic.toolkit.iam.core.dto.UserDto;
+import de.javaholic.toolkit.iam.ui.dto.UserDto;
 import de.javaholic.toolkit.persistence.core.DtoMapper;
 
 import java.util.Set;

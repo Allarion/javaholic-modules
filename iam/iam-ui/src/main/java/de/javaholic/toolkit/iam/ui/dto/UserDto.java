@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.iam.core.dto;
+package de.javaholic.toolkit.iam.ui.dto;
 
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
@@ -20,6 +20,7 @@ public class UserDto {
     @UiLabel("form.user.active.label")
     private UserStatus status;
 
+    @UiLabel("form.user.roles.label")
     private Set<Role> roles;
 
     public UserDto() {

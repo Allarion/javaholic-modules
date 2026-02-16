@@ -1,9 +1,9 @@
-package de.javaholic.toolkit.iam.persistence.jpa.mapper;
+package de.javaholic.toolkit.iam.ui.mapper;
 
 import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
-import de.javaholic.toolkit.iam.core.dto.PermissionDto;
-import de.javaholic.toolkit.iam.core.dto.RoleDto;
+import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
+import de.javaholic.toolkit.iam.ui.dto.RoleDto;
 import de.javaholic.toolkit.persistence.core.DtoMapper;
 
 import java.util.HashSet;

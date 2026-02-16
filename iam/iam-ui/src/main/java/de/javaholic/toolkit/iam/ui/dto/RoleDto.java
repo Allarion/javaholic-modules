@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.iam.core.dto;
+package de.javaholic.toolkit.iam.ui.dto;
 
 import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiLabel;
@@ -8,9 +8,10 @@ import java.util.Set;
 public class RoleDto {
 
     @UIRequired
-    @UiLabel("role.name")
+    @UiLabel("form.role.name.label")
     private String name;
 
+    @UiLabel("form.role.permissions.label")
     private Set<PermissionDto> permissions;
 
     public RoleDto() {

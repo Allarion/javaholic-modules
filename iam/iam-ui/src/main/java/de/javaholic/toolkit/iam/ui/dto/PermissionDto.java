@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.iam.core.dto;
+package de.javaholic.toolkit.iam.ui.dto;
 
 import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiLabel;
@@ -6,7 +6,7 @@ import de.javaholic.toolkit.ui.annotations.UiLabel;
 public class PermissionDto {
 
     @UIRequired
-    @UiLabel("permission.name")
+    @UiLabel("form.permission.code.label")
     private String code;
 
     public PermissionDto() {
