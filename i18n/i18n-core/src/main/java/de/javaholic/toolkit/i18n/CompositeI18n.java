@@ -1,6 +1,7 @@
 package de.javaholic.toolkit.i18n;
 
 import java.util.List;
+import java.util.Locale;
 
 public final class CompositeI18n implements I18n {
 
@@ -11,10 +12,10 @@ public final class CompositeI18n implements I18n {
     }
 
     @Override
-    public String text(String key) {
+    public String resolve(String key, Locale locale) {
         for (I18nProvider p : providers) {
             if (p.contains(key)) {
-                return p.get().text(key);
+                return p.get().resolve(key,locale);
             }
         }
         return "??" + key + "??";

@@ -1,5 +1,7 @@
 package de.javaholic.toolkit.i18n;
 
+import java.util.Locale;
+
 /**
  * Minimal lookup-only i18n service.
  *
@@ -9,11 +11,12 @@ package de.javaholic.toolkit.i18n;
  *     new FileI18nProvider("messages_de.properties"),
  *     new FileI18nProvider("messages.properties") // fallback
  * ));
- * String title = i18n.text("user.create.dialog.title");
+ * String title = i18n.resolve("user.create.dialog.title", Locale.DE);
  * }</pre>
+ * // TODO: check javadoc
  */
 public interface I18n {
-    String text(String key);
+   String resolve(String key, Locale locale);
 }
 
 
