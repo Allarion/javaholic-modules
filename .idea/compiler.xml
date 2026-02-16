@@ -12,6 +12,7 @@
         <module name="audit-core" />
         <module name="iam-security-spring" />
         <module name="config-core" />
+        <module name="i18n-persistence-jpa" />
         <module name="i18n-core" />
         <module name="i18n-spring" />
         <module name="iam-core" />
@@ -20,6 +21,7 @@
         <module name="iam-persistence-jpa" />
         <module name="iam-persistence-file" />
         <module name="iam-ui" />
+        <module name="iam-application-spring" />
         <module name="ui-kit-crud" />
         <module name="config-forms-ui" />
       </profile>
@@ -32,7 +34,9 @@
       <module name="config-forms-ui" options="-Xlint:all" />
       <module name="i18n-core" options="-Xlint:all" />
       <module name="i18n-editor-ui" options="-Xlint:all" />
+      <module name="i18n-persistence-jpa" options="-Xlint:all" />
       <module name="i18n-spring" options="-Xlint:all" />
+      <module name="iam-application-spring" options="-Xlint:all" />
       <module name="iam-core" options="-Xlint:all" />
       <module name="iam-persistence-file" options="-Xlint:all" />
       <module name="iam-persistence-jpa" options="-Xlint:all" />

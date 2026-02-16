@@ -8,12 +8,12 @@ import java.util.Locale;
  * <p>Usage:</p>
  * <pre>{@code
  * I18n i18n = new CompositeI18n(List.of(
- *     new FileI18nProvider("messages_de.properties"),
- *     new FileI18nProvider("messages.properties") // fallback
+ *     new LocalFileI18nProvider("messages_de.properties"),
+ *     new LocalFileI18nProvider("messages.properties") // fallback
  * ));
  * String title = i18n.resolve("user.create.dialog.title", Locale.DE);
  * }</pre>
- * // TODO: check javadoc
+ *
  */
 public interface I18n {
    String resolve(String key, Locale locale);
