@@ -10,23 +10,23 @@ Es wird der zentrale Resolver für UI.
 In deinem Spring Boot Bootstrapping:
 
 @Bean
-public I18nProvider fileProvider() {
-return new FileI18nProvider(...);
+public TextResolver fileProvider() {
+return new FileTextResolver(...);
 }
 
 @Bean
-public I18nProvider jpaProvider(JpaI18nEntryStore store) {
-return new JpaI18nProvider(store);
+public TextResolver jpaProvider(JpaI18nEntryStore store) {
+return new JpaTextResolver(store);
 }
 
 @Bean
-public I18nProvider builtInProvider() {
+public TextResolver builtInProvider() {
 return new BuiltInDefaultsProvider();
 }
 
 @Bean
 public TextResolver textResolver(
-List<I18nProvider> providers
+List<TextResolver> providers
 ) {
 // Example scope stack for AdminWorkbench
 List<String> scopes = List.of(
