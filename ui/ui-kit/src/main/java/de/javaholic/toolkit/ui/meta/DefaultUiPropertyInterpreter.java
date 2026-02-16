@@ -9,7 +9,6 @@ import de.javaholic.toolkit.ui.annotations.UiOrder;
 import de.javaholic.toolkit.ui.annotations.UiPermission;
 import de.javaholic.toolkit.ui.annotations.UiReadOnly;
 
-import java.lang.reflect.AnnotatedElement;
 import java.util.Optional;
 
 /**
@@ -70,24 +69,9 @@ public class DefaultUiPropertyInterpreter implements UiPropertyInterpreter {
             Class<A> annotationType,
             PropertyElements elements
     ) {
-        if (elements.getter.isPresent()) {
-            A annotation = elements.getter.get().getAnnotation(annotationType);
-            if (annotation != null) {
-                return Optional.of(annotation);
-            }
-        }
-        if (elements.field.isPresent()) {
-            A annotation = elements.field.get().getAnnotation(annotationType);
-            if (annotation != null) {
-                return Optional.of(annotation);
-            }
-        }
-        if (elements.recordComponent.isPresent()) {
-            A annotation = elements.recordComponent.get().getAnnotation(annotationType);
-            if (annotation != null) {
-                return Optional.of(annotation);
-            }
-        }
-        return Optional.empty();
+       return elements.getGetter().map( e ->e.getAnnotation(annotationType))
+                        .or(() -> elements.getField().map(e-> e.getAnnotation(annotationType)))
+                        .or(() -> elements.getRecordComponent().map(e-> e.getAnnotation(annotationType)))
+                        .or(Optional::empty);
     }
 }

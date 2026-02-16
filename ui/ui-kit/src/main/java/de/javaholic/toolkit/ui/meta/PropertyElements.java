@@ -8,14 +8,14 @@ import java.util.Optional;
 
 final class PropertyElements {
 
-    final Optional<AnnotatedElement> field;
-    final Optional<AnnotatedElement> getter;
-    final Optional<AnnotatedElement> recordComponent;
+    private final AnnotatedElement field;
+    private final AnnotatedElement getter;
+    private final AnnotatedElement recordComponent;
 
     private PropertyElements(
-            Optional<AnnotatedElement> field,
-            Optional<AnnotatedElement> getter,
-            Optional<AnnotatedElement> recordComponent
+           AnnotatedElement field,
+           AnnotatedElement getter,
+           AnnotatedElement recordComponent
     ) {
         this.field = field;
         this.getter = getter;
@@ -24,9 +24,9 @@ final class PropertyElements {
 
     static PropertyElements resolve(Class<?> type, String propertyName) {
         return new PropertyElements(
-                findField(type, propertyName),
-                findGetter(type, propertyName),
-                findRecordComponent(type, propertyName)
+                findField(type, propertyName).orElse(null),
+                findGetter(type, propertyName).orElse(null),
+                findRecordComponent(type, propertyName).orElse(null)
         );
     }
 
@@ -71,5 +71,17 @@ final class PropertyElements {
             }
         }
         return Optional.empty();
+    }
+
+    public  Optional<AnnotatedElement> getField() {
+        return Optional.ofNullable(field);
+    }
+
+    public  Optional<AnnotatedElement> getGetter() {
+        return Optional.ofNullable(getter);
+    }
+
+    public  Optional<AnnotatedElement> getRecordComponent() {
+        return Optional.ofNullable(recordComponent);
     }
 }
