@@ -6,7 +6,7 @@
     <version>0.1.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
-  <artifactId>iam-ui</artifactId>
+  <artifactId>iam-crud-ui</artifactId>
   <name>IAM UI</name>
 
   <dependencies>

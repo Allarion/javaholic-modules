@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>de.javaholic</groupId>
-            <artifactId>iam-ui</artifactId>
+            <artifactId>iam-crud-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
