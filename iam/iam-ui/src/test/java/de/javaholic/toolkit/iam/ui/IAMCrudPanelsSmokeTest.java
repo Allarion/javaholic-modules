@@ -5,7 +5,6 @@ import de.javaholic.toolkit.iam.core.domain.UserStatus;
 import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
 import de.javaholic.toolkit.iam.ui.dto.RoleDto;
 import de.javaholic.toolkit.iam.ui.dto.UserDto;
-import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,9 +25,6 @@ class IAMCrudPanelsSmokeTest {
     private CrudStore<UserDto, UUID> userStore;
 
     @Mock
-    private RoleCrudStoreAdapter roleStore;
-
-    @Mock
     private CrudStore<RoleDto, UUID> roleDtoStore;
 
     @Mock
@@ -40,11 +36,10 @@ class IAMCrudPanelsSmokeTest {
         UserDto user = new UserDto(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
         when(userStore.findAll()).thenReturn(List.of(user));
 
-        var panel = IAMCrudPanels.users(userStore, roleStore);
+        var panel = IAMCrudPanels.users(userStore);
 
         assertThat(panel).isNotNull();
         verify(userStore, atLeastOnce()).findAll();
-        verify(roleStore, never()).findAll();
     }
 
     @Test

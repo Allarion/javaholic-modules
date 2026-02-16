@@ -3,7 +3,6 @@ package de.javaholic.toolkit.iam.ui;
 import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
 import de.javaholic.toolkit.iam.ui.dto.RoleDto;
 import de.javaholic.toolkit.iam.ui.dto.UserDto;
-import de.javaholic.toolkit.iam.ui.adapter.RoleCrudStoreAdapter;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 import de.javaholic.toolkit.ui.crud.CrudPanels;
@@ -16,13 +15,12 @@ public final class IAMCrudPanels {
     private IAMCrudPanels() {
     }
 
-    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore, RoleCrudStoreAdapter roleStore) {
-        return users(userStore, roleStore, Labels.defaults());
+    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore) {
+        return users(userStore, Labels.defaults());
     }
 
-    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore, RoleCrudStoreAdapter roleStore, Labels labels) {
+    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore, Labels labels) {
         Objects.requireNonNull(userStore, "userStore");
-        Objects.requireNonNull(roleStore, "roleStore");
         Labels effective = Labels.defaults().merge(labels);
         return CrudPanels.auto(UserDto.class)
                 .withStore(userStore)
