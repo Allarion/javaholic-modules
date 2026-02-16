@@ -6,7 +6,7 @@
         <version>0.1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>i18n-editor-ui</artifactId>
+    <artifactId>i18n-crud-ui</artifactId>
     <name>I18n Editor UI</name>
 
     <dependencies>
