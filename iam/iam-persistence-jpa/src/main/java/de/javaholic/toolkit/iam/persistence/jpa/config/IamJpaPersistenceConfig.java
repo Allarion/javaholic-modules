@@ -12,9 +12,9 @@ import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaPermissionRepository;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaRoleRepository;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaUserRepository;
-import de.javaholic.toolkit.iam.persistence.jpa.store.JpaPermissionStore;
-import de.javaholic.toolkit.iam.persistence.jpa.store.JpaRoleStore;
-import de.javaholic.toolkit.iam.persistence.jpa.store.JpaUserStore;
+import de.javaholic.toolkit.iam.persistence.jpa.store.JpaDomainPermissionStore;
+import de.javaholic.toolkit.iam.persistence.jpa.store.JpaDomainRoleStore;
+import de.javaholic.toolkit.iam.persistence.jpa.store.JpaDomainUserStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -50,16 +50,16 @@ public class IamJpaPersistenceConfig {
 
     @Bean
     public UserStore userStore(JpaUserRepository userRepository, JpaUserMapper userMapper) {
-        return new JpaUserStore(userRepository, userMapper);
+        return new JpaDomainUserStore(userRepository, userMapper);
     }
 
     @Bean
     public RoleStore roleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
-        return new JpaRoleStore(roleRepository, roleMapper);
+        return new JpaDomainRoleStore(roleRepository, roleMapper);
     }
 
     @Bean
     public PermissionStore permissionStore(JpaPermissionRepository permissionRepository, JpaPermissionMapper permissionMapper) {
-        return  new JpaPermissionStore(permissionRepository, permissionMapper);
+        return  new JpaDomainPermissionStore(permissionRepository, permissionMapper);
     }
 }

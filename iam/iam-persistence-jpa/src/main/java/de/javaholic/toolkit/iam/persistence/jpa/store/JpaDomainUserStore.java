@@ -5,18 +5,18 @@ import de.javaholic.toolkit.iam.core.spi.UserStore;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaUserMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaUserRepository;
-import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaCrudStore;
+import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaDomainCrudStore;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Transactional(readOnly = true)
-public class JpaUserStore extends AbstractJpaCrudStore<User, UUID, JpaUserEntity, JpaUserRepository> implements UserStore {
+public class JpaDomainUserStore extends AbstractJpaDomainCrudStore<User, UUID, JpaUserEntity, JpaUserRepository> implements UserStore {
 
     private final JpaUserMapper mapper;
 
-    public JpaUserStore(JpaUserRepository repo, JpaUserMapper mapper) {
+    public JpaDomainUserStore(JpaUserRepository repo, JpaUserMapper mapper) {
         super(repo, mapper);
         this.mapper = mapper;
     }

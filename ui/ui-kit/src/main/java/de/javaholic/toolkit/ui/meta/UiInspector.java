@@ -38,26 +38,13 @@ public final class UiInspector {
      * <p>Example: {@code UiMeta<User> meta = UiInspector.inspect(User.class);}</p>
      */
     public static <T> UiMeta<T> inspect(Class<T> type) {
-        Objects.requireNonNull(type, "type");
-        BeanCharacteristics characteristics = BeanCharacteristics.analyze(type);
-        BeanKind beanKind = classify(characteristics);
+        Objects.requireNonNull(type, "type must not be null");
         BeanMeta<T> beanMeta = BeanIntrospector.inspect(type);
-        UiPropertyInterpreter interpreter = new UiPropertyInterpreter();
-        List<UiProperty<T>> properties = beanMeta.properties()
-                .stream()
-                .map(property -> interpreter.interpret(type, property, beanMeta, beanKind))
+        UiPropertyInterpreter interpreter = UiPropertyInterpreterFactory.create(type);
+        List<UiProperty<T>> properties = beanMeta.properties().stream()
+                .map(property -> interpreter.interpret(type, property, beanMeta))
                 .toList();
 
         return new UiMeta<>(beanMeta, properties);
-    }
-
-    private static BeanKind classify(BeanCharacteristics characteristics) {
-        if (characteristics.isJpaEntity) {
-            return BeanKind.JPA_ENTITY;
-        }
-        if (characteristics.hasUiAnnotations) {
-            return BeanKind.DTO;
-        }
-        return BeanKind.DOMAIN;
     }
 }

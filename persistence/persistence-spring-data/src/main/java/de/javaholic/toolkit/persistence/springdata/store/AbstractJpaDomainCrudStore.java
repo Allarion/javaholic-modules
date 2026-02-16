@@ -7,9 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-// TODO: add mapper on this lavel too? or better AbstractMappingJpaCrudStore
-public abstract class AbstractJpaCrudStore<
+// FIXME:
+public abstract class AbstractJpaDomainCrudStore<
         D,        // Domain
         ID,
         E,        // JpaEntity
@@ -19,7 +18,7 @@ public abstract class AbstractJpaCrudStore<
     protected final R repository;
     protected final EntityMapper<D, E> mapper;
 
-    protected AbstractJpaCrudStore(R repository, EntityMapper<D, E> mapper) {
+    protected AbstractJpaDomainCrudStore(R repository, EntityMapper<D, E> mapper) {
         this.repository = Objects.requireNonNull(repository, "repository");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }

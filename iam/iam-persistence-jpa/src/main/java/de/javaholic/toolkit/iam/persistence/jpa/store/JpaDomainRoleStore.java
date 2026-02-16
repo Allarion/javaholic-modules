@@ -9,15 +9,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaCrudStore;
+import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaDomainCrudStore;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
-public class JpaRoleStore extends AbstractJpaCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleStore {
+public class JpaDomainRoleStore extends AbstractJpaDomainCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleStore {
 
     private final JpaRoleMapper mapper;
     // TODO: Generell: feeling: @NotNull > Objects.requireNonNull
-    public JpaRoleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
+    public JpaDomainRoleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
         super(roleRepository, roleMapper);
         this.mapper = Objects.requireNonNull(roleMapper, "roleMapper");
     }
