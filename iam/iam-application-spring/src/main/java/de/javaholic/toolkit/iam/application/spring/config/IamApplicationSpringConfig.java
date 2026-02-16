@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.iam.ui.config;
+package de.javaholic.toolkit.iam.application.spring.config;
 
 import de.javaholic.toolkit.iam.persistence.jpa.store.JpaDomainPermissionStore;
 import de.javaholic.toolkit.iam.persistence.jpa.store.JpaDomainRoleStore;
@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.UUID;
 
 @Configuration
-public class IamUiCrudConfig {
+public class IamApplicationSpringConfig {
 
     @Bean
     public UserDtoMapper userDtoMapper() {
