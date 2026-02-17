@@ -35,6 +35,10 @@ import java.util.function.Supplier;
  *         .build();
  * add(panel);
  * }</pre>
+ *
+ * <p>Concept: this component coordinates existing building blocks
+ * ({@link Grid}, {@link Forms.Form}, {@link CrudStore}) and keeps each concern isolated:
+ * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
 public final class CrudPanel<T> extends VerticalLayout {
 
@@ -114,15 +118,30 @@ public final class CrudPanel<T> extends VerticalLayout {
         createButton.addClickListener(event -> onCreate());
     }
 
+    /**
+     * Opens the create dialog with a fresh bean instance.
+     *
+     * <p>Example: subclass and call {@code super.onCreate();} or override for custom prefill.</p>
+     */
     protected void onCreate() {
         T bean = newEmptyBean();
         openFormDialog("Create " + type.getSimpleName(), bean);
     }
 
+    /**
+     * Opens the edit dialog for the selected item.
+     *
+     * <p>Example: override to add audit logging before delegating.</p>
+     */
     protected void onEdit(T item) {
         openFormDialog("Edit " + type.getSimpleName(), item);
     }
 
+    /**
+     * Opens a confirmation dialog and deletes on confirmation.
+     *
+     * <p>Concept: this is the extension point for soft-delete strategies.</p>
+     */
     protected void onDelete(T item) {
         Dialogs.confirm()
                 .header("Delete " + type.getSimpleName())
@@ -164,11 +183,17 @@ public final class CrudPanel<T> extends VerticalLayout {
         }
     }
 
+    /**
+     * Persists one bean and reloads the grid.
+     */
     void saveAndRefresh(T bean) {
         store.save(bean);
         refresh();
     }
 
+    /**
+     * Deletes one bean and reloads the grid.
+     */
     void deleteAndRefresh(T bean) {
         store.delete(bean);
         refresh();

@@ -25,6 +25,14 @@ import java.util.function.Predicate;
 /**
  * Factory for fluent CRUD panel builders.
  *
+ * <p>Concept: two entry points are provided.</p>
+ * <ul>
+ * <li>manual mode ({@link #of(Class)}) when callers provide explicit grid/form components</li>
+ * <li>auto mode ({@link #auto(Class)}) when grid/form are generated from {@link UiMeta}</li>
+ * </ul>
+ *
+ * <p>Both modes end in the same {@link CrudPanel} orchestration component.</p>
+ *
  * <p>Example manual mode:</p>
  * <pre>{@code
  * CrudPanel<User> panel = CrudPanels.of(User.class)

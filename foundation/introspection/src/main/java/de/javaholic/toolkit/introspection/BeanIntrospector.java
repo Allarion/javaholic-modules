@@ -22,6 +22,9 @@ import java.util.*;
  * BeanMeta<User> meta = BeanIntrospector.inspect(User.class);
  * meta.idProperty().ifPresent(id -> System.out.println(id.name()));
  * }</pre>
+ *
+ * <p>Concept: this class extracts only technical structure (properties, id/version markers)
+ * and intentionally does not decide any UI semantics such as labels, visibility, or ordering.</p>
  */
 public final class BeanIntrospector {
 
@@ -34,6 +37,12 @@ public final class BeanIntrospector {
      * <p>Example:</p>
      * <pre>{@code
      * BeanMeta<User> meta = BeanIntrospector.inspect(User.class);
+     * }</pre>
+     *
+     * <p>Record support example:</p>
+     * <pre>{@code
+     * record UserRow(@Id UUID id, String username) {}
+     * BeanMeta<UserRow> meta = BeanIntrospector.inspect(UserRow.class);
      * }</pre>
      */
     public static <T> BeanMeta<T> inspect(Class<T> type) {
@@ -130,11 +139,20 @@ public final class BeanIntrospector {
         }
     }
 
-    // FIXME: Foundation darf kein JPA kennen. similar functionality (@Entity) is handled in ui-kit/...BeanCharacteristics
+    /**
+     * Detects id marker on fields/record components.
+     *
+     * <p>Concept note: currently this relies on JPA annotations. Long-term, this should move to an
+     * adapter strategy so foundation stays persistence-agnostic.</p>
+     * // TODO: remove JPA depencency. also Compare with technicalField interpretation.
+     */
     private static boolean isId(AnnotatedElement element) {
         return element.isAnnotationPresent(jakarta.persistence.Id.class);
     }
 
+    /**
+     * Detects optimistic lock/version marker on fields/record components.
+     */
     private static boolean isVersion(AnnotatedElement element) {
         return element.isAnnotationPresent(jakarta.persistence.Version.class);
     }
