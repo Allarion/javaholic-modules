@@ -70,13 +70,12 @@ public class HierarchicalTextResolver implements TextResolver {
         for (String candidate : scopedKeys) {
             for (TextResolver provider : providers) {
                 Optional<String> v = provider.resolve(candidate, locale);
-                if (v.isPresent()) {
+                if (v.isPresent() && !v.get().equals(key)) {
                     return v;
                 }
             }
         }
-        // no provider had a value → return original key
-        return Optional.of(key);
+        return Optional.empty();
     }
 
     /**

@@ -19,10 +19,10 @@ public final class CompositeTextResolver implements TextResolver {
         Objects.requireNonNull(locale, "locale");
         for (TextResolver provider : providers) {
             var resolved = provider.resolve(key, locale);
-            if (resolved.isPresent()) {
+            if (resolved.isPresent() && !resolved.get().equals(key)) {
                 return resolved;
             }
         }
-        return Optional.of(key);
+        return Optional.empty();
     }
 }
