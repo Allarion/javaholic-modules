@@ -24,7 +24,7 @@ import java.util.Optional;
     @FunctionalInterface
     public interface TextResolver {
         default Optional<String> resolve(String key) {
-            return resolve(key, Locale.getDefault());
+            return resolve(key, Locale.ROOT);
         }
 
         Optional<String> resolve(String key, Locale locale);
