@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-// FIXME: compare DtoCrudStore here? this class doesnt need to be abstract!
+// FIXME: compare DtoCrudStore here? this class doesnt need to be abstract! fix name!
 public abstract class AbstractJpaDomainCrudStore<
         D,        // Domain
         ID,

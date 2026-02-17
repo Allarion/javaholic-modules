@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class JpaDomainRoleStore extends AbstractJpaDomainCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleStore {
 
     private final JpaRoleMapper mapper;
-    // TODO: Generell: feeling: @NotNull > Objects.requireNonNull
     public JpaDomainRoleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
         super(roleRepository, roleMapper);
         this.mapper = Objects.requireNonNull(roleMapper, "roleMapper");

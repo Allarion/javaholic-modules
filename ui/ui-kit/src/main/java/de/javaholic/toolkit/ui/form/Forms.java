@@ -237,8 +237,7 @@ public final class Forms {
             layout.add(formErrorLabel);
 
             binder.addStatusChangeListener(event -> formErrorLabel.setVisible(event.hasValidationErrors()));
-            // TODO: unit test das die auch wirklich weg sind...und hier fiel auf: wir sind auf die nase gefallen: Domain->JPA entity vermischung, im grunde fehlt DTO.
-            // weitere Schicht (UIMeta) zur kapselung und dann builder um die (auto, mit override) zu erzeugen: e.g. GridModelFactory die auto das GridModel mit BeanInspection ableitet
+            // TODO: unit test isIncludedByTechnicalFlags
             for (BeanProperty<T, ?> property : meta.properties()) {
                 if (!isIncludedByTechnicalFlags(property, meta, hiddenByDefault)) {
                     continue;

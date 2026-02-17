@@ -22,12 +22,19 @@ class CompositeTextResolverTest {
 
     @Test
     void returnsKeyWhenNoProviderResolves() {
+        DefaultTextResolver defaultTextResolver = new DefaultTextResolver();
+        assertThat(defaultTextResolver.resolve("label.ok", Locale.GERMANY)).hasValue("label.ok");
+
         TextResolver first = (key, locale) -> Optional.empty();
+        assertThat(first.resolve("label.ok", Locale.GERMANY)).isNotPresent();
+
         TextResolver second = (key, locale) -> Optional.empty();
+        assertThat(second.resolve("label.ok", Locale.GERMANY)).isNotPresent();
+
         CompositeTextResolver i18n = new CompositeTextResolver(List.of(first, second));
+        assertThat(second.resolve("label.ok", Locale.GERMANY)).isNotPresent();
 
-        Optional<String> resolved = i18n.resolve("label.cancel", Locale.US);
-
-        assertThat(resolved).hasValue("label.cancel");
+        CompositeTextResolver i18nWithDefault = new CompositeTextResolver(List.of(defaultTextResolver,first, second));
+        assertThat(i18nWithDefault.resolve("label.ok",Locale.GERMANY)).hasValue("label.ok");
     }
 }
