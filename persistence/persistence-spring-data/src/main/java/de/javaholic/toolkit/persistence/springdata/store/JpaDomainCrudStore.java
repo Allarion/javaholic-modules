@@ -25,7 +25,7 @@ import java.util.Optional;
  * }</pre>
  */
 // TODO: compare DtoCrudStore -
-public abstract class AbstractJpaDomainCrudStore<
+public abstract class JpaDomainCrudStore<
         D,        // Domain
         ID,
         E,        // JpaEntity
@@ -40,7 +40,7 @@ public abstract class AbstractJpaDomainCrudStore<
      *
      * <p>Example: {@code super(repository, mapper);}</p>
      */
-    protected AbstractJpaDomainCrudStore(R repository, EntityMapper<D, E> mapper) {
+    protected JpaDomainCrudStore(R repository, EntityMapper<D, E> mapper) {
         this.repository = Objects.requireNonNull(repository, "repository");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }

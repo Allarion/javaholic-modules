@@ -9,11 +9,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaDomainCrudStore;
+import de.javaholic.toolkit.persistence.springdata.store.JpaDomainCrudStore;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
-public class JpaDomainRoleStore extends AbstractJpaDomainCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleStore {
+public class JpaDomainRoleStore extends JpaDomainCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleStore {
 
     private final JpaRoleMapper mapper;
     public JpaDomainRoleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {

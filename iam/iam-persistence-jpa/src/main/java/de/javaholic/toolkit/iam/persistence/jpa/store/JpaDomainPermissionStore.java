@@ -5,14 +5,14 @@ import de.javaholic.toolkit.iam.core.spi.PermissionStore;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaPermissionEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaPermissionMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaPermissionRepository;
-import de.javaholic.toolkit.persistence.springdata.store.AbstractJpaDomainCrudStore;
+import de.javaholic.toolkit.persistence.springdata.store.JpaDomainCrudStore;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Transactional(readOnly = true)
-public class JpaDomainPermissionStore extends AbstractJpaDomainCrudStore<Permission,UUID, JpaPermissionEntity, JpaPermissionRepository> implements PermissionStore {
+public class JpaDomainPermissionStore extends JpaDomainCrudStore<Permission,UUID, JpaPermissionEntity, JpaPermissionRepository> implements PermissionStore {
 
     private final JpaPermissionMapper mapper;
 
