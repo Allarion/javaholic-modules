@@ -19,8 +19,18 @@ import java.util.UUID;
  */
 
 public interface UserQuery {
+    /**
+     * Finds a user by unique username.
+     */
     Optional<User> findByUsername(String username);
+
+    /**
+     * Returns all users.
+     */
     List<User> findAll();
+
+    /**
+     * Finds a user by id.
+     */
     Optional<User> findById(UUID id);
 }
-
