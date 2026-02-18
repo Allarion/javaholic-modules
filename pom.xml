@@ -30,6 +30,7 @@
         <module>persistence/persistence-core</module>
         <module>persistence/persistence-spring-data</module>
         <module>foundation/introspection</module>
+        <module>foundation/ui-annotations</module>
     </modules>
 
     <properties>

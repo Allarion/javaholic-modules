@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.iam.dto.dto;
+package de.javaholic.toolkit.iam.dto;
 
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
@@ -21,12 +21,12 @@ public class UserDto {
     private UserStatus status;
 
     @UiLabel("form.user.roles.label")
-    private Set<Role> roles;
+    private Set<RoleDto> roles;
 
     public UserDto() {
     }
 
-    public UserDto(UUID id, String username, UserStatus status, Set<Role> roles) {
+    public UserDto(UUID id, String username, UserStatus status, Set<RoleDto> roles) {
         this.id = id;
         this.username = username;
         this.status = status;
@@ -57,11 +57,11 @@ public class UserDto {
         this.status = status;
     }
 
-    public Set<Role> getRoles() {
+    public Set<RoleDto> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<RoleDto> roles) {
         this.roles = roles;
     }
 }

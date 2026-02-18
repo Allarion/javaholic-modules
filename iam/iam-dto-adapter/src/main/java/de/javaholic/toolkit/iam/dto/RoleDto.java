@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.iam.dto.dto;
+package de.javaholic.toolkit.iam.dto;
 
 import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiLabel;

@@ -3,9 +3,9 @@ package de.javaholic.toolkit.iam.dto.config;
 import de.javaholic.toolkit.iam.core.spi.PermissionStore;
 import de.javaholic.toolkit.iam.core.spi.RoleStore;
 import de.javaholic.toolkit.iam.core.spi.UserStore;
-import de.javaholic.toolkit.iam.dto.dto.PermissionDto;
-import de.javaholic.toolkit.iam.dto.dto.RoleDto;
-import de.javaholic.toolkit.iam.dto.dto.UserDto;
+import de.javaholic.toolkit.iam.dto.PermissionDto;
+import de.javaholic.toolkit.iam.dto.RoleDto;
+import de.javaholic.toolkit.iam.dto.UserDto;
 import de.javaholic.toolkit.iam.dto.mapper.PermissionDtoMapper;
 import de.javaholic.toolkit.iam.dto.mapper.RoleDtoMapper;
 import de.javaholic.toolkit.iam.dto.mapper.UserDtoMapper;
@@ -26,8 +26,8 @@ public class IamDtoAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public UserDtoMapper userDtoMapper() {
-        return new UserDtoMapper();
+    public UserDtoMapper userDtoMapper(RoleDtoMapper roleDtoMapper) {
+        return new UserDtoMapper(roleDtoMapper);
     }
 
     @Bean

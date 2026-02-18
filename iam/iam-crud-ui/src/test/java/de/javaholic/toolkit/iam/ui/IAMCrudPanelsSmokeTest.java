@@ -1,10 +1,9 @@
 package de.javaholic.toolkit.iam.ui;
 
-import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
-import de.javaholic.toolkit.iam.dto.dto.PermissionDto;
-import de.javaholic.toolkit.iam.dto.dto.RoleDto;
-import de.javaholic.toolkit.iam.dto.dto.UserDto;
+import de.javaholic.toolkit.iam.dto.PermissionDto;
+import de.javaholic.toolkit.iam.dto.RoleDto;
+import de.javaholic.toolkit.iam.dto.UserDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +31,7 @@ class IAMCrudPanelsSmokeTest {
 
     @Test
     void usersPanelCreatesAndWiresRoleChoices() {
-        Role admin = new Role("admin", Set.of());
+        RoleDto admin = new RoleDto("admin", Set.of());
         UserDto user = new UserDto(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
         when(userStore.findAll()).thenReturn(List.of(user));
 

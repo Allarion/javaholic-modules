@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.iam.dto.store;
 
 import de.javaholic.toolkit.iam.core.domain.Permission;
-import de.javaholic.toolkit.iam.dto.dto.PermissionDto;
+import de.javaholic.toolkit.iam.dto.PermissionDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.persistence.core.DtoCrudStore;
 import de.javaholic.toolkit.persistence.core.DtoMapper;

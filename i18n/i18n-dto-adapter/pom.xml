@@ -22,7 +22,7 @@
     </dependency>
     <dependency>
       <groupId>de.javaholic</groupId>
-      <artifactId>ui-kit</artifactId>
+      <artifactId>ui-annotations</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

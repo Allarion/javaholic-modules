@@ -2,8 +2,8 @@ package de.javaholic.toolkit.iam.dto.mapper;
 
 import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
-import de.javaholic.toolkit.iam.dto.dto.PermissionDto;
-import de.javaholic.toolkit.iam.dto.dto.RoleDto;
+import de.javaholic.toolkit.iam.dto.PermissionDto;
+import de.javaholic.toolkit.iam.dto.RoleDto;
 import de.javaholic.toolkit.persistence.core.DtoMapper;
 
 import java.util.HashSet;
