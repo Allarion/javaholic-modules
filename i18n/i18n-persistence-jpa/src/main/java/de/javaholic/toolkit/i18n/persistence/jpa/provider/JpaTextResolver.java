@@ -1,8 +1,8 @@
 package de.javaholic.toolkit.i18n.persistence.jpa.provider;
 
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.i18n.persistence.jpa.domain.I18nEntry;
-import de.javaholic.toolkit.i18n.persistence.jpa.store.JpaI18nEntryStore;
+import de.javaholic.toolkit.i18n.core.domain.I18nEntry;
+import de.javaholic.toolkit.i18n.core.spi.I18nEntryStore;
 
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -12,14 +12,14 @@ import java.util.Set;
 
 public class JpaTextResolver implements TextResolver {
 
-    private final JpaI18nEntryStore store;
+    private final I18nEntryStore store;
     private final Locale defaultLocale;
 
-    public JpaTextResolver(JpaI18nEntryStore store) {
+    public JpaTextResolver(I18nEntryStore store) {
         this(store, Locale.ROOT);
     }
 
-    public JpaTextResolver(JpaI18nEntryStore store, Locale defaultLocale) {
+    public JpaTextResolver(I18nEntryStore store, Locale defaultLocale) {
         this.store = Objects.requireNonNull(store, "store");
         this.defaultLocale = Objects.requireNonNull(defaultLocale, "defaultLocale");
     }
@@ -56,3 +56,4 @@ public class JpaTextResolver implements TextResolver {
         return locales;
     }
 }
+

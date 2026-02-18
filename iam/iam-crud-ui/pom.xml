@@ -20,6 +20,16 @@
       <artifactId>iam-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>de.javaholic</groupId>
+      <artifactId>iam-dto-adapter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.javaholic</groupId>
+      <artifactId>i18n-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>de.javaholic</groupId>

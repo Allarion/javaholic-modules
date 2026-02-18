@@ -1,6 +1,6 @@
 package de.javaholic.toolkit.i18n.persistence.jpa.mapper;
 
-import de.javaholic.toolkit.i18n.persistence.jpa.domain.I18nEntry;
+import de.javaholic.toolkit.i18n.core.domain.I18nEntry;
 import de.javaholic.toolkit.i18n.persistence.jpa.entity.JpaI18nEntry;
 import de.javaholic.toolkit.persistence.core.EntityMapper;
 
@@ -34,3 +34,4 @@ public class JpaI18nEntryMapper implements EntityMapper<I18nEntry, JpaI18nEntry>
         );
     }
 }
+

@@ -4,7 +4,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.i18n.ui.dto.I18nEntryDto;
+import de.javaholic.toolkit.i18n.dto.dto.I18nEntryDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,3 +56,4 @@ class I18nCrudPanelsSmokeTest {
         verify(store, atLeastOnce()).findAll();
     }
 }
+

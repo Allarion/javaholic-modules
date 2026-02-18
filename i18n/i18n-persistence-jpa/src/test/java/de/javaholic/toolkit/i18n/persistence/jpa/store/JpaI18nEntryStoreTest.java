@@ -1,6 +1,6 @@
 package de.javaholic.toolkit.i18n.persistence.jpa.store;
 
-import de.javaholic.toolkit.i18n.persistence.jpa.domain.I18nEntry;
+import de.javaholic.toolkit.i18n.core.domain.I18nEntry;
 import de.javaholic.toolkit.i18n.persistence.jpa.entity.JpaI18nEntry;
 import de.javaholic.toolkit.i18n.persistence.jpa.mapper.JpaI18nEntryMapper;
 import de.javaholic.toolkit.i18n.persistence.jpa.repo.JpaI18nEntryRepository;
@@ -89,3 +89,4 @@ class JpaI18nEntryStoreTest {
         verify(repository).delete(mappedEntity);
     }
 }
+

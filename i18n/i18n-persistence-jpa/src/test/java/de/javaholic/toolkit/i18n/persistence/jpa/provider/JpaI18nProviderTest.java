@@ -1,6 +1,6 @@
 package de.javaholic.toolkit.i18n.persistence.jpa.provider;
 
-import de.javaholic.toolkit.i18n.persistence.jpa.domain.I18nEntry;
+import de.javaholic.toolkit.i18n.core.domain.I18nEntry;
 import de.javaholic.toolkit.i18n.persistence.jpa.store.JpaI18nEntryStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,3 +67,4 @@ class JpaTextResolverTest {
         return new I18nEntry(UUID.randomUUID(), key, locale, value, 0L);
     }
 }
+

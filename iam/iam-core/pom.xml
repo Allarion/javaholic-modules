@@ -8,4 +8,11 @@
   </parent>
   <artifactId>iam-core</artifactId>
   <name>IAM Core</name>
+  <dependencies>
+    <dependency>
+      <groupId>de.javaholic</groupId>
+      <artifactId>persistence-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>

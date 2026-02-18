@@ -3,7 +3,7 @@ package de.javaholic.toolkit.iam.persistence.jpa;
 import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.User;
-import de.javaholic.toolkit.iam.persistence.jpa.config.IamJpaPersistenceConfig;
+import de.javaholic.toolkit.iam.persistence.jpa.config.IamJpaAutoConfiguration;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaPermissionEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaRoleEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
@@ -95,7 +95,7 @@ class IamJpaPersistenceTest {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
-    @Import(IamJpaPersistenceConfig.class)
+@Import(IamJpaAutoConfiguration.class)
     @EntityScan(basePackageClasses = JpaUserEntity.class)
     static class TestApp {
     }

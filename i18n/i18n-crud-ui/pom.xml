@@ -23,7 +23,7 @@
 
     <dependency>
       <groupId>de.javaholic</groupId>
-      <artifactId>i18n-persistence-jpa</artifactId>
+      <artifactId>i18n-dto-adapter</artifactId>
       <version>${project.version}</version>
     </dependency>
 

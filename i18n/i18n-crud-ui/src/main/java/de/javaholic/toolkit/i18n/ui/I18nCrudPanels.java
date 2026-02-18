@@ -2,7 +2,7 @@ package de.javaholic.toolkit.i18n.ui;
 
 import com.vaadin.flow.component.Component;
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.i18n.ui.dto.I18nEntryDto;
+import de.javaholic.toolkit.i18n.dto.dto.I18nEntryDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 import de.javaholic.toolkit.ui.crud.CrudPanels;
@@ -38,3 +38,4 @@ public final class I18nCrudPanels {
                 .build();
     }
 }
+

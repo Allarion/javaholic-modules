@@ -8,7 +8,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.i18n.ui.dto.I18nEntryDto;
+import de.javaholic.toolkit.i18n.dto.dto.I18nEntryDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 
@@ -140,3 +140,4 @@ public final class I18nCrudPanelExamples {
         }
     }
 }
+

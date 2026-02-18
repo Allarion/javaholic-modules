@@ -2,9 +2,9 @@ package de.javaholic.toolkit.iam.ui;
 
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
-import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
-import de.javaholic.toolkit.iam.ui.dto.RoleDto;
-import de.javaholic.toolkit.iam.ui.dto.UserDto;
+import de.javaholic.toolkit.iam.dto.dto.PermissionDto;
+import de.javaholic.toolkit.iam.dto.dto.RoleDto;
+import de.javaholic.toolkit.iam.dto.dto.UserDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,3 +63,4 @@ class IAMCrudPanelsSmokeTest {
         verify(permissionDtoStore, atLeastOnce()).findAll();
     }
 }
+
