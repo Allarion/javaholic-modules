@@ -1,0 +1,36 @@
+@startuml
+top to bottom direction
+
+rectangle "UI Layer" {
+  class UI
+}
+
+rectangle "DTO Layer" {
+  class UserDto
+  class "CrudStore<UserDto>" as CrudStoreDto
+}
+
+rectangle "Domain Layer" {
+  class User
+  class "CrudStore<User>" as UserStore
+}
+
+rectangle "Persistence Layer" {
+  class JpaUserEntity
+  class JpaUserRepository
+  class "CrudStore<JpaUserEntity>" as CrudStoreEntity
+}
+
+' Clean
+UI --> CrudStoreDto : Clean
+CrudStoreDto --> UserStore
+UserStore --> JpaUserRepository
+
+' Rapid
+UI --> UserStore : Rapid
+
+' Super-Rapid
+UI --> CrudStoreEntity : SuperRapid
+CrudStoreEntity --> JpaUserRepository
+
+@enduml

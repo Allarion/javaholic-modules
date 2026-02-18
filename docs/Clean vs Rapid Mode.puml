@@ -1,39 +1,55 @@
 @startuml
+top to bottom direction
 
-class UI
+' =========================
+' UI Layer
+' =========================
+rectangle "UI Layer" {
+  class UI
+}
 
-class UserDto
-class UserDtoCrudStore
+' =========================
+' DTO Layer (Clean Mode)
+' =========================
+rectangle "DTO Adapter Layer" {
+  class UserDto
+  class UserDtoCrudStore
+}
 
-class User
-class UserStore
-class JpaDomainUserStore
+' =========================
+' Domain Layer
+' =========================
+rectangle "Domain Layer" {
+  class User
+  class UserStore
+}
 
-class JpaUserEntity
-class CrudStore_Entity
-
-class JpaUserRepository
+' =========================
+' Persistence Layer
+' =========================
+rectangle "Persistence Layer" {
+  class JpaDomainUserStore
+  class JpaUserEntity
+  class JpaUserRepository
+  class CrudStore_Entity
+}
 
 ' -------------------------
-' Clean Mode
+' Clean Mode Flow
 ' -------------------------
-
 UI --> UserDtoCrudStore : Clean
 UserDtoCrudStore --> UserStore
-UserStore <|.. JpaDomainUserStore
+UserStore --> JpaDomainUserStore
 JpaDomainUserStore --> JpaUserRepository
 
 ' -------------------------
-' Rapid Mode
+' Rapid Mode Flow
 ' -------------------------
-
 UI --> UserStore : Rapid
-UserStore --> JpaDomainUserStore
 
 ' -------------------------
-' Super-Rapid Mode
+' Super-Rapid Mode Flow
 ' -------------------------
-
 UI --> CrudStore_Entity : SuperRapid
 CrudStore_Entity --> JpaUserRepository
 
