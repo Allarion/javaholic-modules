@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.HasValueAndElement;
 import com.vaadin.flow.component.grid.Grid;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
@@ -12,13 +13,8 @@ import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import de.javaholic.toolkit.ui.meta.UiPropertyConfig;
-import de.javaholic.toolkit.i18n.DefaultTextResolver;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -60,7 +56,7 @@ public final class CrudPanels {
      *
      * <p>Example: {@code CrudPanels.of(User.class).withStore(store).build();}</p>
      */
-    public static <T> CrudBuilder<T> of(Class<T> type) {
+    public static <T> ManualCrudBuilder<T> of(Class<T> type) {
         return new ManualBuilder<>(type);
     }
 
@@ -79,6 +75,12 @@ public final class CrudPanels {
      * <p>Example: {@code CrudPanels.of(User.class).withStore(store).build();}</p>
      */
     public interface CrudBuilder<T> {
+        /**
+         * Builds the CRUD panel.
+         *
+         * <p>Example: {@code CrudPanel<User> panel = builder.build();}</p>
+         */
+        CrudPanel<T> build();
 
         /**
          * Sets the backing store.
@@ -88,23 +90,9 @@ public final class CrudPanels {
         CrudBuilder<T> withStore(CrudStore<T, ?> store);
 
         /**
-         * Injects a prebuilt grid.
+         * Sets a property filter for default manual components.
          *
-         * <p>Example: {@code builder.withGrid(Grids.of(User.class).build());}</p>
-         */
-        CrudBuilder<T> withGrid(Grid<T> grid);
-
-        /**
-         * Injects a prebuilt form.
-         *
-         * <p>Example: {@code builder.withForm(Forms.of(User.class).build());}</p>
-         */
-        CrudBuilder<T> withForm(Forms.Form<T> form);
-
-        /**
-         * Sets text resolution for default manual components.
-         *
-         * <p>Example: {@code builder.withTextResolver(key -> key);}</p>
+         * <p>Example: {@code builder.withPropertyFilter(UiProperty::isVisible);}</p>
          */
         CrudBuilder<T> withTextResolver(TextResolver resolver);
 
@@ -114,13 +102,49 @@ public final class CrudPanels {
          * <p>Example: {@code builder.withPropertyFilter(UiProperty::isVisible);}</p>
          */
         CrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
+    }
+
+    /**
+     * Fluent manual CRUD builder.
+     *
+     * <p>Example: {@code CrudPanels.of(User.class).withStore(store).build();}</p>
+     */
+    public interface ManualCrudBuilder<T> extends CrudPanels.CrudBuilder<T> {
+        /**
+         * Sets the backing store.
+         *
+         * <p>Example: {@code builder.withStore(store);}</p>
+         */
+        ManualCrudBuilder<T> withStore(CrudStore<T, ?> store);
 
         /**
-         * Builds the CRUD panel.
+         * Sets text resolution for default manual components.
          *
-         * <p>Example: {@code CrudPanel<User> panel = builder.build();}</p>
+         * <p>Example: {@code builder.withTextResolver(key -> key);}</p>
          */
-        CrudPanel<T> build();
+        ManualCrudBuilder<T> withTextResolver(TextResolver resolver);
+
+        /**
+         * Sets a property filter for default manual components.
+         *
+         * <p>Example: {@code builder.withPropertyFilter(UiProperty::isVisible);}</p>
+         */
+        ManualCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
+
+
+        /**
+         * Injects a prebuilt grid.
+         *
+         * <p>Example: {@code builder.withGrid(Grids.of(User.class).build());}</p>
+         */
+        ManualCrudBuilder<T> withGrid(Grid<T> grid);
+
+        /**
+         * Injects a prebuilt form.
+         *
+         * <p>Example: {@code builder.withForm(Forms.of(User.class).build());}</p>
+         */
+        ManualCrudBuilder<T> withForm(Forms.Form<T> form);
     }
 
     /**
@@ -171,7 +195,7 @@ public final class CrudPanels {
         CrudPanel<T> build();
     }
 
-    private static final class ManualBuilder<T> implements CrudBuilder<T> {
+    private static final class ManualBuilder<T> implements ManualCrudBuilder<T> {
         private final Class<T> type;
         private CrudStore<T, ?> store;
         private Grid<T> grid;
@@ -184,31 +208,31 @@ public final class CrudPanels {
         }
 
         @Override
-        public CrudBuilder<T> withStore(CrudStore<T, ?> store) {
+        public ManualCrudBuilder<T> withStore(CrudStore<T, ?> store) {
             this.store = Objects.requireNonNull(store, "store");
             return this;
         }
 
         @Override
-        public CrudBuilder<T> withGrid(Grid<T> grid) {
+        public ManualCrudBuilder<T> withGrid(Grid<T> grid) {
             this.grid = Objects.requireNonNull(grid, "grid");
             return this;
         }
 
         @Override
-        public CrudBuilder<T> withForm(Forms.Form<T> form) {
+        public ManualCrudBuilder<T> withForm(Forms.Form<T> form) {
             this.form = Objects.requireNonNull(form, "form");
             return this;
         }
 
         @Override
-        public CrudBuilder<T> withTextResolver(TextResolver resolver) {
+        public ManualCrudBuilder<T> withTextResolver(TextResolver resolver) {
             this.textResolver = Objects.requireNonNull(resolver, "resolver");
             return this;
         }
 
         @Override
-        public CrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter) {
+        public ManualCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter) {
             this.propertyFilter = Objects.requireNonNull(filter, "filter");
             return this;
         }
