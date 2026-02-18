@@ -1,18 +1,29 @@
 package de.javaholic.toolkit.iam.core.api;
 /**
- * Central authorization service.
+ * Domain SPI for authorization decisions in IAM.
  *
- * <p>Evaluates whether the current user has a given permission.</p>
+ * <p>This contract keeps authorization checks framework-agnostic and aligned with explicit
+ * dependency direction (core declares; adapters provide implementations).</p>
  *
- * <p>This interface contains NO knowledge of:</p>
+ * <p><strong>Responsibility</strong></p>
  * <ul>
- *   <li>Persistence</li>
- *   <li>Security frameworks</li>
- *   <li>UI or transport layers</li>
+ *   <li>Evaluate whether the active principal has a named permission.</li>
  * </ul>
  *
- * <p>Implementations typically delegate to {@link CurrentUser}
- * and inspect the user's effective permissions.</p>
+ * <p><strong>Implemented by</strong></p>
+ * <ul>
+ *   <li>IAM/security adapters that combine {@link CurrentUser} with permission data sources.</li>
+ * </ul>
+ *
+ * <p><strong>Used by</strong></p>
+ * <ul>
+ *   <li>Application services, UI action guards, and method-level authorization components.</li>
+ * </ul>
+ *
+ * <p><strong>Mode Interaction</strong></p>
+ * <ul>
+ *   <li>Rapid and Clean modes: identical API and semantics; persistence mode does not change authorization SPI.</li>
+ * </ul>
  */
 public interface PermissionChecker {
 
