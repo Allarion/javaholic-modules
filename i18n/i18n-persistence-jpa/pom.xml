@@ -18,7 +18,7 @@
     </dependency>
     <dependency>
       <groupId>de.javaholic</groupId>
-      <artifactId>persistence-core</artifactId>
+      <artifactId>spi-persistence</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
