@@ -1,5 +1,22 @@
 # Architecture
 
+## Platform Scope
+
+This toolkit evolves towards a modular application platform.
+
+Core capabilities:
+- CRUD abstraction
+- UI meta interpretation
+- I18N
+- IAM (Authentication + Authorization)
+- User configuration (planned)
+
+Adapters provide:
+- Persistence backends
+- Security integrations
+- External identity providers
+
+
 ## Layer Model
 
 UI Layer - Grids - Forms - CrudPanels - TextResolver
@@ -9,6 +26,12 @@ UiPropertyInterpreter(s)
 
 Persistence Layer - CrudStore\<T, ID\> - DtoCrudStore -
 JpaDtoCrudStore - EntityMapper\<D, E\>
+
+
+CrudStore\<T, ID\> is SPI.
+DomainStore implements CrudStore\<Domain\>.
+DtoCrudStore implements CrudStore\<DTO\> and wraps DomainStore.
+JpaDomainStore implements DomainStore.
 
 Domain Layer - Pure business logic - No UI or JPA dependency
 
@@ -31,6 +54,63 @@ Clean Mode: DTO → Store → Domain → JPA
 Rapid Mode: JPA Entity used directly in UI.
 
 Both are supported intentionally.
+
+## DTO Strategy
+
+DTO is optional and exists as an adapter layer.
+Core must never depend on DTO.
+Rapid Mode is implemented by binding CrudStore<Entity> instead of CrudStore<DTO>.
+Clean Mode uses DTO adapter.
+
+
+
+## Adapter Model
+
+Core defines SPI.
+Adapters implement SPI.
+UI depends only on SPI.
+Persistence depends only on Domain.
+
+Core Layer:
+- Domain
+- SPI interfaces
+- No DTO
+- No JPA
+- No Spring
+
+Adapter Layer:
+- JPA
+- File
+- DTO
+- Spring Security
+
+## Official SPI List
+- CrudStore<T>
+- CurrentUser
+- AuthenticationService
+- PermissionChecker
+- TextResolver
+
+## Dependency Direction
+
+Allowed dependency flow (bottom → top):
+
+core → persistence → dto-adapter → ui → spring-starter
+
+Rules:
+- core must not depend on any other module
+- persistence may depend only on core
+- dto-adapter may depend only on core
+- ui may depend on core and CrudStore SPI
+- spring-starter may depend on all adapters
+
+## Bean Ownership Rules
+
+- Only adapter modules may provide concrete SPI implementations.
+- Persistence modules must not expose high-level SPI directly.
+- DTO adapters wrap DomainStore and publish SPI.
+- Core must never define Spring Beans.
+- AutoConfiguration classes live only in adapter or starter modules.
 
 ## I18N
 Scope prefixes allow app-level overrides.
