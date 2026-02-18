@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.i18n.dto.config;
 
 import de.javaholic.toolkit.i18n.core.spi.I18nEntryStore;
-import de.javaholic.toolkit.i18n.dto.dto.I18nEntryDto;
+import de.javaholic.toolkit.i18n.dto.I18nEntryDto;
 import de.javaholic.toolkit.i18n.dto.mapper.I18nEntryDtoMapper;
 import de.javaholic.toolkit.i18n.dto.store.I18nEntryDtoCrudStore;
 import de.javaholic.toolkit.persistence.core.CrudStore;

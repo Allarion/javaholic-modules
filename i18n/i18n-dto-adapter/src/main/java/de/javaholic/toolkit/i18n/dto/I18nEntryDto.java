@@ -1,8 +1,8 @@
-package de.javaholic.toolkit.i18n.dto.dto;
+package de.javaholic.toolkit.i18n.dto;
 
 import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiOrder;
-// TODO: Framework test demands a RAPID impl, Flat (as in @ui in @entity)...maybe real test not I18m for that
+
 public class I18nEntryDto {
 
     @UiOrder(0)

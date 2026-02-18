@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.i18n.dto.mapper;
 
 import de.javaholic.toolkit.i18n.core.domain.I18nEntry;
-import de.javaholic.toolkit.i18n.dto.dto.I18nEntryDto;
+import de.javaholic.toolkit.i18n.dto.I18nEntryDto;
 import de.javaholic.toolkit.persistence.core.DtoMapper;
 
 public class I18nEntryDtoMapper implements DtoMapper<I18nEntryDto, I18nEntry> {
