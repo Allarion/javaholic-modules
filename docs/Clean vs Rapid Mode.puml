@@ -1,0 +1,40 @@
+@startuml
+
+class UI
+
+class UserDto
+class UserDtoCrudStore
+
+class User
+class UserStore
+class JpaDomainUserStore
+
+class JpaUserEntity
+class CrudStore_Entity
+
+class JpaUserRepository
+
+' -------------------------
+' Clean Mode
+' -------------------------
+
+UI --> UserDtoCrudStore : Clean
+UserDtoCrudStore --> UserStore
+UserStore <|.. JpaDomainUserStore
+JpaDomainUserStore --> JpaUserRepository
+
+' -------------------------
+' Rapid Mode
+' -------------------------
+
+UI --> UserStore : Rapid
+UserStore --> JpaDomainUserStore
+
+' -------------------------
+' Super-Rapid Mode
+' -------------------------
+
+UI --> CrudStore_Entity : SuperRapid
+CrudStore_Entity --> JpaUserRepository
+
+@enduml

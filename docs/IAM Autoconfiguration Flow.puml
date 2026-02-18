@@ -1,0 +1,22 @@
+@startuml
+skinparam packageStyle rectangle
+
+package "Spring Boot AutoConfig" {
+  class IamJpaAutoConfiguration
+  class IamDtoAutoConfiguration
+}
+
+package "Persistence" {
+  class JpaDomainUserStore
+}
+
+package "DTO Adapter" {
+  class UserDtoCrudStore
+}
+
+IamJpaAutoConfiguration --> JpaDomainUserStore
+IamDtoAutoConfiguration --> UserDtoCrudStore
+
+UserDtoCrudStore --> JpaDomainUserStore : wraps
+
+@enduml

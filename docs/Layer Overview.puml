@@ -1,0 +1,35 @@
+@startuml
+skinparam packageStyle rectangle
+
+package "Foundation SPI" {
+  interface CrudStore<T,ID>
+  interface EntityMapper<D,E>
+  interface DtoMapper<DTO,D>
+}
+
+package "Domain Core (IAM)" {
+  class User
+  interface UserStore
+}
+
+package "Persistence Adapter (JPA)" {
+  class JpaDomainUserStore
+}
+
+package "DTO Adapter" {
+  class UserDto
+  class UserDtoCrudStore
+}
+
+package "UI Layer" {
+  class CrudPanel<T>
+}
+
+CrudStore <|-- UserStore
+UserStore <|.. JpaDomainUserStore
+CrudStore <|.. UserDtoCrudStore
+
+UserDtoCrudStore --> UserStore
+CrudPanel --> CrudStore
+
+@enduml
