@@ -5,6 +5,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
 import de.javaholic.toolkit.iam.ui.dto.RoleDto;
 import de.javaholic.toolkit.iam.ui.dto.UserDto;
@@ -23,15 +24,17 @@ public final class IAMCrudPanels {
     public static Component createView(
             CrudStore<UserDto, UUID> userStore,
             CrudStore<RoleDto, UUID> roleStore,
-            CrudStore<PermissionDto, UUID> permissionStore
+            CrudStore<PermissionDto, UUID> permissionStore,
+            TextResolver textResolver
     ) {
-        return createView(userStore, roleStore, permissionStore, Labels.defaults());
+        return createView(userStore, roleStore, permissionStore,textResolver, Labels.defaults());
     }
 
     public static Component createView(
             CrudStore<UserDto, UUID> userStore,
             CrudStore<RoleDto, UUID> roleStore,
             CrudStore<PermissionDto, UUID> permissionStore,
+            TextResolver textResolver,
             Labels labels
     ) {
         Objects.requireNonNull(userStore, "userStore");
