@@ -1,5 +1,10 @@
 package de.javaholic.toolkit.iam.ui;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import de.javaholic.toolkit.iam.ui.dto.PermissionDto;
 import de.javaholic.toolkit.iam.ui.dto.RoleDto;
 import de.javaholic.toolkit.iam.ui.dto.UserDto;
@@ -13,6 +18,57 @@ import java.util.UUID;
 public final class IAMCrudPanels {
 
     private IAMCrudPanels() {
+    }
+
+    public static Component createView(
+            CrudStore<UserDto, UUID> userStore,
+            CrudStore<RoleDto, UUID> roleStore,
+            CrudStore<PermissionDto, UUID> permissionStore
+    ) {
+        return createView(userStore, roleStore, permissionStore, Labels.defaults());
+    }
+
+    public static Component createView(
+            CrudStore<UserDto, UUID> userStore,
+            CrudStore<RoleDto, UUID> roleStore,
+            CrudStore<PermissionDto, UUID> permissionStore,
+            Labels labels
+    ) {
+        Objects.requireNonNull(userStore, "userStore");
+        Objects.requireNonNull(roleStore, "roleStore");
+        Objects.requireNonNull(permissionStore, "permissionStore");
+
+        CrudPanel<UserDto> usersPanel = users(userStore, labels);
+        CrudPanel<RoleDto> rolesPanel = roles(roleStore, permissionStore, labels);
+        CrudPanel<PermissionDto> permissionsPanel = permissions(permissionStore, labels);
+
+        Tabs tabs = new Tabs(
+                new Tab("Users"),
+                new Tab("Roles"),
+                new Tab("Permissions")
+        );
+
+        Div content = new Div();
+        content.setSizeFull();
+
+        VerticalLayout layout = new VerticalLayout(tabs, content);
+        layout.setSizeFull();
+        layout.expand(content);
+
+        Runnable showSelected = () -> {
+            content.removeAll();
+            switch (tabs.getSelectedIndex()) {
+                case 0 -> content.add(usersPanel);
+                case 1 -> content.add(rolesPanel);
+                case 2 -> content.add(permissionsPanel);
+                default -> content.add(usersPanel);
+            }
+        };
+
+        tabs.addSelectedChangeListener(event -> showSelected.run());
+        tabs.setSelectedIndex(0);
+        showSelected.run();
+        return layout;
     }
 
     public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore) {
