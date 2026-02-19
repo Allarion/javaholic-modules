@@ -20,13 +20,13 @@ public class JpaI18nEntry {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "key", nullable = false)
+    @Column(name = "translation_key", nullable = false)
     private String key;
 
     @Column(name = "locale", nullable = false)
     private String locale;
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "translation_value", nullable = false)
     private String value;
 
     @Version
