@@ -7,10 +7,15 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
+import de.javaholic.toolkit.ui.action.Action;
+import de.javaholic.toolkit.ui.action.Actions;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
-import de.javaholic.toolkit.i18n.DefaultTextResolver;
+import de.javaholic.toolkit.ui.state.DerivedState;
+import de.javaholic.toolkit.ui.state.MutableState;
+import de.javaholic.toolkit.ui.state.Trigger;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -18,51 +23,19 @@ import java.util.function.Consumer;
 
 /**
  * Fluent factory for common dialog patterns based on Vaadin {@link Dialog}.
- * <p>
- * This utility intentionally relies only on Vaadin standard dialog features
- * (header, footer, modal handling) and avoids any custom dialog framework.
- *
  */
 public final class Dialogs {
 
     private Dialogs() {
-        // utility class
     }
 
-    // =====================================================================
-    // SELECT DIALOG
-    // =====================================================================
-
-    /**
-     * Creates a dialog for selecting a single item from a {@link Grid}.
-     *
-     * <h3>How to use</h3>
-     * <pre>{@code
-     * Dialogs.select(userGrid)
-     *     .withTextResolver(key -> messages.getOrDefault(key, key))
-     *     .header("user.select.title")
-     *     .confirmLabel("ok")
-     *     .cancelLabel("cancel")
-     *     .open(result -> result.ifPresent(this::handleUser));
-     * }</pre>
-     *
-     * @param grid the grid used for selection
-     * @param <T>  grid item type
-     * @return a fluent dialog builder
-     */
     public static <T> GridSelectionDialogBuilder<T> select(Grid<T> grid) {
         return new GridSelectionDialogBuilder<>(grid);
     }
 
-    /**
-     * Builder for a grid-based selection dialog.
-     *
-     * @param <T> item type
-     */
     public static final class GridSelectionDialogBuilder<T> {
 
         private final Grid<T> grid;
-        // Dialogs are containers: they own one resolver and pass it to nested UI builders.
         private TextResolver textResolver = new DefaultTextResolver();
         private String titleKey;
         private String descriptionKey;
@@ -78,9 +51,6 @@ public final class Dialogs {
             this.grid = grid;
         }
 
-        /**
-         * Sets the resolver used for label keys.
-         */
         public GridSelectionDialogBuilder<T> withTextResolver(TextResolver textResolver) {
             this.textResolver = java.util.Objects.requireNonNull(textResolver, "textResolver");
             return this;
@@ -120,30 +90,11 @@ public final class Dialogs {
             return this;
         }
 
-        /**
-         * Adds additional components above the grid.
-         * <p>
-         * Intended for explanatory text, filters or future {@code Inputs}.
-         *
-         * @param components additional content components
-         * @return this builder
-         */
         public GridSelectionDialogBuilder<T> withContent(Component... components) {
             this.extraContent = components;
             return this;
         }
 
-        /**
-         * Opens the dialog.
-         * <p>
-         * The completion callback is invoked exactly once:
-         * <ul>
-         *   <li>{@link Optional#empty()} if canceled</li>
-         *   <li>{@link Optional#of(Object)} if confirmed with a selection</li>
-         * </ul>
-         *
-         * @param completion selection result consumer
-         */
         public void open(Consumer<Optional<T>> completion) {
             if (!confirmEnabled) {
                 throw new IllegalStateException("Confirm label not set; call confirmLabel(...)");
@@ -168,36 +119,34 @@ public final class Dialogs {
             dialog.add(content);
 
             final Selection<T> selection = new Selection<>();
+            MutableState<Boolean> hasSelection = MutableState.of(false);
 
-            grid.addSelectionListener(e ->
-                    selection.value = e.getFirstSelectedItem().orElse(null)
-            );
+            grid.addSelectionListener(e -> {
+                selection.value = e.getFirstSelectedItem().orElse(null);
+                hasSelection.set(selection.value != null);
+            });
 
-            Button ok = Buttons.create()
-                    .withTextResolver(textResolver)
-                    .label(defaultIfNull(confirmLabelKey, "ok"))
-                    .tooltip(confirmTooltipKey)
-                    .action(() -> {
+            Action okAction = Actions.create()
+                    .label(resolve(textResolver, defaultIfNull(confirmLabelKey, "ok")))
+                    .tooltip(confirmTooltipKey != null ? resolve(textResolver, confirmTooltipKey) : null)
+                    .enabledBy(hasSelection)
+                    .onClick(() -> {
                         dialog.close();
                         completion.accept(Optional.ofNullable(selection.value));
                     })
                     .build();
-            ok.setEnabled(false);
-
-            grid.addSelectionListener(e ->
-                    ok.setEnabled(e.getFirstSelectedItem().isPresent())
-            );
+            Button ok = Buttons.from(okAction);
 
             if (cancelEnabled) {
-                Button cancel = Buttons.create()
-                        .withTextResolver(textResolver)
-                        .label(defaultIfNull(cancelLabelKey, "cancel"))
-                        .tooltip(cancelTooltipKey)
-                        .action(() -> {
+                Action cancelAction = Actions.create()
+                        .label(resolve(textResolver, defaultIfNull(cancelLabelKey, "cancel")))
+                        .tooltip(cancelTooltipKey != null ? resolve(textResolver, cancelTooltipKey) : null)
+                        .onClick(() -> {
                             dialog.close();
                             completion.accept(Optional.empty());
                         })
                         .build();
+                Button cancel = Buttons.from(cancelAction);
                 dialog.getFooter().add(Layouts.hbox(cancel, ok));
             } else {
                 dialog.getFooter().add(Layouts.hbox(ok));
@@ -206,64 +155,10 @@ public final class Dialogs {
         }
     }
 
-    // =====================================================================
-    // CONFIRM DIALOG
-    // =====================================================================
-
-    /**
-     * Opens a simple confirmation dialog.
-     *
-     * <h3>How to use</h3>
-     * <pre>{@code
-     * Dialogs.confirm()
-     *     .withTextResolver(key -> messages.getOrDefault(key, key))
-     *     .header("config.delete.title")
-     *     .description("config.delete.confirmation")
-     *     .confirmLabel("delete")
-     *     .cancelLabel("cancel")
-     *     .open(confirmed -> {
-     *         if (confirmed) {
-     *             deleteConfig();
-     *         }
-     *     });
-     * }</pre>
-     *
-     * @return a fluent dialog builder
-     */
     public static ConfirmDialogBuilder confirm() {
         return new ConfirmDialogBuilder();
     }
 
-    // =====================================================================
-    // FORM DIALOG
-    // =====================================================================
-
-    /**
-     * Opens a dialog containing a {@link Forms.Form}.
-     * <p>
-     * The OK button only closes the dialog if the binder validates successfully.
-     * Validation uses Bean Validation annotations on the
-     * bound bean (e.g. {@code @NotNull}, {@code @Min}, {@code @Max}).
-     *
-     * <pre>{@code
-     * Form<UserConfig> form =
-     *     Forms.of(UserConfig.class)
-     *          .field("name", f -> {
-     *              f.component(Inputs.textField().widthFull().build());
-     *              f.label("user.name");
-     *              f.validate(b -> b.asRequired("user.name.required"));
-     *          })
-     *          .build();
-     *
-     * Dialogs.form(form)
-     *     .withTextResolver(key -> messages.getOrDefault(key, key))
-     *     .header("user.edit.title")
-     *     .confirmLabel("save")
-     *     .cancelLabel("cancel")
-     *     .onOk(f -> save(f.binder().getBean()))
-     *     .open();
-     * }</pre>
-     */
     public static <T> FormDialog<T> form(Forms.Form<T> form) {
         return new FormDialog<>(form);
     }
@@ -297,13 +192,14 @@ public final class Dialogs {
             content.add(form.layout());
             dialog.add(content);
 
-            ok = Buttons.create()
+            Trigger validationTrigger = new Trigger();
+            form.binder().addStatusChangeListener(e -> validationTrigger.fire());
+            var formValid = DerivedState.of(() -> form.binder().isValid(), validationTrigger);
+
+            ok = Buttons.from(Actions.create()
                     .label(this.okLabelKey)
-                    .tooltip(this.okTooltipKey)
-                    .enabledWhen(() -> form.binder().validate().isOk())
-                        .revalidateOn(r -> form.binder().addStatusChangeListener(e -> r.run()))
-                        .done()
-                    .action(() -> {
+                    .enabledBy(formValid)
+                    .onClick(() -> {
                         if (!form.binder().validate().isOk()) {
                             return;
                         }
@@ -313,27 +209,23 @@ public final class Dialogs {
                             dialog.close();
                         }
                     })
-                    .build();
+                    .build());
 
-            cancel = Buttons.create()
+            cancel = Buttons.from(Actions.create()
                     .label(this.cancelLabelKey)
-                    .tooltip(this.cancelTooltipKey)
-                    .build();
-
-            cancel.addClickListener(e -> {
-                if (onCancel != null) {
-                    onCancel.run();
-                }
-                dialog.close();
-            });
+                    .onClick(() -> {
+                        if (onCancel != null) {
+                            onCancel.run();
+                        }
+                        dialog.close();
+                    })
+                    .build());
 
             buttons = Layouts.hbox(ok);
             dialog.getFooter().add(buttons);
+            applyTexts();
         }
 
-        /**
-         * Sets the resolver used for label keys.
-         */
         public FormDialog<T> withTextResolver(TextResolver textResolver) {
             this.textResolver = java.util.Objects.requireNonNull(textResolver, "textResolver");
             applyTexts();
@@ -459,9 +351,6 @@ public final class Dialogs {
             dialog.setCloseOnOutsideClick(false);
         }
 
-        /**
-         * Sets the resolver used for label keys.
-         */
         public ConfirmDialogBuilder withTextResolver(TextResolver textResolver) {
             this.textResolver = java.util.Objects.requireNonNull(textResolver, "textResolver");
             return this;
@@ -501,9 +390,6 @@ public final class Dialogs {
             return this;
         }
 
-        /**
-         * Opens the dialog.
-         */
         public void open(Consumer<Boolean> completion) {
             if (!confirmEnabled) {
                 throw new IllegalStateException("Confirm label not set; call confirmLabel(...)");
@@ -521,27 +407,25 @@ public final class Dialogs {
                 dialog.add(content);
             }
 
-            Button ok = Buttons.create()
-                    .withTextResolver(textResolver)
-                    .label(defaultIfNull(confirmLabelKey, "ok"))
-                    .tooltip(confirmTooltipKey)
-                    .action(() -> {
+            Button ok = Buttons.from(Actions.create()
+                    .label(resolve(textResolver, defaultIfNull(confirmLabelKey, "ok")))
+                    .tooltip(confirmTooltipKey != null ? resolve(textResolver, confirmTooltipKey) : null)
+                    .onClick(() -> {
                         dialog.close();
                         completion.accept(true);
                     })
-                    .build();
+                    .build());
 
             dialog.getFooter().removeAll();
             if (cancelEnabled) {
-                Button cancel = Buttons.create()
-                        .withTextResolver(textResolver)
-                        .label(defaultIfNull(cancelLabelKey, "cancel"))
-                        .tooltip(cancelTooltipKey)
-                        .action(() -> {
+                Button cancel = Buttons.from(Actions.create()
+                        .label(resolve(textResolver, defaultIfNull(cancelLabelKey, "cancel")))
+                        .tooltip(cancelTooltipKey != null ? resolve(textResolver, cancelTooltipKey) : null)
+                        .onClick(() -> {
                             dialog.close();
                             completion.accept(false);
                         })
-                        .build();
+                        .build());
                 dialog.getFooter().add(Layouts.hbox(cancel, ok));
             } else {
                 dialog.getFooter().add(Layouts.hbox(ok));
@@ -550,13 +434,6 @@ public final class Dialogs {
         }
     }
 
-    /**
-     * Simple mutable reference used for temporary UI state.
-     * <p>
-     * This intentionally avoids {@link java.util.concurrent.atomic.AtomicReference}
-     * and {@link java.lang.ref.WeakReference}, as neither concurrency nor GC-based
-     * lifecycle management is desired here.
-     */
     private static final class Selection<T> {
         T value;
     }
@@ -568,7 +445,4 @@ public final class Dialogs {
     private static String resolve(TextResolver resolver, String key) {
         return resolver.resolve(key).orElse(key);
     }
-
 }
-
-

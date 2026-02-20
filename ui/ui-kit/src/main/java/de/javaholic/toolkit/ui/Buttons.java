@@ -6,6 +6,12 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.Notification;
 import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
+import de.javaholic.toolkit.ui.action.Action;
+import de.javaholic.toolkit.ui.action.Actions;
+import de.javaholic.toolkit.ui.action.vaadin.VaadinActionBinder;
+import de.javaholic.toolkit.ui.state.DerivedState;
+import de.javaholic.toolkit.ui.state.ObservableValue;
+import de.javaholic.toolkit.ui.state.Trigger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,32 +22,25 @@ import java.util.function.Supplier;
 /**
  * Fluent builder for Vaadin {@link Button Buttons}.
  *
- * <p>This utility focuses on explicit behavior:
- * no automatic bindings, no polling, no hidden lifecycle logic.</p>
+ * <p>Reactive Lite mode:
+ * no background threads, no polling framework, no hidden async behavior.
+ * UI updates are applied in Vaadin UI lifecycle via subscriptions.</p>
  *
  * <pre>{@code
- * Button save =
- *     Buttons.create()
- *            .label("save")
- *            .action(this::onSave)
- *            .build();
+ * Button save = Buttons.create()
+ *     .label("save")
+ *     .enabledBy(formValid)
+ *     .action(this::save)
+ *     .build();
+ *
+ * Button delete = Buttons.from(
+ *     Actions.create()
+ *         .label("delete")
+ *         .visibleBy(isAdmin)
+ *         .onClick(this::delete)
+ *         .build()
+ * );
  * }</pre>
- *
- * <h3>Dynamic enablement</h3>
- *
- * <pre>{@code
- * Button ok =
- *     Buttons.create()
- *            .label("ok")
- *            .enabledWhen(form::isValid)
- *                .revalidateOn(nameField)
- *                .revalidateOn(enabledCheckbox)
- *                .done()
- *            .action(this::onOk)
- *            .build();
- * }</pre>
- *
- * <p>This is optional syntax sugar only. You can always use Vaadin directly.</p>
  */
 public final class Buttons {
 
@@ -55,27 +54,40 @@ public final class Buttons {
         return new Builder();
     }
 
-    // =====================================================================
-    // == Builder
-    // =====================================================================
+    /**
+     * Renders a Vaadin {@link Button} from immutable {@link Action} definition.
+     *
+     * <p>Subscriptions are tied to component detach lifecycle.</p>
+     */
+    public static Button from(Action action) {
+        Objects.requireNonNull(action, "action");
+
+        Button button = new Button(action.labelKeyOrText());
+        if (action.tooltipKeyOrText() != null) {
+            button.setTooltipText(action.tooltipKeyOrText());
+        }
+        action.createIcon().ifPresent(button::setIcon);
+        button.addClickListener(e -> action.onClick().run());
+
+        VaadinActionBinder.bindEnabled(button, action.enabled());
+        VaadinActionBinder.bindVisible(button, action.visible());
+
+        return button;
+    }
 
     /**
      * Fluent builder for a Vaadin {@link Button}.
-     *
-     * <p>After calling {@link #build()}, the returned button behaves like
-     * a regular Vaadin component. The fluent API is detached.</p>
      */
     public static final class Builder {
 
         private String labelKey;
         private String tooltipKey;
         private Runnable action;
-        private EnablementBinding enablement;
+        private EnablementBinding legacyEnablement;
+        private ObservableValue<Boolean> enabledState;
+        private ObservableValue<Boolean> visibleState;
         private final List<ButtonVariant> themeVariants = new ArrayList<>();
-        // UI boundary: keys are stored in the builder and resolved only when applying to Vaadin.
         private TextResolver textResolver = new DefaultTextResolver();
-
-        /** notification duration for action errors */
         private int errorNotificationMs = 5_000;
 
         private Builder() {
@@ -86,38 +98,48 @@ public final class Buttons {
             return this;
         }
 
-        /**
-         * Sets the button label key.
-         */
-        public Builder label(String key) {
-            this.labelKey = key;
+        public Builder label(String keyOrText) {
+            this.labelKey = keyOrText;
+            return this;
+        }
+
+        public Builder tooltip(String keyOrText) {
+            this.tooltipKey = keyOrText;
             return this;
         }
 
         /**
-         * Sets the button tooltip key.
+         * New Reactive Lite API for button enablement.
          */
-        public Builder tooltip(String key) {
-            this.tooltipKey = key;
+        public Builder enabledBy(ObservableValue<Boolean> enabled) {
+            this.enabledState = Objects.requireNonNull(enabled, "enabled");
             return this;
         }
 
         /**
-         * Defines a dynamic enablement condition.
+         * New Reactive Lite API for button visibility.
+         */
+        public Builder visibleBy(ObservableValue<Boolean> visible) {
+            this.visibleState = Objects.requireNonNull(visible, "visible");
+            return this;
+        }
+
+        /**
+         * Legacy convenience API for computed enablement.
+         *
+         * <p>For explicit and predictable behavior, prefer {@link #enabledBy(ObservableValue)}.
+         * This method is kept for compatibility.</p>
          */
         public EnablementStep enabledWhen(Supplier<Boolean> condition) {
-            if (this.enablement != null) {
+            if (this.legacyEnablement != null) {
                 throw new IllegalStateException("enabledWhen already defined");
             }
-            this.enablement = new EnablementBinding(condition);
-            return new EnablementStep(this, enablement);
+            this.legacyEnablement = new EnablementBinding(condition);
+            return new EnablementStep(this, legacyEnablement);
         }
 
         /**
          * Defines the click action.
-         *
-         * <p>The action is executed inside a centralized try/catch block
-         * handling {@link IllegalStateException} uniformly.</p>
          */
         public Builder action(Runnable action) {
             if (this.action != null) {
@@ -127,57 +149,51 @@ public final class Buttons {
             return this;
         }
 
-        /**
-         * Adds a Vaadin {@link ButtonVariant}.
-         */
         public Builder style(ButtonVariant variant) {
             this.themeVariants.add(variant);
             return this;
         }
 
-        /**
-         * Indicates how long an error Notification should be displayed.
-         */
         public Builder errorNotificationMs(int ms) {
             this.errorNotificationMs = ms;
             return this;
         }
 
-        /**
-         * Builds the Vaadin {@link Button}.
-         */
         public Button build() {
-            Button button = new Button();
+            ObservableValue<Boolean> effectiveEnabled = resolveEnabledState();
+            var actionBuilder = Actions.create()
+                    .label(resolve(defaultIfNull(labelKey, "")))
+                    .tooltip(tooltipKey != null ? resolve(tooltipKey) : null)
+                    .onClick(action != null ? () -> runSafely(action) : () -> { })
+                    .enabledBy(effectiveEnabled);
+            if (visibleState != null) {
+                actionBuilder.visibleBy(visibleState);
+            }
+            Action rendered = actionBuilder.build();
 
+            Button button = Buttons.from(rendered);
             themeVariants.forEach(button::addThemeVariants);
-
-            if (labelKey != null) {
-                button.setText(resolve(labelKey));
-            }
-            if (tooltipKey != null) {
-                button.setTooltipText(resolve(tooltipKey));
-            }
-
-            if (action != null) {
-                button.addClickListener(e -> runSafely(action));
-            }
-
-            if (enablement != null) {
-                enablement.bindTo(button);
-            }
-
             return button;
+        }
+
+        private ObservableValue<Boolean> resolveEnabledState() {
+            if (enabledState != null && legacyEnablement != null) {
+                throw new IllegalStateException("Use either enabledBy(...) or enabledWhen(...), not both");
+            }
+            if (enabledState != null) {
+                return enabledState;
+            }
+            if (legacyEnablement != null) {
+                return legacyEnablement.toState();
+            }
+            return de.javaholic.toolkit.ui.state.BooleanStates.constant(true);
         }
 
         private String resolve(String key) {
             String resolved = textResolver.resolve(key).orElse(key);
-                    //?1 .orElseThrow(() -> new IllegalStateException("resolver ought to return 'key' (if not able to resolve) but didn't"));
             return resolved != null ? resolved : key;
         }
 
-        /**
-         * Centralized exception handling for button actions.
-         */
         private void runSafely(Runnable action) {
             try {
                 action.run();
@@ -189,12 +205,15 @@ public final class Buttons {
                 );
             }
         }
+
+        private static String defaultIfNull(String value, String fallback) {
+            return value != null ? value : fallback;
+        }
     }
 
-    // =====================================================================
-    // == EnablementStep
-    // =====================================================================
-
+    /**
+     * Legacy compatibility step for {@link Builder#enabledWhen(Supplier)}.
+     */
     public static final class EnablementStep {
 
         private final Builder builder;
@@ -205,44 +224,28 @@ public final class Buttons {
             this.binding = binding;
         }
 
-        /**
-         * Revalidates when a Vaadin value component changes.
-         */
         public EnablementStep revalidateOn(HasValue<?, ?> field) {
             Objects.requireNonNull(field, "field");
             binding.addRegistrar(r -> field.addValueChangeListener(e -> r.run()));
             return this;
         }
 
-        /**
-         * Revalidates when a button is clicked.
-         */
         public EnablementStep revalidateOn(Button button) {
             Objects.requireNonNull(button, "button");
             binding.addRegistrar(r -> button.addClickListener(e -> r.run()));
             return this;
         }
 
-        /**
-         * Revalidates using a custom registrar (e.g. attach listener, timer, etc.).
-         */
         public EnablementStep revalidateOn(Consumer<Runnable> registrar) {
             Objects.requireNonNull(registrar, "registrar");
             binding.addRegistrar(registrar);
             return this;
         }
 
-        /**
-         * Returns to the main builder.
-         */
         public Builder done() {
             return builder;
         }
     }
-
-    // =====================================================================
-    // == EnablementBinding
-    // =====================================================================
 
     private static final class EnablementBinding {
 
@@ -257,15 +260,12 @@ public final class Buttons {
             registrars.add(Objects.requireNonNull(registrar, "registrar"));
         }
 
-        private void bindTo(Button button) {
-            Runnable revalidate =
-                    () -> button.setEnabled(Boolean.TRUE.equals(condition.get()));
-
-            revalidate.run();
-
+        private ObservableValue<Boolean> toState() {
+            Trigger trigger = new Trigger();
             for (Consumer<Runnable> registrar : registrars) {
-                registrar.accept(revalidate);
+                registrar.accept(trigger::fire);
             }
+            return DerivedState.of(() -> Boolean.TRUE.equals(condition.get()), trigger);
         }
     }
 }
