@@ -2,6 +2,7 @@ package de.javaholic.toolkit.ui.form;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValueAndElement;
 import com.vaadin.flow.component.html.Span;
@@ -15,6 +16,8 @@ import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
+import de.javaholic.toolkit.ui.form.state.BinderFormState;
+import de.javaholic.toolkit.ui.form.state.FormState;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
@@ -100,6 +103,13 @@ public final class Forms {
      */
     public static <T> AutoFormBuilder<T> auto(Class<T> type) {
         return new AutoFormBuilder<>(type);
+    }
+
+    /**
+     * Creates a reactive state facade for a Binder-backed form.
+     */
+    public static <T> FormState state(Binder<T> binder) {
+        return new BinderFormState<>(binder);
     }
 
     /**
@@ -335,6 +345,12 @@ public final class Forms {
                 List<TypedValidator<T>> validators
         ) {
             Binder.BindingBuilder<T, V> binding = binder.forField(fieldComponent);
+            if (fieldComponent instanceof HasValidation hasValidation) {
+                binding = binding.withValidationStatusHandler(status -> {
+                    hasValidation.setInvalid(status.isError());
+                    hasValidation.setErrorMessage(status.getMessage().orElse(null));
+                });
+            }
 
             binding = binding.withValidator(new BeanValidator(type, property.name()));
 
@@ -565,8 +581,14 @@ public final class Forms {
                 BeanProperty<T, V> property,
                 HasValue<?, V> fieldComponent
         ) {
-            binder.forField(fieldComponent)
-                    .withValidator(new BeanValidator(type, property.name()))
+            Binder.BindingBuilder<T, V> binding = binder.forField(fieldComponent);
+            if (fieldComponent instanceof HasValidation hasValidation) {
+                binding = binding.withValidationStatusHandler(status -> {
+                    hasValidation.setInvalid(status.isError());
+                    hasValidation.setErrorMessage(status.getMessage().orElse(null));
+                });
+            }
+            binding.withValidator(new BeanValidator(type, property.name()))
                     .bind(
                             bean -> meta.getValue(property, bean),
                             (bean, val) -> meta.setValue(property, bean, val)
@@ -692,5 +714,4 @@ public final class Forms {
         return annotations.isAnnotationPresent(NotNull.class) || annotations.isAnnotationPresent(NotBlank.class) || annotations.isAnnotationPresent(NotEmpty.class);
     }
 }
-
 

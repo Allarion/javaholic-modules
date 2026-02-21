@@ -76,6 +76,13 @@ public final class Buttons {
     }
 
     /**
+     * Alias for {@link #from(Action)}.
+     */
+    public static Button action(Action action) {
+        return from(action);
+    }
+
+    /**
      * Fluent builder for a Vaadin {@link Button}.
      */
     public static final class Builder {
