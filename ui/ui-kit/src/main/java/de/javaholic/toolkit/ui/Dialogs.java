@@ -200,9 +200,6 @@ public final class Dialogs {
                     .label(this.okLabelKey)
                     .enabledBy(formValid)
                     .onClick(() -> {
-                        if (!form.binder().validate().isOk()) {
-                            return;
-                        }
                         if (onOk != null) {
                             onOk.accept(form, dialog);
                         } else {

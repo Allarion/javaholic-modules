@@ -7,7 +7,9 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValueAndElement;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.validator.BeanValidator;
 import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
@@ -237,8 +239,10 @@ public final class Forms {
                     .map(UiProperty::name)
                     .collect(LinkedHashSet::new, Set::add, Set::addAll);
             VerticalLayout layout = new VerticalLayout();
-            Binder<T> binder = new Binder<>(type);
+            BeanValidationBinder<T> binder = new BeanValidationBinder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
+            Map<String, Boolean> uiRequiredByName = uiMeta.properties()
+                    .collect(LinkedHashMap::new, (map, property) -> map.put(property.name(), property.isRequired()), Map::putAll);
 
             String formError = resolve("form.validation.error");
             Span formErrorLabel = new Span(formError != null ? formError : "form.validation.error");
@@ -275,8 +279,17 @@ public final class Forms {
                 }
 
                 applyLabel(component, property.name(), spec.labelKey);
-                applyRequiredIndicator(component, property.definition());
-                bindUntyped(binder, meta, property, value, spec.validators);
+                boolean uiRequired = Boolean.TRUE.equals(uiRequiredByName.get(property.name()));
+                applyRequiredIndicator(component, property.definition(), uiRequired);
+                bindUntyped(
+                        binder,
+                        meta,
+                        property,
+                        value,
+                        spec.validators,
+                        uiRequired,
+                        requiredMessage(property.name(), spec.labelKey)
+                );
 
                 layout.add(component);
                 components.put(property.name(), component);
@@ -322,8 +335,14 @@ public final class Forms {
             return resolved != null ? resolved : key;
         }
 
-        private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {
-            if (!isRequired(annotations)) {
+        private String requiredMessage(String fieldName, String overrideLabelKey) {
+            String labelKey = overrideLabelKey != null ? overrideLabelKey : fieldName;
+            String label = resolve(labelKey);
+            return label + " required";
+        }
+
+        private void applyRequiredIndicator(Component component, AnnotatedElement annotations, boolean uiRequired) {
+            if (!uiRequired && !isRequired(annotations)) {
                 return;
             }
             if (component instanceof HasValueAndElement hasValue) {
@@ -332,17 +351,35 @@ public final class Forms {
         }
 
         @SuppressWarnings("unchecked")
-        private <V> void bindUntyped(Binder<T> binder, BeanMeta<T> meta, BeanProperty<T, ?> property, HasValue<?, ?> field, List<TypedValidator<T>> validators) {
+        private <V> void bindUntyped(
+                BeanValidationBinder<T> binder,
+                BeanMeta<T> meta,
+                BeanProperty<T, ?> property,
+                HasValue<?, ?> field,
+                List<TypedValidator<T>> validators,
+                boolean uiRequired,
+                String uiRequiredMessage
+        ) {
             //noinspection rawtypes
-            bindField(binder, meta, (BeanProperty<T, V>) property, (HasValue<?, V>) field, (List) validators);
+            bindField(
+                    binder,
+                    meta,
+                    (BeanProperty<T, V>) property,
+                    (HasValue<?, V>) field,
+                    (List) validators,
+                    uiRequired,
+                    uiRequiredMessage
+            );
         }
 
         private <V> void bindField(
-                Binder<T> binder,
+                BeanValidationBinder<T> binder,
                 BeanMeta<T> meta,
                 BeanProperty<T, V> property,
                 HasValue<?, V> fieldComponent,
-                List<TypedValidator<T>> validators
+                List<TypedValidator<T>> validators,
+                boolean uiRequired,
+                String uiRequiredMessage
         ) {
             Binder.BindingBuilder<T, V> binding = binder.forField(fieldComponent);
             if (fieldComponent instanceof HasValidation hasValidation) {
@@ -352,7 +389,18 @@ public final class Forms {
                 });
             }
 
-            binding = binding.withValidator(new BeanValidator(type, property.name()));
+            if (uiRequired) {
+                binding = binding.asRequired(uiRequiredMessage);
+            }
+
+            BeanValidator beanValidator = new BeanValidator(type, property.name());
+            if (uiRequired) {
+                binding = binding.withValidator((value, context) ->
+                        isEmptyValue(value) ? ValidationResult.ok() : beanValidator.apply(value, context)
+                );
+            } else {
+                binding = binding.withValidator(beanValidator);
+            }
 
             for (TypedValidator<T> v : validators) {
 
@@ -496,7 +544,7 @@ public final class Forms {
                     .collect(LinkedHashMap::new, (map, prop) -> map.put(prop.name(), prop), Map::putAll);
 
             VerticalLayout layout = new VerticalLayout();
-            Binder<T> binder = new Binder<>(type);
+            BeanValidationBinder<T> binder = new BeanValidationBinder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
             // TODO: revisit i18n key, see HierarchicalTextResolver for concept
             String formError = textResolver.resolve("form.validation.error").orElse("form.validation.error");
@@ -526,7 +574,7 @@ public final class Forms {
                 BeanMeta<T> beanMeta,
                 Map<String, BeanProperty<T, ?>> beanProperties,
                 VerticalLayout layout,
-                Binder<T> binder,
+                BeanValidationBinder<T> binder,
                 Map<String, Component> components
         ) {
             BeanProperty<T, ?> beanProperty = beanProperties.get(property.name());
@@ -541,14 +589,21 @@ public final class Forms {
             }
 
             applyLabel(component, property.labelKey());
-            applyRequiredIndicator(component, beanProperty.definition());
+            applyRequiredIndicator(component, beanProperty.definition(), property.isRequired());
 
             Consumer<HasValue<?, ?>> override = overrides.get(property.name());
             if (override != null) {
                 override.accept(value);
             }
 
-            bindAutoFieldUntyped(binder, beanMeta, beanProperty, value);
+            bindAutoFieldUntyped(
+                    binder,
+                    beanMeta,
+                    beanProperty,
+                    value,
+                    property.isRequired(),
+                    textResolver.resolve(property.labelKey()).orElse(property.labelKey()) + " required"
+            );
 
             layout.add(component);
             components.put(property.name(), component);
@@ -561,8 +616,8 @@ public final class Forms {
             hasLabel.setLabel(textResolver.resolve(labelKey).orElse(labelKey));
         }
 
-        private void applyRequiredIndicator(Component component, AnnotatedElement annotations) {
-            if (!isRequired(annotations)) {
+        private void applyRequiredIndicator(Component component, AnnotatedElement annotations, boolean uiRequired) {
+            if (!uiRequired && !isRequired(annotations)) {
                 return;
             }
             if (component instanceof HasValueAndElement hasValue) {
@@ -571,15 +626,31 @@ public final class Forms {
         }
 
         @SuppressWarnings("unchecked")
-        private <V> void bindAutoFieldUntyped(Binder<T> binder, BeanMeta<T> meta, BeanProperty<T, ?> property, HasValue<?, ?> field) {
-            bindAutoField(binder, meta, (BeanProperty<T, V>) property, (HasValue<?, V>) field);
+        private <V> void bindAutoFieldUntyped(
+                BeanValidationBinder<T> binder,
+                BeanMeta<T> meta,
+                BeanProperty<T, ?> property,
+                HasValue<?, ?> field,
+                boolean uiRequired,
+                String uiRequiredMessage
+        ) {
+            bindAutoField(
+                    binder,
+                    meta,
+                    (BeanProperty<T, V>) property,
+                    (HasValue<?, V>) field,
+                    uiRequired,
+                    uiRequiredMessage
+            );
         }
 
         private <V> void bindAutoField(
-                Binder<T> binder,
+                BeanValidationBinder<T> binder,
                 BeanMeta<T> meta,
                 BeanProperty<T, V> property,
-                HasValue<?, V> fieldComponent
+                HasValue<?, V> fieldComponent,
+                boolean uiRequired,
+                String uiRequiredMessage
         ) {
             Binder.BindingBuilder<T, V> binding = binder.forField(fieldComponent);
             if (fieldComponent instanceof HasValidation hasValidation) {
@@ -588,11 +659,21 @@ public final class Forms {
                     hasValidation.setErrorMessage(status.getMessage().orElse(null));
                 });
             }
-            binding.withValidator(new BeanValidator(type, property.name()))
-                    .bind(
-                            bean -> meta.getValue(property, bean),
-                            (bean, val) -> meta.setValue(property, bean, val)
-                    );
+            if (uiRequired) {
+                binding = binding.asRequired(uiRequiredMessage);
+            }
+            BeanValidator beanValidator = new BeanValidator(type, property.name());
+            if (uiRequired) {
+                binding = binding.withValidator((value, context) ->
+                        isEmptyValue(value) ? ValidationResult.ok() : beanValidator.apply(value, context)
+                );
+            } else {
+                binding = binding.withValidator(beanValidator);
+            }
+            binding.bind(
+                    bean -> meta.getValue(property, bean),
+                    (bean, val) -> meta.setValue(property, bean, val)
+            );
         }
     }
 
@@ -713,5 +794,20 @@ public final class Forms {
     private static boolean isRequired(AnnotatedElement annotations) {
         return annotations.isAnnotationPresent(NotNull.class) || annotations.isAnnotationPresent(NotBlank.class) || annotations.isAnnotationPresent(NotEmpty.class);
     }
-}
 
+    private static boolean isEmptyValue(Object value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof CharSequence chars) {
+            return chars.toString().trim().isEmpty();
+        }
+        if (value instanceof Collection<?> collection) {
+            return collection.isEmpty();
+        }
+        if (value instanceof Map<?, ?> map) {
+            return map.isEmpty();
+        }
+        return false;
+    }
+}
