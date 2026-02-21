@@ -27,8 +27,10 @@ public class BinderFormState<T> implements FormState {
         dirty.set(source.hasChanges());
 
         source.addStatusChangeListener(event -> valid.set(source.isValid()));
-        source.addValueChangeListener(event -> dirty.set(source.hasChanges()));
-
+        binder.addValueChangeListener(e -> {
+            valid.set(binder.isValid());
+            dirty.set(binder.hasChanges());
+        });
         this.canSubmit = BooleanStates.and(valid, BooleanStates.not(submitting));
     }
 

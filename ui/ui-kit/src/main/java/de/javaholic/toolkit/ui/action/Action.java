@@ -55,10 +55,12 @@ public final class Action {
         this.permissionKey = permissionKey;
     }
 
+    // TODO: codesmell!!
     public String labelKeyOrText() {
         return labelKeyOrText;
     }
 
+    // TODO: codesmell!!
     public String tooltipKeyOrText() {
         return tooltipKeyOrText;
     }
