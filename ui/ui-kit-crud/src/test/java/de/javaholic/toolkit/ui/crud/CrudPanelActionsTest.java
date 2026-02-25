@@ -47,6 +47,21 @@ class CrudPanelActionsTest {
     }
 
     @Test
+    void readOnlyPresetDisablesDefaultActionsLikeNonePreset() {
+        InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
+        Grid<User> grid = new Grid<>(User.class, false);
+
+        CrudPanel<User> panel = CrudPanels.of(User.class)
+                .withStore(store)
+                .withGrid(grid)
+                .preset(CrudPresets.readOnly())
+                .build();
+
+        assertThat(findButton(panel, "Create")).isEmpty();
+        assertThat(grid.getColumns()).isEmpty();
+    }
+
+    @Test
     void customToolbarAndRowActionsWorkWithNonePreset() {
         InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
         Grid<User> grid = new Grid<>(User.class, false);
@@ -65,6 +80,21 @@ class CrudPanelActionsTest {
 
         assertThat(toolbarInvocations.get()).isEqualTo(1);
         assertThat(grid.getColumns()).hasSize(1);
+    }
+
+    @Test
+    void toolbarActionCanBeDisabledByPredicate() {
+        InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
+        Grid<User> grid = new Grid<>(User.class, false);
+
+        CrudPanel<User> panel = CrudPanels.of(User.class)
+                .withStore(store)
+                .withGrid(grid)
+                .toolbarAction(CrudAction.<User>toolbar("Run", () -> { }).enabledWhen(() -> false))
+                .build();
+
+        Button run = findButton(panel, "Run").orElseThrow();
+        assertThat(run.isEnabled()).isFalse();
     }
 
     @Test

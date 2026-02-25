@@ -47,7 +47,7 @@ import java.util.function.Supplier;
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
 public final class CrudPanel<T> extends VerticalLayout {
-
+// TODO: Since Actions are now not necessary CRUD the class name isn't fitting. ActionsPanel o.ä. (also revisit other Crud Classes + package name)
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;

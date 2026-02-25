@@ -3,6 +3,8 @@ package de.javaholic.toolkit.ui.contract;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 import de.javaholic.toolkit.ui.crud.CrudPanels;
+import de.javaholic.toolkit.ui.crud.action.CrudAction;
+import de.javaholic.toolkit.ui.crud.action.CrudPresets;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +25,11 @@ class CrudFluentApiContractTest {
         CrudPanels.CrudBuilder<UserDto> chained = builder
                 .withStore(store)
                 .withTextResolver((key, locale) -> Optional.of(key))
-                .withPropertyFilter(UiProperty::isVisible);
+                .withPropertyFilter(UiProperty::isVisible)
+                .preset(CrudPresets.full())
+                .toolbarAction(CrudAction.toolbar("t", () -> { }))
+                .rowAction(CrudAction.row("r", dto -> { }))
+                .selectionAction(CrudAction.selection("s", selection -> { }));
 
         CrudPanel<UserDto> result = chained.build();
 
@@ -40,6 +46,10 @@ class CrudFluentApiContractTest {
                 .withStore(store)
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
+                .preset(CrudPresets.full())
+                .toolbarAction(CrudAction.toolbar("t", () -> { }))
+                .rowAction(CrudAction.row("r", dto -> { }))
+                .selectionAction(CrudAction.selection("s", selection -> { }))
                 .override("email", property -> property.label("user.email.label"));
 
         CrudPanel<UserDto> result = chained.build();
@@ -67,10 +77,26 @@ class CrudFluentApiContractTest {
     void crudBuilderMethodReturnTypesStayStable() throws NoSuchMethodException {
         assertThat(CrudPanels.CrudBuilder.class.getMethod("withStore", CrudStore.class).getReturnType())
                 .isEqualTo(CrudPanels.CrudBuilder.class);
+        assertThat(CrudPanels.CrudBuilder.class.getMethod("preset", de.javaholic.toolkit.ui.crud.action.CrudPreset.class).getReturnType())
+                .isEqualTo(CrudPanels.CrudBuilder.class);
+        assertThat(CrudPanels.CrudBuilder.class.getMethod("toolbarAction", CrudAction.ToolbarAction.class).getReturnType())
+                .isEqualTo(CrudPanels.CrudBuilder.class);
+        assertThat(CrudPanels.CrudBuilder.class.getMethod("rowAction", CrudAction.RowAction.class).getReturnType())
+                .isEqualTo(CrudPanels.CrudBuilder.class);
+        assertThat(CrudPanels.CrudBuilder.class.getMethod("selectionAction", CrudAction.SelectionAction.class).getReturnType())
+                .isEqualTo(CrudPanels.CrudBuilder.class);
         assertThat(CrudPanels.CrudBuilder.class.getMethod("build").getReturnType())
                 .isEqualTo(CrudPanel.class);
 
         assertThat(CrudPanels.AutoCrudBuilder.class.getMethod("withStore", CrudStore.class).getReturnType())
+                .isEqualTo(CrudPanels.AutoCrudBuilder.class);
+        assertThat(CrudPanels.AutoCrudBuilder.class.getMethod("preset", de.javaholic.toolkit.ui.crud.action.CrudPreset.class).getReturnType())
+                .isEqualTo(CrudPanels.AutoCrudBuilder.class);
+        assertThat(CrudPanels.AutoCrudBuilder.class.getMethod("toolbarAction", CrudAction.ToolbarAction.class).getReturnType())
+                .isEqualTo(CrudPanels.AutoCrudBuilder.class);
+        assertThat(CrudPanels.AutoCrudBuilder.class.getMethod("rowAction", CrudAction.RowAction.class).getReturnType())
+                .isEqualTo(CrudPanels.AutoCrudBuilder.class);
+        assertThat(CrudPanels.AutoCrudBuilder.class.getMethod("selectionAction", CrudAction.SelectionAction.class).getReturnType())
                 .isEqualTo(CrudPanels.AutoCrudBuilder.class);
         assertThat(CrudPanels.AutoCrudBuilder.class.getMethod("override", String.class, java.util.function.Consumer.class).getReturnType())
                 .isEqualTo(CrudPanels.AutoCrudBuilder.class);
