@@ -2,7 +2,9 @@ package de.javaholic.toolkit.ui.form.fields;
 
 import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -96,6 +98,11 @@ public final class FieldRegistry {
      */
     public HasValue<?, ?> create(FieldContext ctx, String labelKey, boolean readOnly) {
         Objects.requireNonNull(ctx, "ctx");
+
+        if (Collection.class.isAssignableFrom(ctx.getRawType())) {
+            MultiSelectComboBox<Object> box = new MultiSelectComboBox<>();
+            return applySemanticHints(box, labelKey, readOnly);
+        }
 
         FieldFactory factory = propertyOverrides.get(PropertyKey.of(ctx.declaringType(), ctx.property()));
         if (factory != null) {

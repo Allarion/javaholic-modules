@@ -32,6 +32,6 @@ class DefaultMappingsTest {
 
     private static FieldContext context(String property, Class<?> type) throws NoSuchFieldException {
         Field field = Sample.class.getDeclaredField(property);
-        return new FieldContext(Sample.class, property, type, field);
+        return new FieldContext(Sample.class, property, type, null, field);
     }
 }

@@ -16,6 +16,7 @@ import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
+import de.javaholic.toolkit.introspection.BeanPropertyTypes;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import de.javaholic.toolkit.ui.form.state.BinderFormState;
@@ -266,7 +267,7 @@ public final class Forms {
                 Component component = spec.component;
                 HasValue<?, ?> value;
                 if (component == null) {
-                    FieldContext ctx = new FieldContext(type, property.name(), property.type(), property.definition());
+                    FieldContext ctx = new FieldContext(type, property.name(), property.type(), null, property.definition());
                     value = fieldRegistry.create(ctx);
                     if (!(value instanceof Component)) {
                         throw new IllegalStateException("FieldFactory returned non-Component for property '" + property.name() + "'");
@@ -582,7 +583,8 @@ public final class Forms {
                 throw new IllegalStateException("Unknown BeanProperty for UiProperty '" + property.name() + "'");
             }
 
-            FieldContext ctx = new FieldContext(type, property.name(), property.type(), beanProperty.definition());
+            Class<?> elementType = BeanPropertyTypes.resolveCollectionElementType(type, beanProperty);
+            FieldContext ctx = new FieldContext(type, property.name(), property.type(), elementType, beanProperty.definition());
             HasValue<?, ?> value = fieldRegistry.create(ctx, property.labelKey(), property.isReadOnly());
             if (!(value instanceof Component component)) {
                 throw new IllegalStateException("FieldFactory returned non-Component for property '" + property.name() + "'");
@@ -608,7 +610,6 @@ public final class Forms {
             layout.add(component);
             components.put(property.name(), component);
         }
-
         private void applyLabel(Component component, String labelKey) {
             if (!(component instanceof HasLabel hasLabel)) {
                 return;
