@@ -93,8 +93,6 @@ public final class CrudPanel<T> extends VerticalLayout {
     }
 
     private void addActionsColumn() {
-        // TODO: gehört eher ins Grids? vll so: Grids.auto(type).withActions(...) ?
-        // TODO: add optional selection dialog integration when use-cases need it.
         grid.addColumn(new ComponentRenderer<>(item -> {
                     Button edit = Buttons.create()
                             .label("Edit")
