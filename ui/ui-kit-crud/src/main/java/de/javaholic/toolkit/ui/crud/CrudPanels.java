@@ -8,6 +8,9 @@ import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
+import de.javaholic.toolkit.ui.crud.action.CrudAction;
+import de.javaholic.toolkit.ui.crud.action.CrudPreset;
+import de.javaholic.toolkit.ui.crud.action.CrudPresets;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
@@ -90,9 +93,9 @@ public final class CrudPanels {
         CrudBuilder<T> withStore(CrudStore<T, ?> store);
 
         /**
-         * Sets a property filter for default manual components.
+         * Sets text resolution for default manual components.
          *
-         * <p>Example: {@code builder.withPropertyFilter(UiProperty::isVisible);}</p>
+         * <p>Example: {@code builder.withTextResolver(key -> key);}</p>
          */
         CrudBuilder<T> withTextResolver(TextResolver resolver);
 
@@ -102,6 +105,18 @@ public final class CrudPanels {
          * <p>Example: {@code builder.withPropertyFilter(UiProperty::isVisible);}</p>
          */
         CrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
+
+        /**
+         * Sets which default create/edit/delete actions are shown.
+         * Presets affect only default actions and never block custom actions.
+         */
+        CrudBuilder<T> preset(CrudPreset preset);
+
+        CrudBuilder<T> toolbarAction(CrudAction.ToolbarAction<T> action);
+
+        CrudBuilder<T> rowAction(CrudAction.RowAction<T> action);
+
+        CrudBuilder<T> selectionAction(CrudAction.SelectionAction<T> action);
     }
 
     /**
@@ -131,6 +146,17 @@ public final class CrudPanels {
          */
         ManualCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
+        /**
+         * Sets which default create/edit/delete actions are shown.
+         * Presets affect only default actions and never block custom actions.
+         */
+        ManualCrudBuilder<T> preset(CrudPreset preset);
+
+        ManualCrudBuilder<T> toolbarAction(CrudAction.ToolbarAction<T> action);
+
+        ManualCrudBuilder<T> rowAction(CrudAction.RowAction<T> action);
+
+        ManualCrudBuilder<T> selectionAction(CrudAction.SelectionAction<T> action);
 
         /**
          * Injects a prebuilt grid.
@@ -176,6 +202,18 @@ public final class CrudPanels {
         AutoCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
         /**
+         * Sets which default create/edit/delete actions are shown.
+         * Presets affect only default actions and never block custom actions.
+         */
+        AutoCrudBuilder<T> preset(CrudPreset preset);
+
+        AutoCrudBuilder<T> toolbarAction(CrudAction.ToolbarAction<T> action);
+
+        AutoCrudBuilder<T> rowAction(CrudAction.RowAction<T> action);
+
+        AutoCrudBuilder<T> selectionAction(CrudAction.SelectionAction<T> action);
+
+        /**
          * Overrides one auto-generated property before grid/form generation.
          *
          * <p>This method applies only to the auto builder variant and configures UI metadata
@@ -202,6 +240,10 @@ public final class CrudPanels {
         private Forms.Form<T> form;
         private TextResolver textResolver = new DefaultTextResolver();
         private Predicate<UiProperty<T>> propertyFilter = UiProperty::isVisible;
+        private CrudPreset preset = CrudPresets.full();
+        private final List<CrudAction.ToolbarAction<T>> toolbarActions = new ArrayList<>();
+        private final List<CrudAction.RowAction<T>> rowActions = new ArrayList<>();
+        private final List<CrudAction.SelectionAction<T>> selectionActions = new ArrayList<>();
 
         private ManualBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -238,18 +280,51 @@ public final class CrudPanels {
         }
 
         @Override
+        public ManualCrudBuilder<T> preset(CrudPreset preset) {
+            this.preset = Objects.requireNonNull(preset, "preset");
+            return this;
+        }
+
+        @Override
+        public ManualCrudBuilder<T> toolbarAction(CrudAction.ToolbarAction<T> action) {
+            this.toolbarActions.add(Objects.requireNonNull(action, "action"));
+            return this;
+        }
+
+        @Override
+        public ManualCrudBuilder<T> rowAction(CrudAction.RowAction<T> action) {
+            this.rowActions.add(Objects.requireNonNull(action, "action"));
+            return this;
+        }
+
+        @Override
+        public ManualCrudBuilder<T> selectionAction(CrudAction.SelectionAction<T> action) {
+            this.selectionActions.add(Objects.requireNonNull(action, "action"));
+            return this;
+        }
+
+        @Override
         public CrudPanel<T> build() {
             Objects.requireNonNull(store, "store");
             String[] excluded = excludedPropertyNames(type, propertyFilter);
             Grid<T> effectiveGrid = grid != null
                     ? grid
                     : Grids.of(type).withTextResolver(textResolver).build();
-            return new CrudPanel<>(type, store, effectiveGrid, () -> form != null
-                    ? form
-                    : Forms.auto(type)
-                    .withTextResolver(textResolver)
-                    .exclude(excluded)
-                    .build());
+            return new CrudPanel<>(
+                    type,
+                    store,
+                    effectiveGrid,
+                    () -> form != null
+                            ? form
+                            : Forms.auto(type)
+                            .withTextResolver(textResolver)
+                            .exclude(excluded)
+                            .build(),
+                    preset,
+                    toolbarActions,
+                    rowActions,
+                    selectionActions
+            );
         }
     }
 
@@ -259,6 +334,10 @@ public final class CrudPanels {
         private TextResolver textResolver = new DefaultTextResolver();
         private Predicate<UiProperty<T>> propertyFilter = property -> true;
         private final Map<String, Consumer<UiPropertyConfig<T>>> overrides = new LinkedHashMap<>();
+        private CrudPreset preset = CrudPresets.full();
+        private final List<CrudAction.ToolbarAction<T>> toolbarActions = new ArrayList<>();
+        private final List<CrudAction.RowAction<T>> rowActions = new ArrayList<>();
+        private final List<CrudAction.SelectionAction<T>> selectionActions = new ArrayList<>();
 
         private AutoBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -283,6 +362,30 @@ public final class CrudPanels {
         }
 
         @Override
+        public AutoCrudBuilder<T> preset(CrudPreset preset) {
+            this.preset = Objects.requireNonNull(preset, "preset");
+            return this;
+        }
+
+        @Override
+        public AutoCrudBuilder<T> toolbarAction(CrudAction.ToolbarAction<T> action) {
+            this.toolbarActions.add(Objects.requireNonNull(action, "action"));
+            return this;
+        }
+
+        @Override
+        public AutoCrudBuilder<T> rowAction(CrudAction.RowAction<T> action) {
+            this.rowActions.add(Objects.requireNonNull(action, "action"));
+            return this;
+        }
+
+        @Override
+        public AutoCrudBuilder<T> selectionAction(CrudAction.SelectionAction<T> action) {
+            this.selectionActions.add(Objects.requireNonNull(action, "action"));
+            return this;
+        }
+
+        @Override
         public AutoCrudBuilder<T> override(String propertyName, Consumer<UiPropertyConfig<T>> config) {
             Objects.requireNonNull(propertyName, "propertyName");
             Objects.requireNonNull(config, "config");
@@ -296,7 +399,16 @@ public final class CrudPanels {
             Map<String, UiPropertyConfig<T>> effectiveConfigs = buildEffectiveConfigs();
             String[] excluded = excludedPropertyNames(effectiveConfigs);
             Grid<T> grid = buildGrid(excluded, effectiveConfigs);
-            return new CrudPanel<>(type, store, grid, () -> buildForm(excluded, effectiveConfigs));
+            return new CrudPanel<>(
+                    type,
+                    store,
+                    grid,
+                    () -> buildForm(excluded, effectiveConfigs),
+                    preset,
+                    toolbarActions,
+                    rowActions,
+                    selectionActions
+            );
         }
 
         private Grid<T> buildGrid(String[] excluded, Map<String, UiPropertyConfig<T>> configs) {

@@ -3,17 +3,23 @@ package de.javaholic.toolkit.ui.crud;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
+import de.javaholic.toolkit.ui.crud.action.CrudAction;
+import de.javaholic.toolkit.ui.crud.action.CrudPreset;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -45,8 +51,12 @@ public final class CrudPanel<T> extends VerticalLayout {
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
-    private final Button createButton;
     private final Supplier<Forms.Form<T>> formFactory;
+    private final CrudPreset preset;
+    private final List<CrudAction.ToolbarAction<T>> toolbarActions;
+    private final List<CrudAction.RowAction<T>> rowActions;
+    private final List<CrudAction.SelectionAction<T>> selectionActions;
+    private final List<SelectionActionBinding<T>> selectionActionBindings = new ArrayList<>();
 
     /**
      * Creates a CRUD panel for one type and backing store.
@@ -57,20 +67,24 @@ public final class CrudPanel<T> extends VerticalLayout {
             Class<T> type,
             CrudStore<T, ?> store,
             Grid<T> grid,
-            Supplier<Forms.Form<T>> formFactory
+            Supplier<Forms.Form<T>> formFactory,
+            CrudPreset preset,
+            List<CrudAction.ToolbarAction<T>> toolbarActions,
+            List<CrudAction.RowAction<T>> rowActions,
+            List<CrudAction.SelectionAction<T>> selectionActions
     ) {
         this.type = Objects.requireNonNull(type, "type");
         this.store = Objects.requireNonNull(store, "store");
         this.grid = Objects.requireNonNull(grid, "grid");
         this.formFactory = Objects.requireNonNull(formFactory, "formFactory");
+        this.preset = Objects.requireNonNull(preset, "preset");
+        this.toolbarActions = List.copyOf(Objects.requireNonNull(toolbarActions, "toolbarActions"));
+        this.rowActions = List.copyOf(Objects.requireNonNull(rowActions, "rowActions"));
+        this.selectionActions = List.copyOf(Objects.requireNonNull(selectionActions, "selectionActions"));
 
-        addActionsColumn();
-        this.createButton = Buttons.create()
-                .label("Create")
-                .build();
-
+        addActionsColumnIfNeeded();
         configureLayout();
-        configureCreateButton();
+        configureSelectionActions();
         refresh();
     }
 
@@ -83,37 +97,125 @@ public final class CrudPanel<T> extends VerticalLayout {
         // TODO: add paging/filtering/sorting support for large datasets.
         List<T> items = store.findAll();
         grid.setItems(items);
+        updateSelectionActionEnablement();
     }
 
     private void configureLayout() {
         setSizeFull();
         grid.setSizeFull();
-        add(createButton, grid);
+        add(buildToolbar(), grid);
         expand(grid);
     }
 
-    private void addActionsColumn() {
+    /**
+     * Composes the toolbar from preset defaults and custom toolbar/selection actions.
+     */
+    private HorizontalLayout buildToolbar() {
+        List<Button> buttons = new ArrayList<>();
+        if (preset.enableCreate()) {
+            Button createButton = Buttons.create()
+                    .label("Create")
+                    .action(this::onCreate)
+                    .build();
+            buttons.add(createButton);
+        }
+
+        for (CrudAction.ToolbarAction<T> action : toolbarActions) {
+            Button button = createButton(action.label(), action.tooltip(), action.variants(), action.onInvoke());
+            button.setEnabled(Boolean.TRUE.equals(action.enabledWhen().get()));
+            buttons.add(button);
+        }
+
+        for (CrudAction.SelectionAction<T> action : selectionActions) {
+            Button button = createButton(
+                    action.label(),
+                    action.tooltip(),
+                    action.variants(),
+                    () -> action.onInvoke().accept(currentSelection())
+            );
+            selectionActionBindings.add(new SelectionActionBinding<>(action, button));
+            buttons.add(button);
+        }
+
+        return Layouts.hbox(buttons.toArray(Button[]::new));
+    }
+
+    /**
+     * Adds the row actions column only when default row actions or custom row actions exist.
+     */
+    private void addActionsColumnIfNeeded() {
+        if (!preset.enableEdit() && !preset.enableDelete() && rowActions.isEmpty()) {
+            return;
+        }
+
         grid.addColumn(new ComponentRenderer<>(item -> {
-                    Button edit = Buttons.create()
-                            .label("Edit")
-                            .style(ButtonVariant.LUMO_TERTIARY_INLINE)
-                            .action(() -> onEdit(item))
-                            .build();
-                    Button delete = Buttons.create()
-                            .label("Delete")
-                            .style(ButtonVariant.LUMO_ERROR)
-                            .style(ButtonVariant.LUMO_TERTIARY_INLINE)
-                            .action(() -> onDelete(item))
-                            .build();
-                    return Layouts.hbox(edit, delete);
+                    List<Button> buttons = new ArrayList<>();
+                    if (preset.enableEdit()) {
+                        buttons.add(Buttons.create()
+                                .label("Edit")
+                                .style(ButtonVariant.LUMO_TERTIARY_INLINE)
+                                .action(() -> onEdit(item))
+                                .build());
+                    }
+                    if (preset.enableDelete()) {
+                        buttons.add(Buttons.create()
+                                .label("Delete")
+                                .style(ButtonVariant.LUMO_ERROR)
+                                .style(ButtonVariant.LUMO_TERTIARY_INLINE)
+                                .action(() -> onDelete(item))
+                                .build());
+                    }
+                    for (CrudAction.RowAction<T> action : rowActions) {
+                        Button button = createButton(
+                                action.label(),
+                                action.tooltip(),
+                                action.variants(),
+                                () -> action.onInvoke().accept(item)
+                        );
+                        button.setEnabled(action.enabledWhen().test(item));
+                        buttons.add(button);
+                    }
+                    return Layouts.hbox(buttons.toArray(Button[]::new));
                 }))
                 .setHeader("Actions")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
     }
 
-    private void configureCreateButton() {
-        createButton.addClickListener(event -> onCreate());
+    /**
+     * Selection actions are rendered as toolbar buttons and re-evaluated on selection changes.
+     */
+    private void configureSelectionActions() {
+        if (selectionActions.isEmpty()) {
+            return;
+        }
+        grid.addSelectionListener(event -> updateSelectionActionEnablement());
+        updateSelectionActionEnablement();
+    }
+
+    /**
+     * Recomputes selection-action enablement from each action predicate and current selection.
+     */
+    private void updateSelectionActionEnablement() {
+        Set<T> selection = currentSelection();
+        selectionActionBindings.forEach(binding ->
+                binding.button().setEnabled(binding.action().enabledWhen().test(selection))
+        );
+    }
+
+    private Set<T> currentSelection() {
+        return Set.copyOf(new LinkedHashSet<>(grid.getSelectedItems()));
+    }
+
+    private Button createButton(String label, String tooltip, List<ButtonVariant> variants, Runnable invoke) {
+        Buttons.Builder builder = Buttons.create()
+                .label(label)
+                .action(invoke);
+        if (tooltip != null && !tooltip.isBlank()) {
+            builder.tooltip(tooltip);
+        }
+        variants.forEach(builder::style);
+        return builder.build();
     }
 
     /**
@@ -195,5 +297,8 @@ public final class CrudPanel<T> extends VerticalLayout {
     void deleteAndRefresh(T bean) {
         store.delete(bean);
         refresh();
+    }
+
+    private record SelectionActionBinding<T>(CrudAction.SelectionAction<T> action, Button button) {
     }
 }
