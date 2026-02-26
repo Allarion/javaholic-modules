@@ -30,5 +30,5 @@ import java.util.UUID;
  *   <li>Clean Mode: serves as domain backing store for DTO CRUD adapters.</li>
  * </ul>
  */
-public interface RoleStore extends RoleQuery, RoleCommand, CrudStore<Role, UUID> {
+public interface RoleFormStore extends RoleQuery, RoleCommand, CrudStore<Role, UUID> {
 }

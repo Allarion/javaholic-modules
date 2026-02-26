@@ -30,5 +30,5 @@ import java.util.UUID;
  *   <li>Clean Mode: delegated by DTO-facing permission CRUD stores.</li>
  * </ul>
  */
-public interface PermissionStore extends PermissionCommand, PermissionQuery, CrudStore<Permission, UUID> {
+public interface PermissionFormStore extends PermissionCommand, PermissionQuery, CrudStore<Permission, UUID> {
 }

@@ -40,5 +40,5 @@ import java.util.UUID;
  * userStore.save(user);
  * }</pre>
  */
-public interface UserStore extends UserQuery, UserCommand, CrudStore<User, UUID> {
+public interface UserFormStore extends UserQuery, UserCommand, CrudStore<User, UUID> {
 }

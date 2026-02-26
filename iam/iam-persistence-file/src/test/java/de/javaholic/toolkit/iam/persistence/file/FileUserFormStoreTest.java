@@ -12,11 +12,11 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class FileUserStoreTest {
+public class FileUserFormStoreTest {
 
     @Test
     public void loadsUsersFromYaml() {
-        FileUserStore store = new FileUserStore("iam/users-test.yaml");
+        FileUserFormStore store = new FileUserFormStore("iam/users-test.yaml");
         Optional<User> admin = store.findByUsername("admin");
 
         assertTrue(admin.isPresent());

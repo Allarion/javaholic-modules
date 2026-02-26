@@ -1,17 +1,17 @@
 package de.javaholic.toolkit.iam.dto.config;
 
-import de.javaholic.toolkit.iam.core.spi.PermissionStore;
-import de.javaholic.toolkit.iam.core.spi.RoleStore;
-import de.javaholic.toolkit.iam.core.spi.UserStore;
-import de.javaholic.toolkit.iam.dto.mapper.PermissionDtoMapper;
-import de.javaholic.toolkit.iam.dto.mapper.RoleDtoMapper;
-import de.javaholic.toolkit.iam.dto.mapper.UserDtoMapper;
-import de.javaholic.toolkit.iam.dto.spi.PermissionDtoStore;
+import de.javaholic.toolkit.iam.core.spi.PermissionFormStore;
+import de.javaholic.toolkit.iam.core.spi.RoleFormStore;
+import de.javaholic.toolkit.iam.core.spi.UserFormStore;
+import de.javaholic.toolkit.iam.dto.mapper.PermissionFormDtoMapper;
+import de.javaholic.toolkit.iam.dto.mapper.RoleFormDtoMapper;
+import de.javaholic.toolkit.iam.dto.mapper.UserFormDtoMapper;
+import de.javaholic.toolkit.iam.dto.spi.PermissionFormDtoStore;
 import de.javaholic.toolkit.iam.dto.spi.RoleDtoStore;
-import de.javaholic.toolkit.iam.dto.spi.UserDtoStore;
-import de.javaholic.toolkit.iam.dto.store.PermissionDtoCrudStore;
-import de.javaholic.toolkit.iam.dto.store.RoleDtoCrudStore;
-import de.javaholic.toolkit.iam.dto.store.UserDtoCrudStore;
+import de.javaholic.toolkit.iam.dto.spi.UserFormDtoStore;
+import de.javaholic.toolkit.iam.dto.store.PermissionFormDtoCrudStore;
+import de.javaholic.toolkit.iam.dto.store.RoleFormDtoCrudStore;
+import de.javaholic.toolkit.iam.dto.store.UserFormDtoCrudStore;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -21,34 +21,34 @@ public class IamDtoAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public UserDtoMapper userDtoMapper(RoleDtoMapper roleDtoMapper) {
-        return new UserDtoMapper(roleDtoMapper);
+    public UserFormDtoMapper userDtoMapper(RoleFormDtoMapper roleFormDtoMapper) {
+        return new UserFormDtoMapper(roleFormDtoMapper);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public PermissionDtoMapper permissionDtoMapper() {
-        return new PermissionDtoMapper();
+    public PermissionFormDtoMapper permissionDtoMapper() {
+        return new PermissionFormDtoMapper();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public RoleDtoMapper roleDtoMapper(PermissionDtoMapper permissionDtoMapper) {
-        return new RoleDtoMapper(permissionDtoMapper);
+    public RoleFormDtoMapper roleDtoMapper(PermissionFormDtoMapper permissionFormDtoMapper) {
+        return new RoleFormDtoMapper(permissionFormDtoMapper);
     }
 
     @Bean
-    public UserDtoStore userDtoStore(UserStore domainStore, UserDtoMapper userDtoMapper) {
-        return new UserDtoCrudStore(domainStore, userDtoMapper);
+    public UserFormDtoStore userDtoStore(UserFormStore domainStore, UserFormDtoMapper userFormDtoMapper) {
+        return new UserFormDtoCrudStore(domainStore, userFormDtoMapper);
     }
 
     @Bean
-    public RoleDtoStore roleDtoStore(RoleStore domainStore, RoleDtoMapper roleDtoMapper) {
-        return new RoleDtoCrudStore(domainStore, roleDtoMapper);
+    public RoleDtoStore roleDtoStore(RoleFormStore domainStore, RoleFormDtoMapper roleFormDtoMapper) {
+        return new RoleFormDtoCrudStore(domainStore, roleFormDtoMapper);
     }
 
     @Bean
-    public PermissionDtoStore permissionDtoStore(PermissionStore domainStore, PermissionDtoMapper permissionDtoMapper) {
-        return new PermissionDtoCrudStore(domainStore, permissionDtoMapper);
+    public PermissionFormDtoStore permissionDtoStore(PermissionFormStore domainStore, PermissionFormDtoMapper permissionFormDtoMapper) {
+        return new PermissionFormDtoCrudStore(domainStore, permissionFormDtoMapper);
     }
 }

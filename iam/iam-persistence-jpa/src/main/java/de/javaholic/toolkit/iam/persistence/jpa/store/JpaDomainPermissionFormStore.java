@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.iam.persistence.jpa.store;
 
 import de.javaholic.toolkit.iam.core.domain.Permission;
-import de.javaholic.toolkit.iam.core.spi.PermissionStore;
+import de.javaholic.toolkit.iam.core.spi.PermissionFormStore;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaPermissionEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaPermissionMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaPermissionRepository;
@@ -12,11 +12,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Transactional(readOnly = true)
-public class JpaDomainPermissionStore extends JpaDomainCrudStore<Permission,UUID, JpaPermissionEntity, JpaPermissionRepository> implements PermissionStore {
+public class JpaDomainPermissionFormStore extends JpaDomainCrudStore<Permission,UUID, JpaPermissionEntity, JpaPermissionRepository> implements PermissionFormStore {
 
     private final JpaPermissionMapper mapper;
 
-    public JpaDomainPermissionStore(JpaPermissionRepository repository, JpaPermissionMapper mapper) {
+    public JpaDomainPermissionFormStore(JpaPermissionRepository repository, JpaPermissionMapper mapper) {
         super(repository, mapper);
         this.mapper = mapper;
     }

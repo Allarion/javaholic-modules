@@ -6,7 +6,7 @@ import de.javaholic.toolkit.iam.core.domain.Permission;
 import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.User;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
-import de.javaholic.toolkit.iam.core.spi.UserStore;
+import de.javaholic.toolkit.iam.core.spi.UserFormStore;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,22 +22,22 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public final class FileUserStore implements UserStore {
+public final class FileUserFormStore implements UserFormStore {
 
     private static final String DEFAULT_RESOURCE = "iam/users.yaml";
 
     private final List<User> users;
     private final Map<String, User> usersByUsername;
 
-    public FileUserStore() {
+    public FileUserFormStore() {
         this(DEFAULT_RESOURCE, new ObjectMapper(new YAMLFactory()));
     }
 
-    public FileUserStore(String resourcePath) {
+    public FileUserFormStore(String resourcePath) {
         this(resourcePath, new ObjectMapper(new YAMLFactory()));
     }
 
-    public FileUserStore(String resourcePath, ObjectMapper mapper) {
+    public FileUserFormStore(String resourcePath, ObjectMapper mapper) {
         Objects.requireNonNull(resourcePath, "resourcePath");
         Objects.requireNonNull(mapper, "mapper");
         UsersFile data = load(resourcePath, mapper);
@@ -62,7 +62,7 @@ public final class FileUserStore implements UserStore {
     }
 
     private UsersFile load(String resourcePath, ObjectMapper mapper) {
-        try (InputStream inputStream = FileUserStore.class.getClassLoader().getResourceAsStream(resourcePath)) {
+        try (InputStream inputStream = FileUserFormStore.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
                 throw new IllegalStateException("Resource not found: " + resourcePath);
             }

@@ -1,9 +1,9 @@
 package de.javaholic.toolkit.iam.ui;
 
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
-import de.javaholic.toolkit.iam.dto.PermissionDto;
-import de.javaholic.toolkit.iam.dto.RoleDto;
-import de.javaholic.toolkit.iam.dto.UserDto;
+import de.javaholic.toolkit.iam.dto.PermissionFormDto;
+import de.javaholic.toolkit.iam.dto.RoleFormDto;
+import de.javaholic.toolkit.iam.dto.UserFormDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,18 +21,18 @@ import static org.mockito.Mockito.*;
 class IAMCrudPanelsSmokeTest {
 
     @Mock
-    private CrudStore<UserDto, UUID> userStore;
+    private CrudStore<UserFormDto, UUID> userStore;
 
     @Mock
-    private CrudStore<RoleDto, UUID> roleDtoStore;
+    private CrudStore<RoleFormDto, UUID> roleDtoStore;
 
     @Mock
-    private CrudStore<PermissionDto, UUID> permissionDtoStore;
+    private CrudStore<PermissionFormDto, UUID> permissionDtoStore;
 
     @Test
     void usersPanelCreatesAndWiresRoleChoices() {
-        RoleDto admin = new RoleDto("admin", Set.of());
-        UserDto user = new UserDto(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
+        RoleFormDto admin = new RoleFormDto("admin", Set.of());
+        UserFormDto user = new UserFormDto(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
         when(userStore.findAll()).thenReturn(List.of(user));
 
         var panel = IAMCrudPanels.users(userStore);
@@ -43,8 +43,8 @@ class IAMCrudPanelsSmokeTest {
 
     @Test
     void rolesPanelCreatesAndWiresPermissionChoices() {
-        PermissionDto permission = new PermissionDto("user.read");
-        when(roleDtoStore.findAll()).thenReturn(List.of(new RoleDto("reader", Set.of(permission))));
+        PermissionFormDto permission = new PermissionFormDto("user.read");
+        when(roleDtoStore.findAll()).thenReturn(List.of(new RoleFormDto("reader", Set.of(permission))));
 
         var panel = IAMCrudPanels.roles(roleDtoStore, permissionDtoStore);
 
@@ -55,7 +55,7 @@ class IAMCrudPanelsSmokeTest {
 
     @Test
     void permissionsPanelCreatesAndLoadsItems() {
-        PermissionDto permission = new PermissionDto("config.read");
+        PermissionFormDto permission = new PermissionFormDto("config.read");
         when(permissionDtoStore.findAll()).thenReturn(List.of(permission));
         var panel = IAMCrudPanels.permissions(permissionDtoStore);
         assertThat(panel).isNotNull();

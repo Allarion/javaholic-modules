@@ -6,9 +6,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.iam.dto.PermissionDto;
-import de.javaholic.toolkit.iam.dto.RoleDto;
-import de.javaholic.toolkit.iam.dto.UserDto;
+import de.javaholic.toolkit.iam.dto.PermissionFormDto;
+import de.javaholic.toolkit.iam.dto.RoleFormDto;
+import de.javaholic.toolkit.iam.dto.UserFormDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.crud.CrudPanel;
 import de.javaholic.toolkit.ui.crud.CrudPanels;
@@ -22,18 +22,18 @@ public final class IAMCrudPanels {
     }
 
     public static Component createView(
-            CrudStore<UserDto, UUID> userStore,
-            CrudStore<RoleDto, UUID> roleStore,
-            CrudStore<PermissionDto, UUID> permissionStore,
+            CrudStore<UserFormDto, UUID> userStore,
+            CrudStore<RoleFormDto, UUID> roleStore,
+            CrudStore<PermissionFormDto, UUID> permissionStore,
             TextResolver textResolver
     ) {
         return createView(userStore, roleStore, permissionStore,textResolver, Labels.defaults());
     }
 
     public static Component createView(
-            CrudStore<UserDto, UUID> userStore,
-            CrudStore<RoleDto, UUID> roleStore,
-            CrudStore<PermissionDto, UUID> permissionStore,
+            CrudStore<UserFormDto, UUID> userStore,
+            CrudStore<RoleFormDto, UUID> roleStore,
+            CrudStore<PermissionFormDto, UUID> permissionStore,
             TextResolver textResolver,
             Labels labels
     ) {
@@ -41,9 +41,9 @@ public final class IAMCrudPanels {
         Objects.requireNonNull(roleStore, "roleStore");
         Objects.requireNonNull(permissionStore, "permissionStore");
 
-        CrudPanel<UserDto> usersPanel = users(userStore, labels);
-        CrudPanel<RoleDto> rolesPanel = roles(roleStore, permissionStore, labels);
-        CrudPanel<PermissionDto> permissionsPanel = permissions(permissionStore, labels);
+        CrudPanel<UserFormDto> usersPanel = users(userStore, labels);
+        CrudPanel<RoleFormDto> rolesPanel = roles(roleStore, permissionStore, labels);
+        CrudPanel<PermissionFormDto> permissionsPanel = permissions(permissionStore, labels);
 
         Tabs tabs = new Tabs(
                 new Tab("Users"),
@@ -74,14 +74,14 @@ public final class IAMCrudPanels {
         return layout;
     }
 
-    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore) {
+    public static CrudPanel<UserFormDto> users(CrudStore<UserFormDto, UUID> userStore) {
         return users(userStore, Labels.defaults());
     }
 
-    public static CrudPanel<UserDto> users(CrudStore<UserDto, UUID> userStore, Labels labels) {
+    public static CrudPanel<UserFormDto> users(CrudStore<UserFormDto, UUID> userStore, Labels labels) {
         Objects.requireNonNull(userStore, "userStore");
         Labels effective = Labels.defaults().merge(labels);
-        return CrudPanels.auto(UserDto.class)
+        return CrudPanels.auto(UserFormDto.class)
                 .withStore(userStore)
                 .override("username", cfg -> cfg.label(effective.userUsername()))
                 .override("status", cfg -> cfg.label(effective.userStatus()))
@@ -89,29 +89,29 @@ public final class IAMCrudPanels {
                 .build();
     }
 
-    public static CrudPanel<RoleDto> roles(CrudStore<RoleDto, UUID> roleStore, CrudStore<PermissionDto, UUID> permissionStore) {
+    public static CrudPanel<RoleFormDto> roles(CrudStore<RoleFormDto, UUID> roleStore, CrudStore<PermissionFormDto, UUID> permissionStore) {
         return roles(roleStore, permissionStore, Labels.defaults());
     }
 
-    public static CrudPanel<RoleDto> roles(CrudStore<RoleDto, UUID> roleStore, CrudStore<PermissionDto, UUID> permissionStore, Labels labels) {
+    public static CrudPanel<RoleFormDto> roles(CrudStore<RoleFormDto, UUID> roleStore, CrudStore<PermissionFormDto, UUID> permissionStore, Labels labels) {
         Objects.requireNonNull(roleStore, "roleStore");
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
-        return CrudPanels.auto(RoleDto.class)
+        return CrudPanels.auto(RoleFormDto.class)
                 .withStore(roleStore)
                 .override("name", cfg -> cfg.label(effective.roleName()))
                 .override("permissions", cfg -> cfg.label(effective.rolePermissions()))
                 .build();
     }
 
-    public static CrudPanel<PermissionDto> permissions(CrudStore<PermissionDto, UUID> permissionStore) {
+    public static CrudPanel<PermissionFormDto> permissions(CrudStore<PermissionFormDto, UUID> permissionStore) {
         return permissions(permissionStore, Labels.defaults());
     }
 
-    public static CrudPanel<PermissionDto> permissions(CrudStore<PermissionDto, UUID> permissionStore, Labels labels) {
+    public static CrudPanel<PermissionFormDto> permissions(CrudStore<PermissionFormDto, UUID> permissionStore, Labels labels) {
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
-        return CrudPanels.auto(PermissionDto.class)
+        return CrudPanels.auto(PermissionFormDto.class)
                 .withStore(permissionStore)
                 .override("code", cfg -> cfg.label(effective.permissionName()))
                 .build();

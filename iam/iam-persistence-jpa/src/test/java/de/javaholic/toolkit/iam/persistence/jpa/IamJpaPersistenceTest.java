@@ -10,7 +10,7 @@ import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaUserEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaPermissionRepository;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaRoleRepository;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaUserRepository;
-import de.javaholic.toolkit.iam.core.spi.UserStore;
+import de.javaholic.toolkit.iam.core.spi.UserFormStore;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ class IamJpaPersistenceTest {
     private JpaPermissionRepository permissionRepository;
 
     @Autowired
-    private UserStore userStore;
+    private UserFormStore userFormStore;
 
     @Test
     void flywayMigrationCreatesTables() {
@@ -73,7 +73,7 @@ class IamJpaPersistenceTest {
         user.setRoles(Set.of(adminRole));
         userRepository.save(user);
 
-        User loaded = userStore.findByUsername("alice").orElseThrow();
+        User loaded = userFormStore.findByUsername("alice").orElseThrow();
         assertEquals("alice", loaded.getUsername());
         assertEquals(Set.of("ADMIN"),
             loaded.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toSet()));
@@ -90,7 +90,7 @@ class IamJpaPersistenceTest {
         user.setStatus(de.javaholic.toolkit.iam.core.domain.UserStatus.ACTIVE);
         userRepository.save(user);
 
-        assertTrue(userStore.findByUsername("bob").isPresent());
+        assertTrue(userFormStore.findByUsername("bob").isPresent());
     }
 
     @SpringBootConfiguration

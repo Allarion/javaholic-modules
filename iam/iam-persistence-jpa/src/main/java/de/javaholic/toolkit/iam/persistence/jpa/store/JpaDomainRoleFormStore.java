@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.iam.persistence.jpa.store;
 
 import de.javaholic.toolkit.iam.core.domain.Role;
-import de.javaholic.toolkit.iam.core.spi.RoleStore;
+import de.javaholic.toolkit.iam.core.spi.RoleFormStore;
 import de.javaholic.toolkit.iam.persistence.jpa.entity.JpaRoleEntity;
 import de.javaholic.toolkit.iam.persistence.jpa.mapper.JpaRoleMapper;
 import de.javaholic.toolkit.iam.persistence.jpa.repo.JpaRoleRepository;
@@ -13,10 +13,10 @@ import de.javaholic.toolkit.persistence.springdata.store.JpaDomainCrudStore;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
-public class JpaDomainRoleStore extends JpaDomainCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleStore {
+public class JpaDomainRoleFormStore extends JpaDomainCrudStore<Role, UUID, JpaRoleEntity, JpaRoleRepository> implements RoleFormStore {
 
     private final JpaRoleMapper mapper;
-    public JpaDomainRoleStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
+    public JpaDomainRoleFormStore(JpaRoleRepository roleRepository, JpaRoleMapper roleMapper) {
         super(roleRepository, roleMapper);
         this.mapper = Objects.requireNonNull(roleMapper, "roleMapper");
     }

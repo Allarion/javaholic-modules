@@ -5,19 +5,19 @@ import de.javaholic.toolkit.ui.annotations.UiLabel;
 
 import java.util.Set;
 
-public class RoleDto {
+public class RoleFormDto {
 
     @UIRequired
     @UiLabel("form.role.name.label")
     private String name;
 
     @UiLabel("form.role.permissions.label")
-    private Set<PermissionDto> permissions;
+    private Set<PermissionFormDto> permissions;
 
-    public RoleDto() {
+    public RoleFormDto() {
     }
 
-    public RoleDto(String name, Set<PermissionDto> permissions) {
+    public RoleFormDto(String name, Set<PermissionFormDto> permissions) {
         this.name = name;
         this.permissions = permissions;
     }
@@ -30,11 +30,11 @@ public class RoleDto {
         this.name = name;
     }
 
-    public Set<PermissionDto> getPermissions() {
+    public Set<PermissionFormDto> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<PermissionDto> permissions) {
+    public void setPermissions(Set<PermissionFormDto> permissions) {
         this.permissions = permissions;
     }
 }

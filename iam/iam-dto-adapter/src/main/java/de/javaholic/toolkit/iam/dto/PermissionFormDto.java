@@ -3,16 +3,16 @@ package de.javaholic.toolkit.iam.dto;
 import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiLabel;
 
-public class PermissionDto {
+public class PermissionFormDto {
 
     @UIRequired
     @UiLabel("form.permission.code.label")
     private String code;
 
-    public PermissionDto() {
+    public PermissionFormDto() {
     }
 
-    public PermissionDto(String code) {
+    public PermissionFormDto(String code) {
         this.code = code;
     }
 

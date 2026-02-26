@@ -1,6 +1,5 @@
 package de.javaholic.toolkit.iam.dto;
 
-import de.javaholic.toolkit.iam.core.domain.Role;
 import de.javaholic.toolkit.iam.core.domain.UserStatus;
 import de.javaholic.toolkit.ui.annotations.UIRequired;
 import de.javaholic.toolkit.ui.annotations.UiLabel;
@@ -8,7 +7,7 @@ import de.javaholic.toolkit.ui.annotations.UiLabel;
 import java.util.Set;
 import java.util.UUID;
 
-public class UserDto {
+public class UserFormDto {
 
     private UUID id;
 
@@ -21,12 +20,12 @@ public class UserDto {
     private UserStatus status;
 
     @UiLabel("form.user.roles.label")
-    private Set<RoleDto> roles;
+    private Set<RoleFormDto> roles;
 
-    public UserDto() {
+    public UserFormDto() {
     }
 
-    public UserDto(UUID id, String username, UserStatus status, Set<RoleDto> roles) {
+    public UserFormDto(UUID id, String username, UserStatus status, Set<RoleFormDto> roles) {
         this.id = id;
         this.username = username;
         this.status = status;
@@ -57,11 +56,11 @@ public class UserDto {
         this.status = status;
     }
 
-    public Set<RoleDto> getRoles() {
+    public Set<RoleFormDto> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<RoleDto> roles) {
+    public void setRoles(Set<RoleFormDto> roles) {
         this.roles = roles;
     }
 }
