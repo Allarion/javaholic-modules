@@ -21,7 +21,7 @@ public final class IamUiPresets {
 
     private static final ResourcePreset USERS = new FixedPreset(true, true, false);
     private static final ResourcePreset ROLES = new FixedPreset(true, true, true);
-    private static final ResourcePreset PERMISSIONS = new FixedPreset(false, false, false);
+    private static final ResourcePreset PERMISSIONS = new FixedPreset(true, false, true);
 
     private IamUiPresets() {
     }
