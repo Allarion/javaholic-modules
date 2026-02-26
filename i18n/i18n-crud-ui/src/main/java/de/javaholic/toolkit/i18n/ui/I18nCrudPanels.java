@@ -35,7 +35,10 @@ public final class I18nCrudPanels {
         return CrudPanels.auto(I18nEntryDto.class)
                 .withStore(store)
                 .withTextResolver(textResolver)
+                .preset(I18nUiPresets.texts())
+                .toolbarAction(I18nUiPresets.importAction())
+                .toolbarAction(I18nUiPresets.exportAction())
+                .toolbarAction(I18nUiPresets.generateMissingKeysAction())
                 .build();
     }
 }
-

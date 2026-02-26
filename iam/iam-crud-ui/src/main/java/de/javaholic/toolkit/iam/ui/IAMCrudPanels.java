@@ -83,9 +83,13 @@ public final class IAMCrudPanels {
         Labels effective = Labels.defaults().merge(labels);
         return CrudPanels.auto(UserFormDto.class)
                 .withStore(userStore)
+                .preset(IamUiPresets.users())
                 .override("username", cfg -> cfg.label(effective.userUsername()))
                 .override("status", cfg -> cfg.label(effective.userStatus()))
                 .override("roles", cfg -> cfg.label(effective.userRoles()))
+                .rowAction(IamUiPresets.deactivateUserAction(userStore))
+                .rowAction(IamUiPresets.activateUserAction(userStore))
+                .rowAction(IamUiPresets.assignRolesAction())
                 .build();
     }
 
@@ -99,8 +103,10 @@ public final class IAMCrudPanels {
         Labels effective = Labels.defaults().merge(labels);
         return CrudPanels.auto(RoleFormDto.class)
                 .withStore(roleStore)
+                .preset(IamUiPresets.roles())
                 .override("name", cfg -> cfg.label(effective.roleName()))
                 .override("permissions", cfg -> cfg.label(effective.rolePermissions()))
+                .rowAction(IamUiPresets.assignPermissionsAction())
                 .build();
     }
 
@@ -113,6 +119,7 @@ public final class IAMCrudPanels {
         Labels effective = Labels.defaults().merge(labels);
         return CrudPanels.auto(PermissionFormDto.class)
                 .withStore(permissionStore)
+                .preset(IamUiPresets.permissions())
                 .override("code", cfg -> cfg.label(effective.permissionName()))
                 .build();
     }
@@ -144,4 +151,3 @@ public final class IAMCrudPanels {
         }
     }
 }
-
