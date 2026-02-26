@@ -4,6 +4,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.Notification;
+import de.javaholic.toolkit.iam.core.api.PermissionChecker;
 import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.ui.action.Action;
@@ -60,8 +61,15 @@ public final class Buttons {
      * <p>Subscriptions are tied to component detach lifecycle.</p>
      */
     public static Button from(Action action) {
-        Objects.requireNonNull(action, "action");
+        return from(action, null);
+    }
 
+    /**
+     * Renders a Vaadin {@link Button} from immutable {@link Action} definition with optional permission context.
+     */
+    public static Button from(Action action, PermissionChecker permissionChecker) {
+        Objects.requireNonNull(action, "action");
+        // FIXME: whole .from(Action ) isnt using the Builder! API BREAK! solution: .withPermissionChecker
         Button button = new Button(action.labelKeyOrText());
         if (action.tooltipKeyOrText() != null) {
             button.setTooltipText(action.tooltipKeyOrText());
@@ -69,7 +77,7 @@ public final class Buttons {
         action.createIcon().ifPresent(button::setIcon);
         button.addClickListener(e -> action.onClick().run());
 
-        VaadinActionBinder.bindEnabled(button, action.enabled());
+        VaadinActionBinder.bindEnabled(button, action, permissionChecker);
         VaadinActionBinder.bindVisible(button, action.visible());
 
         return button;
@@ -80,6 +88,13 @@ public final class Buttons {
      */
     public static Button action(Action action) {
         return from(action);
+    }
+
+    /**
+     * Alias for {@link #from(Action, PermissionChecker)}.
+     */
+    public static Button action(Action action, PermissionChecker permissionChecker) {
+        return from(action, permissionChecker);
     }
 
     /**

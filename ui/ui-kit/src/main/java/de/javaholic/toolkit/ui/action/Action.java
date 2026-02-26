@@ -81,6 +81,9 @@ public final class Action {
         return visible;
     }
 
+    /**
+     * Optional permission key used for UX-level enablement decisions.
+     */
     public Optional<String> permissionKey() {
         return Optional.ofNullable(permissionKey);
     }

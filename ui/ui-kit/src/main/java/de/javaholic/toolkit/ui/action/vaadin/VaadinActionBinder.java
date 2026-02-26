@@ -3,6 +3,11 @@ package de.javaholic.toolkit.ui.action.vaadin;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.UI;
+import de.javaholic.toolkit.iam.core.api.PermissionChecker;
+import de.javaholic.toolkit.ui.action.Action;
+import de.javaholic.toolkit.ui.policy.DefaultUiPolicyEngine;
+import de.javaholic.toolkit.ui.policy.UiPolicyContext;
+import de.javaholic.toolkit.ui.state.DerivedState;
 import de.javaholic.toolkit.ui.state.ObservableValue;
 import de.javaholic.toolkit.ui.state.Subscription;
 
@@ -20,8 +25,12 @@ import java.util.function.Consumer;
  */
 public final class VaadinActionBinder {
 
+    private static final DefaultUiPolicyEngine POLICY_ENGINE = new DefaultUiPolicyEngine();
+
     private VaadinActionBinder() {
     }
+
+    // TODO: more comments & examples. also check side effects if bindEndabled
 
     /**
      * Binds enabled state when component supports {@link HasEnabled}.
@@ -32,6 +41,24 @@ public final class VaadinActionBinder {
         if (component instanceof HasEnabled hasEnabled) {
             bind(component, enabled, v -> hasEnabled.setEnabled(Boolean.TRUE.equals(v)));
         }
+    }
+
+    /**
+     * Binds enabled state with permission-aware precondition.
+     *
+     * <p>Order is explicit: permission check first, then existing action enabled state.</p>
+     */
+    public static void bindEnabled(Component component, Action action, PermissionChecker permissionChecker) {
+        Objects.requireNonNull(component, "component");
+        Objects.requireNonNull(action, "action");
+        boolean permissionAllowed = action.permissionKey()
+                .map(key -> POLICY_ENGINE.isPermissionAllowed(key, new UiPolicyContext(permissionChecker, null)))
+                .orElse(true);
+        ObservableValue<Boolean> effectiveEnabled = DerivedState.of(
+                () -> permissionAllowed && Boolean.TRUE.equals(action.enabled().get()),
+                action.enabled()
+        );
+        bindEnabled(component, effectiveEnabled);
     }
 
     /**

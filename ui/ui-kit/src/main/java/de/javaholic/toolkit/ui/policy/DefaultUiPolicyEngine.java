@@ -12,6 +12,20 @@ import java.util.Objects;
  */
 public final class DefaultUiPolicyEngine implements UiPolicyEngine {
 
+    /**
+     * Evaluates permission-only policy for action-level UX enablement.
+     */
+    public boolean isPermissionAllowed(String permissionKey, UiPolicyContext context) {
+        if (permissionKey == null || permissionKey.isBlank()) {
+            return true;
+        }
+        PermissionChecker checker = context != null ? context.getPermissionChecker() : null;
+        if (checker == null) {
+            return true;
+        }
+        return checker.hasPermission(permissionKey);
+    }
+
     @Override
     public UiDecision evaluate(UiProperty<?> property, UiPolicyContext context) {
         Objects.requireNonNull(property, "property");

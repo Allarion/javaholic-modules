@@ -164,6 +164,9 @@ public final class ActionBuilder {
         return visibleBy(BooleanStates.not(fromField(field)));
     }
 
+    /**
+     * Sets optional permission key for UX-level enablement filtering.
+     */
     public ActionBuilder permission(String permissionKey) {
         this.permission = permissionKey;
         return this;
