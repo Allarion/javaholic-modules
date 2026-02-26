@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="iam-crud-ui" />
         <module name="persistence-core" />
         <module name="introspection" />
         <module name="persistence-spring-data" />
@@ -14,13 +15,12 @@
         <module name="config-core" />
         <module name="i18n-persistence-jpa" />
         <module name="i18n-core" />
+        <module name="i18n-crud-ui" />
         <module name="i18n-spring" />
         <module name="iam-core" />
-        <module name="i18n-editor-ui" />
         <module name="ui-kit" />
         <module name="iam-persistence-jpa" />
         <module name="iam-persistence-file" />
-        <module name="iam-ui" />
         <module name="iam-application-spring" />
         <module name="ui-kit-crud" />
         <module name="config-forms-ui" />
@@ -33,15 +33,15 @@
       <module name="config-core" options="-Xlint:all" />
       <module name="config-forms-ui" options="-Xlint:all" />
       <module name="i18n-core" options="-Xlint:all" />
-      <module name="i18n-editor-ui" options="-Xlint:all" />
+      <module name="i18n-crud-ui" options="-Xlint:all" />
       <module name="i18n-persistence-jpa" options="-Xlint:all" />
       <module name="i18n-spring" options="-Xlint:all" />
       <module name="iam-application-spring" options="-Xlint:all" />
       <module name="iam-core" options="-Xlint:all" />
+      <module name="iam-crud-ui" options="-Xlint:all" />
       <module name="iam-persistence-file" options="-Xlint:all" />
       <module name="iam-persistence-jpa" options="-Xlint:all" />
       <module name="iam-security-spring" options="-Xlint:all" />
-      <module name="iam-ui" options="-Xlint:all" />
       <module name="introspection" options="-Xlint:all" />
       <module name="persistence-core" options="-Xlint:all" />
       <module name="persistence-spring-data" options="-Xlint:all" />

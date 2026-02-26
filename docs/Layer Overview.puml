@@ -22,7 +22,7 @@ package "DTO Adapter" {
 }
 
 package "UI Layer" {
-  class CrudPanel<T>
+  class ResourcePanel<T>
 }
 
 CrudStore <|-- UserStore
@@ -30,6 +30,7 @@ UserStore <|.. JpaDomainUserStore
 CrudStore <|.. UserDtoCrudStore
 
 UserDtoCrudStore --> UserStore
-CrudPanel --> CrudStore
+ResourcePanel --> CrudStore
 
 @enduml
+

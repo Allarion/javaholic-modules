@@ -1,8 +1,8 @@
 package de.javaholic.toolkit.i18n.ui;
 
 import com.vaadin.flow.component.notification.Notification;
-import de.javaholic.toolkit.ui.crud.action.CrudAction;
-import de.javaholic.toolkit.ui.crud.action.CrudPreset;
+import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 
 /**
  * I18n-specific CRUD defaults and helper actions.
@@ -12,33 +12,34 @@ import de.javaholic.toolkit.ui.crud.action.CrudPreset;
  */
 public final class I18nUiPresets {
 
-    private static final CrudPreset TEXTS = new FixedPreset(true, true, true);
+    private static final ResourcePreset TEXTS = new FixedPreset(true, true, true);
 
     private I18nUiPresets() {
     }
 
-    public static CrudPreset texts() {
+    public static ResourcePreset texts() {
         return TEXTS;
     }
 
-    public static <T> CrudAction.ToolbarAction<T> importAction() {
-        return CrudAction.toolbar("Import...", () ->
+    public static <T> ResourceAction.ToolbarAction<T> importAction() {
+        return ResourceAction.toolbar("Import...", () ->
                 Notification.show("Import is not implemented yet.", 2500, Notification.Position.MIDDLE)
         );
     }
 
-    public static <T> CrudAction.ToolbarAction<T> exportAction() {
-        return CrudAction.toolbar("Export...", () ->
+    public static <T> ResourceAction.ToolbarAction<T> exportAction() {
+        return ResourceAction.toolbar("Export...", () ->
                 Notification.show("Export is not implemented yet.", 2500, Notification.Position.MIDDLE)
         );
     }
 
-    public static <T> CrudAction.ToolbarAction<T> generateMissingKeysAction() {
-        return CrudAction.toolbar("Generate Missing Keys", () ->
+    public static <T> ResourceAction.ToolbarAction<T> generateMissingKeysAction() {
+        return ResourceAction.toolbar("Generate Missing Keys", () ->
                 Notification.show("Generate Missing Keys is not implemented yet.", 2500, Notification.Position.MIDDLE)
         );
     }
 
-    private record FixedPreset(boolean enableCreate, boolean enableEdit, boolean enableDelete) implements CrudPreset {
+    private record FixedPreset(boolean enableCreate, boolean enableEdit, boolean enableDelete) implements ResourcePreset {
     }
 }
+

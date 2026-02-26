@@ -5,7 +5,7 @@
 UI Layer
 - Grids
 - Forms
-- CrudPanels
+- CrudPanels -> now ResourcePanels
 - TextResolver
 - UiMeta
 

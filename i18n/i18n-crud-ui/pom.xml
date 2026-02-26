@@ -29,7 +29,7 @@
 
     <dependency>
       <groupId>de.javaholic</groupId>
-      <artifactId>ui-kit-crud</artifactId>
+      <artifactId>ui-kit-resource</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -57,3 +57,4 @@
     </dependency>
   </dependencies>
 </project>
+

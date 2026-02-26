@@ -8,11 +8,11 @@ Das Toolkit soll:
 - und vor allem: gleiche Probleme (hidden fields, defaults, ordering, labels) zentral lösen.
 
 ## Kernprinzip
-**UI-Komponenten (Grids, Forms, CrudPanel) dürfen keine technischen Schichten erraten.**
+**UI-Komponenten (Grids, Forms, ResourcePanel) dürfen keine technischen Schichten erraten.**
 Sie arbeiten ausschließlich mit einem **UI-semantischen Metamodell**: `UiMeta<T>`.
 
 Das reduziert:
-- verteilte Sonderlogik (z.B. hidden id/version in CrudPanel),
+- verteilte Sonderlogik (z.B. hidden id/version in ResourcePanel),
 - inkonsistentes Verhalten zwischen Grid/Form,
 - „warum zeigt er mir UUID?“-Debatten.
 
@@ -57,7 +57,7 @@ Das reduziert:
 - optional: CrudMode-spezifische Defaults (RAPID vs CLEAN)
 
 **Wichtig:**
-- Grid/Form/CrudPanel dürfen keine eigene Hidden-Logik haben.
+- Grid/Form/ResourcePanel dürfen keine eigene Hidden-Logik haben.
 - Jede Entscheidung „soll UI das sehen?“ lebt in `UiMeta`.
 
 ### 3) Fluent API Layer (benutzerfreundlich)
@@ -66,8 +66,8 @@ Das reduziert:
 - `Grids.auto(type)` → auto builder über `UiMeta`
 - `Forms.of(type)` → manuell
 - `Forms.auto(type)` → auto builder über `UiMeta`
-- `CrudPanels.of(type)...build()` → manueller CRUD builder
-- `CrudPanels.auto(type)...build()` → UiMeta-basierter Auto-CRUD builder
+- `ResourcePanels.of(type)...build()` → manueller CRUD builder
+- `ResourcePanels.auto(type)...build()` → UiMeta-basierter Auto-CRUD builder
 
 **Builder müssen Overrides unterstützen (ab Phase 1):**
 - `.exclude("password")`
@@ -76,11 +76,11 @@ Das reduziert:
 - `.order(...)` (optional)
 - `.label(...)` (optional)
 
-Overrides sind UI-semantisch und gehören daher in Builder/UiMeta-Config, nicht in CrudPanel.
+Overrides sind UI-semantisch und gehören daher in Builder/UiMeta-Config, nicht in ResourcePanel.
 
 ### 4) Usecase Layer (CRUD Orchestration)
 **Typ:**
-- `CrudPanel<T>`
+- `ResourcePanel<T>`
 
 **Zuständigkeit:**
 - Orchestriert UI: Grid + Form + Actions (Edit/Delete/etc)
@@ -91,7 +91,7 @@ Overrides sind UI-semantisch und gehören daher in Builder/UiMeta-Config, nicht 
 - Keine hidden/id/version Filter hier
 - Keine Auto-Column-Logik hier
 
-> CrudPanel ist „Controller“, nicht „Renderer“.
+> ResourcePanel ist „Controller“, nicht „Renderer“.
 
 ## Konsistenzregeln
 1. **Single source of truth:** UI-Sichtbarkeit/Defaults ausschließlich via UiMeta.
@@ -100,7 +100,7 @@ Overrides sind UI-semantisch und gehören daher in Builder/UiMeta-Config, nicht 
 4. **Keep Fluent API simple:** `.of()` bleibt manuell, `.auto()` bleibt bequem.
 
 ## Langfristiges Ziel (Roadmap grob)
-- Phase 1: UiMeta Defaults-only + auto builders + CrudPanel entkoppeln
+- Phase 1: UiMeta Defaults-only + auto builders + ResourcePanel entkoppeln
 - Phase 2: UI-Annotationen + (optional) CrudMode RAPID/CLEAN
 - Phase 3: i18n Integration (Texts/Keys) ohne API-Wildwuchs
 - Phase 4: Optional: DTO-first scaffolding / Mapping helpers (außerhalb UI)
@@ -122,3 +122,4 @@ Auto-Builders unterstützen:
 
 Overrides werden nach Default-Erstellung angewendet.
 UiMeta bleibt die zentrale Entscheidungsinstanz für Sichtbarkeit.
+

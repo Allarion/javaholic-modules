@@ -5,8 +5,8 @@ import de.javaholic.toolkit.iam.core.domain.UserStatus;
 import de.javaholic.toolkit.iam.dto.RoleFormDto;
 import de.javaholic.toolkit.iam.dto.UserFormDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.crud.action.CrudAction;
-import de.javaholic.toolkit.ui.crud.action.CrudPreset;
+import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -19,55 +19,56 @@ import java.util.UUID;
  */
 public final class IamUiPresets {
 
-    private static final CrudPreset USERS = new FixedPreset(true, true, false);
-    private static final CrudPreset ROLES = new FixedPreset(true, true, true);
-    private static final CrudPreset PERMISSIONS = new FixedPreset(false, false, false);
+    private static final ResourcePreset USERS = new FixedPreset(true, true, false);
+    private static final ResourcePreset ROLES = new FixedPreset(true, true, true);
+    private static final ResourcePreset PERMISSIONS = new FixedPreset(false, false, false);
 
     private IamUiPresets() {
     }
 
-    public static <T> CrudPreset users() {
+    public static <T> ResourcePreset users() {
         return USERS;
     }
 
-    public static <T> CrudPreset roles() {
+    public static <T> ResourcePreset roles() {
         return ROLES;
     }
 
-    public static <T> CrudPreset permissions() {
+    public static <T> ResourcePreset permissions() {
         return PERMISSIONS;
     }
 
-    public static CrudAction.RowAction<UserFormDto> deactivateUserAction(CrudStore<UserFormDto, UUID> userStore) {
+    public static ResourceAction.RowAction<UserFormDto> deactivateUserAction(CrudStore<UserFormDto, UUID> userStore) {
         Objects.requireNonNull(userStore, "userStore");
-        return CrudAction.<UserFormDto>row("Deactivate", user -> {
+        return ResourceAction.<UserFormDto>row("Deactivate", user -> {
                     user.setStatus(UserStatus.DISABLED);
                     userStore.save(user);
                 })
                 .enabledWhen(user -> user.getStatus() == UserStatus.ACTIVE);
     }
 
-    public static CrudAction.RowAction<UserFormDto> activateUserAction(CrudStore<UserFormDto, UUID> userStore) {
+    public static ResourceAction.RowAction<UserFormDto> activateUserAction(CrudStore<UserFormDto, UUID> userStore) {
         Objects.requireNonNull(userStore, "userStore");
-        return CrudAction.<UserFormDto>row("Activate", user -> {
+        return ResourceAction.<UserFormDto>row("Activate", user -> {
                     user.setStatus(UserStatus.ACTIVE);
                     userStore.save(user);
                 })
                 .enabledWhen(user -> user.getStatus() != UserStatus.ACTIVE);
     }
 
-    public static CrudAction.RowAction<UserFormDto> assignRolesAction() {
-        return CrudAction.row("Assign Roles...", user ->
+    public static ResourceAction.RowAction<UserFormDto> assignRolesAction() {
+        return ResourceAction.row("Assign Roles...", user ->
                 Notification.show("Assign Roles is not implemented yet.", 2500, Notification.Position.MIDDLE)
         );
     }
 
-    public static CrudAction.RowAction<RoleFormDto> assignPermissionsAction() {
-        return CrudAction.row("Assign Permissions...", role ->
+    public static ResourceAction.RowAction<RoleFormDto> assignPermissionsAction() {
+        return ResourceAction.row("Assign Permissions...", role ->
                 Notification.show("Assign Permissions is not implemented yet.", 2500, Notification.Position.MIDDLE)
         );
     }
 
-    private record FixedPreset(boolean enableCreate, boolean enableEdit, boolean enableDelete) implements CrudPreset {
+    private record FixedPreset(boolean enableCreate, boolean enableEdit, boolean enableDelete) implements ResourcePreset {
     }
 }
+

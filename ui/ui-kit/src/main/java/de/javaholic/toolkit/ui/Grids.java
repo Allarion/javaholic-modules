@@ -796,8 +796,9 @@ public final class Grids {
     }
 
 }
-// TODO: Grids.column.button
-//  //
+// TODO: Grids.column.button as shorthand for .column(return Buttons.create()); could also apply to to inputs. and maybe Forms...grid() as ref to Grids?
+
+
 //  (vgl. CrudView: grid.addColumn(new ComponentRenderer<>(item -> {
 //                    Button edit = Buttons.create()
 //                            .label("Edit")
@@ -813,7 +814,7 @@ public final class Grids {
 //                    return Layouts.hbox(edit, delete);
 //                }))
 // TODO (Architecture):
-// Introduce internal ComponentFactory for shared component creation (buttons, fields, layouts).
+// Introduce internal ComponentFactory for shared component creation (buttons, fields, layouts). <- vgl Registry?
 // Grid/Form should delegate internally to it, but must NOT expose Inputs builders directly.
 // Goal: reuse + consistency without API-layer merging.
 

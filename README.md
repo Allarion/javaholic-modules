@@ -21,7 +21,7 @@ with:
 
 -   foundation (introspection)
 -   ui-kit
--   ui-kit-crud
+-   ui-kit-resource
 -   persistence-core
 -   persistence-springdata (optional integration)
 -   iam (reference implementation)
@@ -30,3 +30,4 @@ with:
 
 Minimal magic. Explicit mapping. Composable layers. Extensible but
 predictable.
+

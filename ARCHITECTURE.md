@@ -57,7 +57,7 @@ adapters.
 
 ### UI Layer
 
--   CrudPanels
+-   ResourcePanels
 -   Forms
 -   Grids
 -   Login / Account (future)
@@ -207,3 +207,4 @@ crud.user.title
 TextResolver returns key if not found.
 
 I18N is SPI-based and adapter-driven.
+

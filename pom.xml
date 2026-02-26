@@ -12,7 +12,7 @@
 
     <modules>
         <module>ui/ui-kit</module>
-        <module>ui/ui-kit-crud</module>
+        <module>ui/ui-kit-resource</module>
         <module>iam/iam-core</module>
         <module>iam/iam-persistence-file</module>
         <module>iam/iam-persistence-jpa</module>
@@ -102,3 +102,4 @@
         </pluginManagement>
     </build>
 </project>
+

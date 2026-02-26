@@ -29,7 +29,7 @@ PermissionChecker checker = new DefaultPermissionChecker(currentUser);
 ```
 -------------------------------------------------------------------
 |                             UI Layer                             |
-| CrudPanels.auto(UserDto.class)                                   |
+| ResourcePanels.auto(UserDto.class)                                   |
 |   → UiMeta ← TextResolver                                         |
 |   → DtoCrudStore                                                  |
 -------------------------------------------------------------------
@@ -46,3 +46,4 @@ PermissionChecker checker = new DefaultPermissionChecker(currentUser);
 | JpaUserRepository                                                |
 | JpaDomainUserStore (JpaDomainCrudStore)                           |
 -------------------------------------------------------------------
+
