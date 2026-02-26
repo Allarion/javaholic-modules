@@ -41,6 +41,9 @@ public final class IAMResourcePanels {
         Objects.requireNonNull(roleStore, "roleStore");
         Objects.requireNonNull(permissionStore, "permissionStore");
 
+        Objects.requireNonNull(textResolver, "permissionStore");
+        // TODO: actually USE textResolver (and i18n...)
+
         ResourcePanel<UserFormDto> usersPanel = users(userStore, labels);
         ResourcePanel<RoleFormDto> rolesPanel = roles(roleStore, permissionStore, labels);
         ResourcePanel<PermissionFormDto> permissionsPanel = permissions(permissionStore, labels);

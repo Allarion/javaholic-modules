@@ -18,14 +18,14 @@
         <module>iam/iam-persistence-jpa</module>
         <module>iam/iam-security-spring</module>
         <module>iam/iam-dto-adapter</module>
-        <module>iam/iam-crud-ui</module>
+        <module>iam/iam-resource-ui</module>
         <module>config/config-core</module>
         <module>config/config-forms-ui</module>
         <module>i18n/i18n-core</module>
         <module>i18n/i18n-spring</module>
         <module>i18n/i18n-persistence-jpa</module>
         <module>i18n/i18n-dto-adapter</module>
-        <module>i18n/i18n-crud-ui</module>
+        <module>i18n/i18n-resource-ui</module>
         <module>audit/audit-core</module>
         <module>persistence/persistence-core</module>
         <module>persistence/persistence-spring-data</module>

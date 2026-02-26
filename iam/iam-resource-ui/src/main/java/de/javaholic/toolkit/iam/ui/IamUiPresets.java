@@ -26,15 +26,15 @@ public final class IamUiPresets {
     private IamUiPresets() {
     }
 
-    public static <T> ResourcePreset users() {
+    public static ResourcePreset users() {
         return USERS;
     }
 
-    public static <T> ResourcePreset roles() {
+    public static ResourcePreset roles() {
         return ROLES;
     }
 
-    public static <T> ResourcePreset permissions() {
+    public static ResourcePreset permissions() {
         return PERMISSIONS;
     }
 
