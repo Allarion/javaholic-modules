@@ -613,11 +613,11 @@ public final class Forms {
                 if (component instanceof HasEnabled hasEnabled) {
                     hasEnabled.setEnabled(decision.enabled());
                 }
-                if (component instanceof HasValue<?, ?> hasValue) {
-                    hasValue.setReadOnly(decision.readOnly());
+                if (decision.readOnly() && component instanceof HasValue<?, ?> hasValue) {
+                    hasValue.setReadOnly(true);
                 }
-                if (component instanceof HasValueAndElement<?, ?> hasValueAndElement) {
-                    hasValueAndElement.setRequiredIndicatorVisible(decision.required());
+                if (decision.required() && component instanceof HasValueAndElement<?, ?> hasValueAndElement) {
+                    hasValueAndElement.setRequiredIndicatorVisible(true);
                 }
             });
         }
