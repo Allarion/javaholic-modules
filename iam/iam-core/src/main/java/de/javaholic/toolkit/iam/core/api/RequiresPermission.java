@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 /**
  * Marks a method or type as requiring a specific permission.
- *
+ * (Backend Enforcement)
  * <p>This annotation is a declarative marker only.</p>
  *
  * <p>Enforcement is handled by infrastructure code
