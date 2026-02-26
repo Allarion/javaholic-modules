@@ -1,6 +1,7 @@
 package de.javaholic.toolkit.ui.form;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
@@ -17,6 +18,7 @@ import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.introspection.BeanMeta;
 import de.javaholic.toolkit.introspection.BeanProperty;
 import de.javaholic.toolkit.introspection.BeanPropertyTypes;
+import de.javaholic.toolkit.iam.core.api.PermissionChecker;
 import de.javaholic.toolkit.ui.form.fields.FieldContext;
 import de.javaholic.toolkit.ui.form.fields.FieldRegistry;
 import de.javaholic.toolkit.ui.form.state.BinderFormState;
@@ -24,6 +26,10 @@ import de.javaholic.toolkit.ui.form.state.FormState;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
+import de.javaholic.toolkit.ui.policy.DefaultUiPolicyEngine;
+import de.javaholic.toolkit.ui.policy.UiDecision;
+import de.javaholic.toolkit.ui.policy.UiPolicyContext;
+import de.javaholic.toolkit.ui.policy.UiPolicyEngine;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -464,6 +470,7 @@ public final class Forms {
         private final Class<T> type;
         private final UiMeta<T> uiMeta;
         private FieldRegistry fieldRegistry = new FieldRegistry();
+        private PermissionChecker permissionChecker;
         // UiMeta provides keys only; auto forms resolve keys only while rendering fields.
         private TextResolver textResolver = new DefaultTextResolver();
         private final Set<String> excluded = new LinkedHashSet<>();
@@ -492,6 +499,14 @@ public final class Forms {
          */
         public AutoFormBuilder<T> withTextResolver(TextResolver textResolver) {
             this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
+            return this;
+        }
+
+        /**
+         * Sets the permission checker used by {@link UiPolicyEngine} for {@code @UiPermission} visibility decisions.
+         */
+        public AutoFormBuilder<T> withPermissionChecker(PermissionChecker permissionChecker) {
+            this.permissionChecker = permissionChecker;
             return this;
         }
 
@@ -545,8 +560,16 @@ public final class Forms {
                     .collect(LinkedHashMap::new, (map, prop) -> map.put(prop.name(), prop), Map::putAll);
 
             VerticalLayout layout = new VerticalLayout();
-            BeanValidationBinder<T> binder = new BeanValidationBinder<>(type);
             Map<String, Component> components = new LinkedHashMap<>();
+            Map<String, UiProperty<T>> uiPropertiesByName = new LinkedHashMap<>();
+            UiPolicyEngine policyEngine = new DefaultUiPolicyEngine();
+            Consumer<T> policyApplier = bean -> applyUiPolicy(
+                    uiPropertiesByName,
+                    components,
+                    policyEngine,
+                    new UiPolicyContext(permissionChecker, bean)
+            );
+            BeanValidationBinder<T> binder = new PolicyAwareBeanValidationBinder<>(type, policyApplier);
             // TODO: revisit i18n key, see HierarchicalTextResolver for concept
             String formError = textResolver.resolve("form.validation.error").orElse("form.validation.error");
             Span formErrorLabel = new Span(formError);
@@ -560,13 +583,43 @@ public final class Forms {
                     .filter(UiProperty::isVisible)
                     .filter(property -> !excluded.contains(property.name()))
                     .sorted(Comparator.comparingInt(UiProperty::order))
-                    .forEach(property -> addField(property, beanMeta, beanProperties, layout, binder, components));
+                    .forEach(property -> {
+                        uiPropertiesByName.put(property.name(), property);
+                        addField(property, beanMeta, beanProperties, layout, binder, components);
+                    });
 
             Form<T> form = new Form<>(layout, binder, components);
+            // UI policy integration point: evaluate UiProperty metadata into runtime component state.
+            policyApplier.accept(binder.getBean());
             for (Consumer<Form<T>> config : configurators) {
                 config.accept(form);
             }
             return form;
+        }
+
+        private void applyUiPolicy(
+                Map<String, UiProperty<T>> uiPropertiesByName,
+                Map<String, Component> components,
+                UiPolicyEngine engine,
+                UiPolicyContext context
+        ) {
+            uiPropertiesByName.forEach((name, property) -> {
+                Component component = components.get(name);
+                if (component == null) {
+                    return;
+                }
+                UiDecision decision = engine.evaluate(property, context);
+                component.setVisible(decision.visible());
+                if (component instanceof HasEnabled hasEnabled) {
+                    hasEnabled.setEnabled(decision.enabled());
+                }
+                if (component instanceof HasValue<?, ?> hasValue) {
+                    hasValue.setReadOnly(decision.readOnly());
+                }
+                if (component instanceof HasValueAndElement<?, ?> hasValueAndElement) {
+                    hasValueAndElement.setRequiredIndicatorVisible(decision.required());
+                }
+            });
         }
 
         @SuppressWarnings("unchecked")
@@ -675,6 +728,22 @@ public final class Forms {
                     bean -> meta.getValue(property, bean),
                     (bean, val) -> meta.setValue(property, bean, val)
             );
+        }
+
+        private static final class PolicyAwareBeanValidationBinder<T> extends BeanValidationBinder<T> {
+
+            private final Consumer<T> onBeanChanged;
+
+            private PolicyAwareBeanValidationBinder(Class<T> beanType, Consumer<T> onBeanChanged) {
+                super(beanType);
+                this.onBeanChanged = Objects.requireNonNull(onBeanChanged, "onBeanChanged");
+            }
+
+            @Override
+            public void setBean(T bean) {
+                super.setBean(bean);
+                onBeanChanged.accept(bean);
+            }
         }
     }
 
