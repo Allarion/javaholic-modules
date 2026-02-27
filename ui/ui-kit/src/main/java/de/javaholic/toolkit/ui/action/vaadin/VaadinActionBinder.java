@@ -4,7 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.UI;
 import de.javaholic.toolkit.iam.core.api.PermissionChecker;
-import de.javaholic.toolkit.ui.action.Action;
+import de.javaholic.toolkit.ui.action.Actions;
 import de.javaholic.toolkit.ui.policy.DefaultUiPolicyEngine;
 import de.javaholic.toolkit.ui.policy.UiPolicyContext;
 import de.javaholic.toolkit.ui.state.DerivedState;
@@ -48,7 +48,7 @@ public final class VaadinActionBinder {
      *
      * <p>Order is explicit: permission check first, then existing action enabled state.</p>
      */
-    public static void bindEnabled(Component component, Action action, PermissionChecker permissionChecker) {
+    public static void bindEnabled(Component component, Actions.Action action, PermissionChecker permissionChecker) {
         Objects.requireNonNull(component, "component");
         Objects.requireNonNull(action, "action");
         boolean permissionAllowed = action.permissionKey()

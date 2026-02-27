@@ -9,7 +9,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.ui.action.Action;
 import de.javaholic.toolkit.ui.action.Actions;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
@@ -126,7 +125,7 @@ public final class Dialogs {
                 hasSelection.set(selection.value != null);
             });
 
-            Action okAction = Actions.create()
+            Actions.Action okAction = Actions.create()
                     .label(resolve(textResolver, defaultIfNull(confirmLabelKey, "ok")))
                     .tooltip(confirmTooltipKey != null ? resolve(textResolver, confirmTooltipKey) : null)
                     .enabledBy(hasSelection)
@@ -138,7 +137,7 @@ public final class Dialogs {
             Button ok = Buttons.from(okAction);
 
             if (cancelEnabled) {
-                Action cancelAction = Actions.create()
+                Actions.Action cancelAction = Actions.create()
                         .label(resolve(textResolver, defaultIfNull(cancelLabelKey, "cancel")))
                         .tooltip(cancelTooltipKey != null ? resolve(textResolver, cancelTooltipKey) : null)
                         .onClick(() -> {

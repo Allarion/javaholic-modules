@@ -1,7 +1,6 @@
 package de.javaholic.toolkit.ui;
 
 import com.vaadin.flow.component.button.Button;
-import de.javaholic.toolkit.ui.action.Action;
 import de.javaholic.toolkit.ui.action.Actions;
 import de.javaholic.toolkit.ui.state.MutableState;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ class ActionBindingTest {
     void buttonEnabledFollowsObservableValue() {
         MutableState<Boolean> enabled = MutableState.of(false);
 
-        Action action = Actions.create()
+        Actions.Action action = Actions.create()
                 .label("Save")
                 .enabledBy(enabled)
                 .onClick(() -> { })

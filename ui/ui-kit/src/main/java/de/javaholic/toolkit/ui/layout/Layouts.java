@@ -7,7 +7,7 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.javaholic.toolkit.ui.Buttons;
-import de.javaholic.toolkit.ui.action.Action;
+import de.javaholic.toolkit.ui.action.Actions;
 import de.javaholic.toolkit.ui.state.Subscription;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public final class Layouts {
 
         private final List<MenuEntry> entries = new ArrayList<>();
 
-        public MenuBuilder item(Action action) {
+        public MenuBuilder item(Actions.Action action) {
             entries.add(MenuEntry.action(Objects.requireNonNull(action, "action")));
             return this;
         }
@@ -103,7 +103,7 @@ public final class Layouts {
         private final List<ToolbarEntry> entries = new ArrayList<>();
         private boolean overflowToMenu;
 
-        public ToolbarBuilder action(Action action) {
+        public ToolbarBuilder action(Actions.Action action) {
             entries.add(ToolbarEntry.action(Objects.requireNonNull(action, "action")));
             return this;
         }
@@ -166,7 +166,7 @@ public final class Layouts {
                     continue;
                 }
 
-                Action action = entry.action;
+                Actions.Action action = entry.action;
                 if (!Boolean.TRUE.equals(action.visible().get())) {
                     subscribeVisibility(action);
                     continue;
@@ -185,7 +185,7 @@ public final class Layouts {
             }
         }
 
-        private void subscribeVisibility(Action action) {
+        private void subscribeVisibility(Actions.Action action) {
             subscriptions.add(action.visible().subscribe(v -> rebuild()));
         }
 
@@ -202,15 +202,15 @@ public final class Layouts {
 
     private static final class MenuEntry {
 
-        private final Action action;
+        private final Actions.Action action;
         private final boolean separator;
 
-        private MenuEntry(Action action, boolean separator) {
+        private MenuEntry(Actions.Action action, boolean separator) {
             this.action = action;
             this.separator = separator;
         }
 
-        private static MenuEntry action(Action action) {
+        private static MenuEntry action(Actions.Action action) {
             return new MenuEntry(action, false);
         }
 
@@ -222,16 +222,16 @@ public final class Layouts {
     private static final class ToolbarEntry {
 
         private final Kind kind;
-        private final Action action;
+        private final Actions.Action action;
         private final Component component;
 
-        private ToolbarEntry(Kind kind, Action action, Component component) {
+        private ToolbarEntry(Kind kind, Actions.Action action, Component component) {
             this.kind = kind;
             this.action = action;
             this.component = component;
         }
 
-        private static ToolbarEntry action(Action action) {
+        private static ToolbarEntry action(Actions.Action action) {
             return new ToolbarEntry(Kind.ACTION, action, null);
         }
 

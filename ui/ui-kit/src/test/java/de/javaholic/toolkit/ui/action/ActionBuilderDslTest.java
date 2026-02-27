@@ -14,7 +14,7 @@ class ActionBuilderDslTest {
         Checkbox checkbox = new Checkbox();
         checkbox.setValue(false);
 
-        Action action = Actions.create()
+        Actions.Action action = Actions.create()
                 .label("X")
                 .enabledWhen(checkbox)
                 .build();
@@ -31,7 +31,7 @@ class ActionBuilderDslTest {
         Checkbox first = new Checkbox();
         Checkbox second = new Checkbox();
 
-        Action action = Actions.create()
+        Actions.Action action = Actions.create()
                 .label("X")
                 .enabledWhen(first)
                 .enabledWhen(second)
@@ -57,7 +57,7 @@ class ActionBuilderDslTest {
                 .asRequired("required")
                 .bind(FormBean::getName, FormBean::setName);
 
-        Action action = Actions.create()
+        Actions.Action action = Actions.create()
                 .label("Save")
                 .enabledWhen(binder)
                 .build();
@@ -74,7 +74,7 @@ class ActionBuilderDslTest {
         Checkbox toggle = new Checkbox();
         toggle.setValue(false);
 
-        Action action = Actions.create()
+        Actions.Action action = Actions.create()
                 .label("X")
                 .disabledWhen(toggle)
                 .hiddenWhen(toggle)

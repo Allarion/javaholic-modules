@@ -7,7 +7,6 @@ import com.vaadin.flow.component.notification.Notification;
 import de.javaholic.toolkit.iam.core.api.PermissionChecker;
 import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
-import de.javaholic.toolkit.ui.action.Action;
 import de.javaholic.toolkit.ui.action.Actions;
 import de.javaholic.toolkit.ui.action.vaadin.VaadinActionBinder;
 import de.javaholic.toolkit.ui.state.DerivedState;
@@ -56,18 +55,18 @@ public final class Buttons {
     }
 
     /**
-     * Renders a Vaadin {@link Button} from immutable {@link Action} definition.
+     * Renders a Vaadin {@link Button} from immutable {@link Actions.Action} definition.
      *
      * <p>Subscriptions are tied to component detach lifecycle.</p>
      */
-    public static Button from(Action action) {
+    public static Button from(Actions.Action action) {
         return from(action, null);
     }
 
     /**
-     * Renders a Vaadin {@link Button} from immutable {@link Action} definition with optional permission context.
+     * Renders a Vaadin {@link Button} from immutable {@link Actions.Action} definition with optional permission context.
      */
-    public static Button from(Action action, PermissionChecker permissionChecker) {
+    public static Button from(Actions.Action action, PermissionChecker permissionChecker) {
         Objects.requireNonNull(action, "action");
         // FIXME: whole .from(Action ) isnt using the Builder! API BREAK! solution: .withPermissionChecker
         Button button = new Button(action.labelKeyOrText());
@@ -84,16 +83,16 @@ public final class Buttons {
     }
 
     /**
-     * Alias for {@link #from(Action)}.
+     * Alias for {@link #from(Actions.Action)}.
      */
-    public static Button action(Action action) {
+    public static Button action(Actions.Action action) {
         return from(action);
     }
 
     /**
-     * Alias for {@link #from(Action, PermissionChecker)}.
+     * Alias for {@link #from(Actions.Action, PermissionChecker)}.
      */
-    public static Button action(Action action, PermissionChecker permissionChecker) {
+    public static Button action(Actions.Action action, PermissionChecker permissionChecker) {
         return from(action, permissionChecker);
     }
 
@@ -191,7 +190,7 @@ public final class Buttons {
             if (visibleState != null) {
                 actionBuilder.visibleBy(visibleState);
             }
-            Action rendered = actionBuilder.build();
+            Actions.Action rendered = actionBuilder.build();
 
             Button button = Buttons.from(rendered);
             themeVariants.forEach(button::addThemeVariants);
