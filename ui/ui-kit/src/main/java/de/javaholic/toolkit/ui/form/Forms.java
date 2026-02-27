@@ -794,7 +794,7 @@ public final class Forms {
          *
          * <p>Example: {@code f.validate(String.class, b -> b.asRequired("Email required"));}</p>
          */
-        // TODO: revisit specifying the valueType here. should be somehow derivied from the BeanMeta <- OLD COMMENT!! UiMeta is the correct Model
+        // TODO: revisit specifying the valueType here. should be somehow derivied from the BeanMeta <- OLD COMMENT!! UiMeta is the correct Model; still: 'Class<V> valueType' has to go
         public <V> FieldOverride<T> validate(Class<V> valueType, Consumer<Binder.BindingBuilder<T, V>> validator) {
             validators.add(new TypedValidator<>(valueType, validator));
             return this;

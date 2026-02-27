@@ -7,6 +7,7 @@ package de.javaholic.toolkit.ui.resource.action;
  * added and rendered regardless of preset choice. {@link #none()} hides all default
  * create/edit/delete actions while keeping the grid and optional form support available.</p>
  */
+@Deprecated
 public final class ResourcePresets {
 
     private static final ResourcePreset FULL = new FixedResourcePreset(true, true, true);

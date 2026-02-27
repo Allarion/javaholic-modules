@@ -168,7 +168,7 @@ public final class ResourcePanel<T> extends VerticalLayout {
                     }
                     return Layouts.hbox(buttons.toArray(Button[]::new));
                 }))
-                .setHeader("Actions")
+                .setHeader("Actions") // TODO: I1n8 key missing
                 .setAutoWidth(true)
                 .setFlexGrow(0);
     }
