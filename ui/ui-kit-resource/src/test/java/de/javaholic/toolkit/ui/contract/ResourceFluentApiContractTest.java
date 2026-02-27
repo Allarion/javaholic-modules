@@ -3,7 +3,7 @@ package de.javaholic.toolkit.ui.contract;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.resource.ResourcePanel;
 import de.javaholic.toolkit.ui.resource.ResourcePanels;
-import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.annotations.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import org.junit.jupiter.api.Test;

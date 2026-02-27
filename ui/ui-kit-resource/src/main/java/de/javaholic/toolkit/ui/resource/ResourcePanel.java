@@ -1,24 +1,30 @@
 package de.javaholic.toolkit.ui.resource;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.di.Instantiator;
+import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
-import de.javaholic.toolkit.ui.resource.action.ResourceAction;
-import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
+import de.javaholic.toolkit.ui.annotations.UiActionProvider;
+import de.javaholic.toolkit.ui.annotations.UiSurfaceContext;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
+import de.javaholic.toolkit.ui.annotations.ResourceAction;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -51,12 +57,11 @@ import java.util.function.Supplier;
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
 public final class ResourcePanel<T> extends VerticalLayout {
-// TODO: Since Actions are now not necessary CRUD the class name isn't fitting. ActionsPanel o.ä. (also revisit other Crud Classes + package name)
+    // TODO: Since Actions are now not necessary CRUD the class name is not fitting. ActionsPanel o.ae.
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
     private final Supplier<Forms.Form<T>> formFactory;
-    private final ResourcePreset preset;
     private final List<ResourceAction.ToolbarAction<T>> toolbarActions;
     private final List<ResourceAction.RowAction<T>> rowActions;
     private final List<ResourceAction.SelectionAction<T>> selectionActions;
@@ -72,19 +77,43 @@ public final class ResourcePanel<T> extends VerticalLayout {
             CrudStore<T, ?> store,
             Grid<T> grid,
             Supplier<Forms.Form<T>> formFactory,
-            ResourcePreset preset,
             List<ResourceAction.ToolbarAction<T>> toolbarActions,
             List<ResourceAction.RowAction<T>> rowActions,
             List<ResourceAction.SelectionAction<T>> selectionActions
-    ) {
+    )
+        // TODO: warum nicht 1 liste der ResourceAction. wird ja eh aussortiert
+        {
         this.type = Objects.requireNonNull(type, "type");
         this.store = Objects.requireNonNull(store, "store");
         this.grid = Objects.requireNonNull(grid, "grid");
         this.formFactory = Objects.requireNonNull(formFactory, "formFactory");
-        this.preset = Objects.requireNonNull(preset, "preset");
-        this.toolbarActions = List.copyOf(Objects.requireNonNull(toolbarActions, "toolbarActions"));
-        this.rowActions = List.copyOf(Objects.requireNonNull(rowActions, "rowActions"));
-        this.selectionActions = List.copyOf(Objects.requireNonNull(selectionActions, "selectionActions"));
+
+        List<ResourceAction<T>> allActions = new ArrayList<>(loadActionsFromProvider());
+        allActions.addAll(Objects.requireNonNull(toolbarActions, "toolbarActions"));
+        allActions.addAll(Objects.requireNonNull(rowActions, "rowActions"));
+        allActions.addAll(Objects.requireNonNull(selectionActions, "selectionActions"));
+
+        List<ResourceAction.ToolbarAction<T>> resolvedToolbarActions = new ArrayList<>();
+        List<ResourceAction.RowAction<T>> resolvedRowActions = new ArrayList<>();
+        List<ResourceAction.SelectionAction<T>> resolvedSelectionActions = new ArrayList<>();
+
+        for (ResourceAction<T> action : allActions) {
+            if (action instanceof ResourceAction.ToolbarAction<T> toolbar) {
+                resolvedToolbarActions.add(toolbar);
+                continue;
+            }
+            if (action instanceof ResourceAction.RowAction<T> row) {
+                resolvedRowActions.add(row);
+                continue;
+            }
+            if (action instanceof ResourceAction.SelectionAction<T> selection) {
+                resolvedSelectionActions.add(selection);
+            }
+        }
+
+        this.toolbarActions = List.copyOf(resolvedToolbarActions);
+        this.rowActions = List.copyOf(resolvedRowActions);
+        this.selectionActions = List.copyOf(resolvedSelectionActions);
 
         addActionsColumnIfNeeded();
         configureLayout();
@@ -111,21 +140,11 @@ public final class ResourcePanel<T> extends VerticalLayout {
         expand(grid);
     }
 
-    /**
-     * Composes the toolbar from preset defaults and custom toolbar/selection actions.
-     */
     private HorizontalLayout buildToolbar() {
         List<Button> buttons = new ArrayList<>();
-        if (preset.enableCreate()) {
-            Button createButton = Buttons.create()
-                    .label("Create")
-                    .action(this::onCreate)
-                    .build();
-            buttons.add(createButton);
-        }
 
         for (ResourceAction.ToolbarAction<T> action : toolbarActions) {
-            Button button = createButton(action.label(), action.tooltip(), action.variants(), action.onInvoke());
+            Button button = createButton(action.label(), action.tooltip(), action.onInvoke());
             button.setEnabled(Boolean.TRUE.equals(action.enabledWhen().get()));
             buttons.add(button);
         }
@@ -134,7 +153,6 @@ public final class ResourcePanel<T> extends VerticalLayout {
             Button button = createButton(
                     action.label(),
                     action.tooltip(),
-                    action.variants(),
                     () -> action.onInvoke().accept(currentSelection())
             );
             selectionActionBindings.add(new SelectionActionBinding<>(action, button));
@@ -144,36 +162,17 @@ public final class ResourcePanel<T> extends VerticalLayout {
         return Layouts.hbox(buttons.toArray(Button[]::new));
     }
 
-    /**
-     * Adds the row actions column only when default row actions or custom row actions exist.
-     */
     private void addActionsColumnIfNeeded() {
-        if (!preset.enableEdit() && !preset.enableDelete() && rowActions.isEmpty()) {
+        if (rowActions.isEmpty()) {
             return;
         }
 
         grid.addColumn(new ComponentRenderer<>(item -> {
                     List<Button> buttons = new ArrayList<>();
-                    if (preset.enableEdit()) {
-                        buttons.add(Buttons.create()
-                                .label("Edit")
-                                .style(ButtonVariant.LUMO_TERTIARY_INLINE)
-                                .action(() -> onEdit(item))
-                                .build());
-                    }
-                    if (preset.enableDelete()) {
-                        buttons.add(Buttons.create()
-                                .label("Delete")
-                                .style(ButtonVariant.LUMO_ERROR)
-                                .style(ButtonVariant.LUMO_TERTIARY_INLINE)
-                                .action(() -> onDelete(item))
-                                .build());
-                    }
                     for (ResourceAction.RowAction<T> action : rowActions) {
                         Button button = createButton(
                                 action.label(),
                                 action.tooltip(),
-                                action.variants(),
                                 () -> action.onInvoke().accept(item)
                         );
                         button.setEnabled(action.enabledWhen().test(item));
@@ -211,17 +210,22 @@ public final class ResourcePanel<T> extends VerticalLayout {
         return Set.copyOf(new LinkedHashSet<>(grid.getSelectedItems()));
     }
 
-    private Button createButton(String label, String tooltip, List<ButtonVariant> variants, Runnable invoke) {
+    private Optional<T> currentSingleSelection() {
+        return grid.getSelectedItems().stream().findFirst();
+    }
+
+    private Button createButton(String label, String tooltip,  Runnable invoke) {
         Buttons.Builder builder = Buttons.create()
                 .label(label)
                 .action(invoke);
         if (tooltip != null && !tooltip.isBlank()) {
             builder.tooltip(tooltip);
         }
-        variants.forEach(builder::style);
+        // TODO revisit: List<ButtonVariant> variants -> variants.forEach(builder::style);
         return builder.build();
     }
 
+    // FIXME: method is only used in test. remove it!
     /**
      * Opens the create dialog with a fresh bean instance.
      *
@@ -231,7 +235,7 @@ public final class ResourcePanel<T> extends VerticalLayout {
         T bean = newEmptyBean();
         openFormDialog("Create " + type.getSimpleName(), bean);
     }
-
+    // FIXME: method is never used. remove it!
     /**
      * Opens the edit dialog for the selected item.
      *
@@ -241,6 +245,7 @@ public final class ResourcePanel<T> extends VerticalLayout {
         openFormDialog("Edit " + type.getSimpleName(), item);
     }
 
+    // FIXME: method is never used. remove it!
     /**
      * Opens a confirmation dialog and deletes on confirmation.
      *
@@ -303,7 +308,59 @@ public final class ResourcePanel<T> extends VerticalLayout {
         refresh();
     }
 
+    private List<ResourceAction<T>> loadActionsFromProvider() {
+        UiActionProvider<T> provider = resolveActionProvider();
+        List<ResourceAction<T>> actions = provider.actions(new UiSurfaceContext<>() {
+            @Override
+            public Class<T> dtoType() {
+                return type;
+            }
+
+            @Override
+            public Optional<T> currentSelection() {
+                return currentSingleSelection();
+            }
+
+            @Override
+            public void refresh() {
+                ResourcePanel.this.refresh();
+            }
+        });
+        if (actions == null) {
+            return Collections.emptyList();
+        }
+        return List.copyOf(actions);
+    }
+
+    @SuppressWarnings("unchecked")
+    private UiActionProvider<T> resolveActionProvider() {
+        Class<? extends UiActionProvider<?>> providerType = resolveProviderType();
+        UI currentUi = UI.getCurrent();
+        if (currentUi != null) {
+            Instantiator instantiator = Instantiator.get(currentUi);
+            if (instantiator != null) {
+                return (UiActionProvider<T>) (instantiator.getOrCreate(providerType));
+            }
+        }
+        return instantiateProvider(providerType);
+    }
+
+    private Class<? extends UiActionProvider<?>> resolveProviderType() {
+        de.javaholic.toolkit.ui.annotations.UiSurface surface = BeanIntrospector.inspect(type).type().getAnnotation(de.javaholic.toolkit.ui.annotations.UiSurface.class);
+        return surface.actions();
+    }
+
+    @SuppressWarnings("unchecked")
+    private UiActionProvider<T> instantiateProvider(Class<? extends UiActionProvider<?>> providerType) {
+        try {
+            Constructor<? extends UiActionProvider<?>> constructor = providerType.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return (UiActionProvider<T>) (constructor.newInstance());
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to instantiate UiActionProvider " + providerType.getName(), e);
+        }
+    }
+
     private record SelectionActionBinding<T>(ResourceAction.SelectionAction<T> action, Button button) {
     }
 }
-

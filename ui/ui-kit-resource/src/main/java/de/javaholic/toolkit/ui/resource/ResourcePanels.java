@@ -8,7 +8,7 @@ import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
-import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.annotations.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 import de.javaholic.toolkit.ui.form.Forms;
@@ -323,7 +323,6 @@ public final class ResourcePanels {
                             .withTextResolver(textResolver)
                             .exclude(excluded)
                             .build(),
-                    preset,
                     toolbarActions,
                     rowActions,
                     selectionActions
@@ -407,7 +406,6 @@ public final class ResourcePanels {
                     store,
                     grid,
                     () -> buildForm(excluded, effectiveConfigs),
-                    preset,
                     toolbarActions,
                     rowActions,
                     selectionActions

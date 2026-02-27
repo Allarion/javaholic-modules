@@ -5,7 +5,7 @@ import de.javaholic.toolkit.iam.core.domain.UserStatus;
 import de.javaholic.toolkit.iam.dto.RoleFormDto;
 import de.javaholic.toolkit.iam.dto.UserFormDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.annotations.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 
 import java.util.Objects;

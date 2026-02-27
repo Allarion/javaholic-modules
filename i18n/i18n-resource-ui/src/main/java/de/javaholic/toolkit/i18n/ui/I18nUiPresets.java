@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.i18n.ui;
 
 import com.vaadin.flow.component.notification.Notification;
-import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.annotations.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 
 /**

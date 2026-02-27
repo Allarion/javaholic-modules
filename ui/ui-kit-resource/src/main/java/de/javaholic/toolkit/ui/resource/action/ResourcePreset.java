@@ -6,6 +6,7 @@ package de.javaholic.toolkit.ui.resource.action;
  * <p>Presets affect only default create/edit/delete actions. Custom actions can be added
  * independently of any preset.</p>
  */
+@Deprecated
 public interface ResourcePreset {
 
     boolean enableCreate();

@@ -4,7 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.resource.action.ResourceAction;
+import de.javaholic.toolkit.ui.annotations.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 import org.junit.jupiter.api.Test;
 

@@ -1,9 +1,5 @@
-package de.javaholic.toolkit.ui.resource.action;
+package de.javaholic.toolkit.ui.annotations;
 
-import com.vaadin.flow.component.button.ButtonVariant;
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -22,16 +18,14 @@ public sealed interface ResourceAction<T>
 
     String tooltip();
 
-    List<ButtonVariant> variants();
-
     ResourceActionScope scope();
 
     static <T> ToolbarAction<T> toolbar(String label, Runnable onInvoke) {
-        return new ToolbarAction<>(label, null, List.of(), () -> true, onInvoke);
+        return new ToolbarAction<>(label, null, () -> true, onInvoke);
     }
 
     static <T> RowAction<T> row(String label, Consumer<T> onInvoke) {
-        return new RowAction<>(label, null, List.of(), item -> true, onInvoke);
+        return new RowAction<>(label, null, item -> true, onInvoke);
     }
 
     /**
@@ -40,26 +34,23 @@ public sealed interface ResourceAction<T>
      * <p>Default enablement is {@code selection -> !selection.isEmpty()}.</p>
      */
     static <T> SelectionAction<T> selection(String label, Consumer<Set<T>> onInvoke) {
-        return new SelectionAction<>(label, null, List.of(), selection -> !selection.isEmpty(), onInvoke);
+        return new SelectionAction<>(label, null, selection -> !selection.isEmpty(), onInvoke);
     }
 
     final class ToolbarAction<T> implements ResourceAction<T> {
         private final String label;
         private final String tooltip;
-        private final List<ButtonVariant> variants;
         private final Supplier<Boolean> enabledWhen;
         private final Runnable onInvoke;
 
         private ToolbarAction(
                 String label,
                 String tooltip,
-                List<ButtonVariant> variants,
                 Supplier<Boolean> enabledWhen,
                 Runnable onInvoke
         ) {
             this.label = Objects.requireNonNull(label, "label");
             this.tooltip = tooltip;
-            this.variants = List.copyOf(Objects.requireNonNull(variants, "variants"));
             this.enabledWhen = Objects.requireNonNull(enabledWhen, "enabledWhen");
             this.onInvoke = Objects.requireNonNull(onInvoke, "onInvoke");
         }
@@ -72,11 +63,6 @@ public sealed interface ResourceAction<T>
         @Override
         public String tooltip() {
             return tooltip;
-        }
-
-        @Override
-        public List<ButtonVariant> variants() {
-            return variants;
         }
 
         @Override
@@ -93,35 +79,28 @@ public sealed interface ResourceAction<T>
         }
 
         public ToolbarAction<T> tooltip(String tooltip) {
-            return new ToolbarAction<>(label, tooltip, variants, enabledWhen, onInvoke);
-        }
-
-        public ToolbarAction<T> variants(ButtonVariant... variants) {
-            return new ToolbarAction<>(label, tooltip, List.copyOf(Arrays.asList(Objects.requireNonNull(variants, "variants"))), enabledWhen, onInvoke);
+            return new ToolbarAction<>(label, tooltip, enabledWhen, onInvoke);
         }
 
         public ToolbarAction<T> enabledWhen(Supplier<Boolean> enabledWhen) {
-            return new ToolbarAction<>(label, tooltip, variants, Objects.requireNonNull(enabledWhen, "enabledWhen"), onInvoke);
+            return new ToolbarAction<>(label, tooltip, Objects.requireNonNull(enabledWhen, "enabledWhen"), onInvoke);
         }
     }
 
     final class RowAction<T> implements ResourceAction<T> {
         private final String label;
         private final String tooltip;
-        private final List<ButtonVariant> variants;
         private final Predicate<T> enabledWhen;
         private final Consumer<T> onInvoke;
 
         private RowAction(
                 String label,
                 String tooltip,
-                List<ButtonVariant> variants,
                 Predicate<T> enabledWhen,
                 Consumer<T> onInvoke
         ) {
             this.label = Objects.requireNonNull(label, "label");
             this.tooltip = tooltip;
-            this.variants = List.copyOf(Objects.requireNonNull(variants, "variants"));
             this.enabledWhen = Objects.requireNonNull(enabledWhen, "enabledWhen");
             this.onInvoke = Objects.requireNonNull(onInvoke, "onInvoke");
         }
@@ -134,11 +113,6 @@ public sealed interface ResourceAction<T>
         @Override
         public String tooltip() {
             return tooltip;
-        }
-
-        @Override
-        public List<ButtonVariant> variants() {
-            return variants;
         }
 
         @Override
@@ -155,35 +129,28 @@ public sealed interface ResourceAction<T>
         }
 
         public RowAction<T> tooltip(String tooltip) {
-            return new RowAction<>(label, tooltip, variants, enabledWhen, onInvoke);
-        }
-
-        public RowAction<T> variants(ButtonVariant... variants) {
-            return new RowAction<>(label, tooltip, List.copyOf(Arrays.asList(Objects.requireNonNull(variants, "variants"))), enabledWhen, onInvoke);
+            return new RowAction<>(label, tooltip, enabledWhen, onInvoke);
         }
 
         public RowAction<T> enabledWhen(Predicate<T> enabledWhen) {
-            return new RowAction<>(label, tooltip, variants, Objects.requireNonNull(enabledWhen, "enabledWhen"), onInvoke);
+            return new RowAction<>(label, tooltip, Objects.requireNonNull(enabledWhen, "enabledWhen"), onInvoke);
         }
     }
 
     final class SelectionAction<T> implements ResourceAction<T> {
         private final String label;
         private final String tooltip;
-        private final List<ButtonVariant> variants;
         private final Predicate<Set<T>> enabledWhen;
         private final Consumer<Set<T>> onInvoke;
 
         private SelectionAction(
                 String label,
                 String tooltip,
-                List<ButtonVariant> variants,
                 Predicate<Set<T>> enabledWhen,
                 Consumer<Set<T>> onInvoke
         ) {
             this.label = Objects.requireNonNull(label, "label");
             this.tooltip = tooltip;
-            this.variants = List.copyOf(Objects.requireNonNull(variants, "variants"));
             this.enabledWhen = Objects.requireNonNull(enabledWhen, "enabledWhen");
             this.onInvoke = Objects.requireNonNull(onInvoke, "onInvoke");
         }
@@ -196,11 +163,6 @@ public sealed interface ResourceAction<T>
         @Override
         public String tooltip() {
             return tooltip;
-        }
-
-        @Override
-        public List<ButtonVariant> variants() {
-            return variants;
         }
 
         @Override
@@ -217,16 +179,31 @@ public sealed interface ResourceAction<T>
         }
 
         public SelectionAction<T> tooltip(String tooltip) {
-            return new SelectionAction<>(label, tooltip, variants, enabledWhen, onInvoke);
-        }
-
-        public SelectionAction<T> variants(ButtonVariant... variants) {
-            return new SelectionAction<>(label, tooltip, List.copyOf(Arrays.asList(Objects.requireNonNull(variants, "variants"))), enabledWhen, onInvoke);
+            return new SelectionAction<>(label, tooltip, enabledWhen, onInvoke);
         }
 
         public SelectionAction<T> enabledWhen(Predicate<Set<T>> enabledWhen) {
-            return new SelectionAction<>(label, tooltip, variants, Objects.requireNonNull(enabledWhen, "enabledWhen"), onInvoke);
+            return new SelectionAction<>(label, tooltip, Objects.requireNonNull(enabledWhen, "enabledWhen"), onInvoke);
         }
     }
+
+    /**
+     * Defines where a Resource action is rendered and what context it operates on.
+     */
+    enum ResourceActionScope {
+        /**
+         * Toolbar action above the grid, independent of one specific item.
+         */
+        TOOLBAR,
+        /**
+         * Action rendered per row in the actions column, operating on one item.
+         */
+        ROW,
+        /**
+         * Toolbar action operating on the current grid selection.
+         */
+        SELECTION
+    }
+
 }
 
