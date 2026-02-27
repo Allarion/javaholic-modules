@@ -60,7 +60,6 @@ public class DefaultUiPropertyInterpreter implements UiPropertyInterpreter {
         );
     }
 
-    // TODO: add @UiTechnical o.ä. what about @UiVisibleFor("ADMIN") or better @UiPermission("iam.user.admin")
     private static <T> boolean isTechnical(BeanProperty<T, ?> property, BeanMeta<T> beanMeta) {
         return beanMeta.idProperty().map(p -> p.name().equals(property.name())).orElse(false)
                 || beanMeta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false);
