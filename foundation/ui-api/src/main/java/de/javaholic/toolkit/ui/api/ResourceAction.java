@@ -198,6 +198,7 @@ public sealed interface ResourceAction<T>
         /**
          * Action rendered per row in the actions column, operating on one item.
          */
+        // TODO: rethink 'ROW' as its view specific (that its a row). for nodeUI it would be NODE or smth
         ROW,
         /**
          * Toolbar action operating on the current grid selection.

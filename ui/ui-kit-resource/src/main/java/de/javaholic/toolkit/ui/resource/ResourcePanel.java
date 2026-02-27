@@ -9,6 +9,7 @@ import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
 import de.javaholic.toolkit.ui.api.ResourceAction;
+import de.javaholic.toolkit.ui.api.ResourceView;
 import de.javaholic.toolkit.ui.api.UiSurfaceContext;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
@@ -45,7 +46,8 @@ import java.util.function.Supplier;
  * ({@link Grid}, {@link Forms.Form}, {@link CrudStore}) and keeps each concern isolated:
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
-public final class ResourcePanel<T> extends VerticalLayout {
+// TODO: once again naming: ResourceGridFormsPanel
+public final class ResourcePanel<T> extends VerticalLayout implements ResourceView<T> {
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
@@ -213,17 +215,16 @@ public final class ResourcePanel<T> extends VerticalLayout {
         return builder.build();
     }
 
-    // FIXME: method is only used in test. remove it!
     /**
      * Opens the create dialog with a fresh bean instance.
      *
      * <p>Example: subclass and call {@code super.onCreate();} or override for custom prefill.</p>
      */
     protected void onCreate() {
-        T bean = newEmptyBean();
-        openFormDialog("Create " + type.getSimpleName(), bean);
+            T bean = newEmptyBean();
+            openFormDialog("Create " + type.getSimpleName(), bean);
     }
-    // FIXME: method is never used. remove it!
+
     /**
      * Opens the edit dialog for the selected item.
      *
@@ -233,7 +234,6 @@ public final class ResourcePanel<T> extends VerticalLayout {
         openFormDialog("Edit " + type.getSimpleName(), item);
     }
 
-    // FIXME: method is never used. remove it!
     /**
      * Opens a confirmation dialog and deletes on confirmation.
      *
@@ -312,8 +312,28 @@ public final class ResourcePanel<T> extends VerticalLayout {
             public void refresh() {
                 ResourcePanel.this.refresh();
             }
+
+            @Override
+            public ResourceView<T> view() {
+                return ResourcePanel.this;
+            }
         };
         return SurfaceResolvers.resolveActions(type, context);
+    }
+
+    @Override
+    public void create() {
+        onCreate();
+    }
+
+    @Override
+    public void edit(T item) {
+        onEdit(item);
+    }
+
+    @Override
+    public void delete(T item) {
+        onDelete(item);
     }
 
     private record SelectionActionBinding<T>(ResourceAction.SelectionAction<T> action, Button button) {

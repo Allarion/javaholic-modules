@@ -10,6 +10,8 @@ public interface UiSurfaceContext<T> {
 
     void refresh();
 
+    ResourceView<T> view();
+
     // TODO: (later version) add fields: PermissionChecker, CurrentUser, Store
 }
 
