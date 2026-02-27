@@ -9,13 +9,5 @@
 
   <artifactId>ui-annotations</artifactId>
   <name>UI Annotations</name>
-
-  <dependencies>
-    <dependency>
-      <groupId>de.javaholic</groupId>
-      <artifactId>ui-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
 </project>
 

@@ -1,19 +1,14 @@
 package de.javaholic.toolkit.ui.resource;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.di.Instantiator;
-import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
-import de.javaholic.toolkit.ui.annotations.UiSurface;
 import de.javaholic.toolkit.ui.api.ResourceAction;
-import de.javaholic.toolkit.ui.api.UiActionProvider;
 import de.javaholic.toolkit.ui.api.UiSurfaceContext;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
@@ -302,8 +297,7 @@ public final class ResourcePanel<T> extends VerticalLayout {
     }
 
     private List<ResourceAction<T>> loadActionsFromProvider() {
-        UiActionProvider<T> provider = resolveActionProvider();
-        List<ResourceAction<T>> actions = provider.actions(new UiSurfaceContext<>() {
+        UiSurfaceContext<T> context = new UiSurfaceContext<>() {
             @Override
             public Class<T> dtoType() {
                 return type;
@@ -318,47 +312,10 @@ public final class ResourcePanel<T> extends VerticalLayout {
             public void refresh() {
                 ResourcePanel.this.refresh();
             }
-        });
-        if (actions == null) {
-            return Collections.emptyList();
-        }
-        return List.copyOf(actions);
-    }
-
-    @SuppressWarnings("unchecked")
-    private UiActionProvider<T> resolveActionProvider() {
-        Class<? extends UiActionProvider<?>> providerType = resolveProviderType();
-        UI currentUi = UI.getCurrent();
-        if (currentUi != null) {
-            Instantiator instantiator = Instantiator.get(currentUi);
-            if (instantiator != null) {
-                return (UiActionProvider<T>) (instantiator.getOrCreate(providerType));
-            }
-        }
-        return instantiateProvider(providerType);
-    }
-
-    // FIXME: this is NOT the right layer as ResourcePanel IS already a UISurface View.
-    private Class<? extends UiActionProvider<?>> resolveProviderType() {
-        UiSurface surface = BeanIntrospector.inspect(type).type().getAnnotation(de.javaholic.toolkit.ui.annotations.UiSurface.class);
-        if (surface != null) {return surface.actions();}
-        // fallback if no @UiSurface is specified. no actions. but this wants to instanciate a class...so
-        // TODO: check: instantiating needed for NoActions?
-        return UiSurface.NoActions.class;
-    }
-
-    @SuppressWarnings("unchecked")
-    private UiActionProvider<T> instantiateProvider(Class<? extends UiActionProvider<?>> providerType) {
-        try {
-            Constructor<? extends UiActionProvider<?>> constructor = providerType.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return (UiActionProvider<T>) (constructor.newInstance());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Unable to instantiate UiActionProvider " + providerType.getName(), e);
-        }
+        };
+        return SurfaceResolvers.resolveActions(type, context);
     }
 
     private record SelectionActionBinding<T>(ResourceAction.SelectionAction<T> action, Button button) {
     }
 }
-
