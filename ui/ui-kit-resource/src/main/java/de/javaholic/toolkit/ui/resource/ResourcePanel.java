@@ -12,11 +12,11 @@ import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
-import de.javaholic.toolkit.ui.annotations.UiActionProvider;
-import de.javaholic.toolkit.ui.annotations.UiSurfaceContext;
+import de.javaholic.toolkit.ui.api.UiActionProvider;
+import de.javaholic.toolkit.ui.api.UiSurfaceContext;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
-import de.javaholic.toolkit.ui.annotations.ResourceAction;
+import de.javaholic.toolkit.ui.api.ResourceAction;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -364,3 +364,4 @@ public final class ResourcePanel<T> extends VerticalLayout {
     private record SelectionActionBinding<T>(ResourceAction.SelectionAction<T> action, Button button) {
     }
 }
+

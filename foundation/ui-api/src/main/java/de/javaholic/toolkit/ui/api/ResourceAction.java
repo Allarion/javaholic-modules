@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.ui.annotations;
+package de.javaholic.toolkit.ui.api;
 
 import java.util.Objects;
 import java.util.Set;
@@ -206,4 +206,5 @@ public sealed interface ResourceAction<T>
     }
 
 }
+
 

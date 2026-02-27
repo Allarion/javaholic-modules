@@ -1,7 +1,7 @@
 package de.javaholic.toolkit.i18n.ui;
 
 import com.vaadin.flow.component.notification.Notification;
-import de.javaholic.toolkit.ui.annotations.ResourceAction;
+import de.javaholic.toolkit.ui.api.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 
 /**
@@ -42,4 +42,5 @@ public final class I18nUiPresets {
     private record FixedPreset(boolean enableCreate, boolean enableEdit, boolean enableDelete) implements ResourcePreset {
     }
 }
+
 

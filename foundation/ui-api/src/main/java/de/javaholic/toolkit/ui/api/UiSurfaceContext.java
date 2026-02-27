@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.ui.annotations;
+package de.javaholic.toolkit.ui.api;
 
 import java.util.Optional;
 
@@ -12,3 +12,4 @@ public interface UiSurfaceContext<T> {
 
     // TODO: (later version) add fields: PermissionChecker, CurrentUser, Store
 }
+

@@ -5,7 +5,7 @@ import de.javaholic.toolkit.iam.core.domain.UserStatus;
 import de.javaholic.toolkit.iam.dto.RoleFormDto;
 import de.javaholic.toolkit.iam.dto.UserFormDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.annotations.ResourceAction;
+import de.javaholic.toolkit.ui.api.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 
 import java.util.Objects;
@@ -71,4 +71,5 @@ public final class IamUiPresets {
     private record FixedPreset(boolean enableCreate, boolean enableEdit, boolean enableDelete) implements ResourcePreset {
     }
 }
+
 

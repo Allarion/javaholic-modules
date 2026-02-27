@@ -32,6 +32,7 @@
         <module>foundation/introspection</module>
         <module>foundation/spi-persistence</module>
         <module>foundation/ui-annotations</module>
+        <module>foundation/ui-api</module>
     </modules>
 
     <properties>
@@ -102,4 +103,5 @@
         </pluginManagement>
     </build>
 </project>
+
 

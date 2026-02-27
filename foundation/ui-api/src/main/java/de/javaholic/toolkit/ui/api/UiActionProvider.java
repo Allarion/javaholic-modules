@@ -1,4 +1,4 @@
-package de.javaholic.toolkit.ui.annotations;
+package de.javaholic.toolkit.ui.api;
 
 import java.util.List;
 
@@ -6,3 +6,4 @@ import java.util.List;
 public interface UiActionProvider<T> {
     List<ResourceAction<T>> actions(UiSurfaceContext<T> context);
 }
+

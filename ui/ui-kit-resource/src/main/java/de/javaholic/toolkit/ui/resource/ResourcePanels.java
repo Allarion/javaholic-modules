@@ -8,7 +8,7 @@ import de.javaholic.toolkit.i18n.DefaultTextResolver;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
-import de.javaholic.toolkit.ui.annotations.ResourceAction;
+import de.javaholic.toolkit.ui.api.ResourceAction;
 import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
 import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 import de.javaholic.toolkit.ui.form.Forms;
@@ -495,4 +495,5 @@ public final class ResourcePanels {
                 .toArray(String[]::new);
     }
 }
+
 
