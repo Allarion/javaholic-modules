@@ -43,7 +43,7 @@ import java.util.function.Supplier;
  * Vaadin UI thread only.</p>
  */
 public final class ActionBuilder {
-
+// TODO: move into Actions.
     private String label;
     private String tooltip;
     private Supplier<Component> iconSupplier;
