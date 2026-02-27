@@ -26,7 +26,7 @@ class ResourceFluentApiContractTest {
                 .withStore(store)
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
-                .actionProvider(NoopActionProvider.class)
+                .withActionProvider(NoopActionProvider.class)
                 .toolbarAction(ResourceAction.toolbar("t", () -> { }))
                 .rowAction(ResourceAction.row("r", dto -> { }))
                 .selectionAction(ResourceAction.selection("s", selection -> { }));
@@ -46,7 +46,7 @@ class ResourceFluentApiContractTest {
                 .withStore(store)
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
-                .actionProvider(NoopActionProvider.class)
+                .withActionProvider(NoopActionProvider.class)
                 .toolbarAction(ResourceAction.toolbar("t", () -> { }))
                 .rowAction(ResourceAction.row("r", dto -> { }))
                 .selectionAction(ResourceAction.selection("s", selection -> { }))
@@ -77,7 +77,7 @@ class ResourceFluentApiContractTest {
     void crudBuilderMethodReturnTypesStayStable() throws NoSuchMethodException {
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("withStore", CrudStore.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
-        assertThat(ResourcePanels.CrudBuilder.class.getMethod("actionProvider", Class.class).getReturnType())
+        assertThat(ResourcePanels.CrudBuilder.class.getMethod("withActionProvider", Class.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("toolbarAction", ResourceAction.ToolbarAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
@@ -90,7 +90,7 @@ class ResourceFluentApiContractTest {
 
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("withStore", CrudStore.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
-        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("actionProvider", Class.class).getReturnType())
+        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("withActionProvider", Class.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("toolbarAction", ResourceAction.ToolbarAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);

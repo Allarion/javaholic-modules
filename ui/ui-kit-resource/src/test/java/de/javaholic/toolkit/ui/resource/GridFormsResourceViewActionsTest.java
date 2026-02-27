@@ -38,7 +38,7 @@ class GridFormsResourceViewActionsTest {
         GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .actionProvider(CrudActionProvider.class)
+                .withActionProvider(CrudActionProvider.class)
                 .build();
 
         assertThat(findButton(panel, "Create")).isPresent();

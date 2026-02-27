@@ -107,7 +107,7 @@ public final class ResourcePanels {
          */
         CrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
-        CrudBuilder<T> actionProvider(Class<?> actionProviderType);
+        CrudBuilder<T> withActionProvider(Class<?> actionProviderType);
 
         CrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
 
@@ -143,7 +143,7 @@ public final class ResourcePanels {
          */
         ManualCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
-        ManualCrudBuilder<T> actionProvider(Class<?> actionProviderType);
+        ManualCrudBuilder<T> withActionProvider(Class<?> actionProviderType);
 
         ManualCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
 
@@ -194,10 +194,9 @@ public final class ResourcePanels {
          */
         AutoCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
-        // todo: rename withActionProvider
-        AutoCrudBuilder<T> actionProvider(Class<?> actionProviderType);
+        AutoCrudBuilder<T> withActionProvider(Class<?> actionProviderType);
 
-        // todo: cant this be 1? the action know where it belongs
+        // todo: cant this be 1 for all actions? the action know where it belongs
         AutoCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
 
         AutoCrudBuilder<T> rowAction(ResourceAction.RowAction<T> action);
@@ -271,7 +270,7 @@ public final class ResourcePanels {
         }
 
         @Override
-        public ManualCrudBuilder<T> actionProvider(Class<?> actionProviderType) {
+        public ManualCrudBuilder<T> withActionProvider(Class<?> actionProviderType) {
             this.actionProviderType = Objects.requireNonNull(actionProviderType, "actionProviderType");
             return this;
         }
@@ -353,7 +352,7 @@ public final class ResourcePanels {
         }
 
         @Override
-        public AutoCrudBuilder<T> actionProvider(Class<?> actionProviderType) {
+        public AutoCrudBuilder<T> withActionProvider(Class<?> actionProviderType) {
             this.actionProviderType = Objects.requireNonNull(actionProviderType, "actionProviderType");
             return this;
         }

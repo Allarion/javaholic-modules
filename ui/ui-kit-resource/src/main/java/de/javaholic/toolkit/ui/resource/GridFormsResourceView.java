@@ -46,7 +46,6 @@ import java.util.function.Supplier;
  * ({@link Grid}, {@link Forms.Form}, {@link CrudStore}) and keeps each concern isolated:
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
-// TODO: once again naming: ResourceGridFormsPanel? ResourceBrowserView?
 public final class GridFormsResourceView<T> extends VerticalLayout implements ResourceView<T> {
     private final Class<T> type;
     private final CrudStore<T, ?> store;
@@ -260,7 +259,7 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
         if (tooltip != null && !tooltip.isBlank()) {
             builder.tooltip(tooltip);
         }
-        // TODO revisit: List<ButtonVariant> variants -> variants.forEach(builder::style);
+        // TODO revisit: List<ButtonVariant> variants -> variants.forEach(builder::style); isnt it just a enum of CSS stlyes? we can do styles already...
         return builder.build();
     }
 
@@ -298,7 +297,7 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
                     if (!confirmed) {
                         return;
                     }
-                    // TODO: add SoftDelete Support; dont forget its also a tech-field
+                    // TODO: v0.2: add SoftDelete Support; dont forget its also a tech-field
                     deleteAndRefresh(item);
                 });
     }
@@ -315,7 +314,7 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
                 .open();
     }
 
-    // TODO:add supplier as alternative to newEmptyBean: .withNewInstanceSupplier(Supplier<T>)...but how is it used (in DTO)
+    //  TODO:add supplier as alternative to newEmptyBean: .withNewInstanceSupplier(Supplier<T>)...but how is it used (in DTO? => ActionProvider!)
     private T newEmptyBean() {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor();

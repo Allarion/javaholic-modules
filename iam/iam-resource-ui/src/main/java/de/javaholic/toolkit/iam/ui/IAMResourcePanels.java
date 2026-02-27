@@ -86,7 +86,7 @@ public final class IAMResourcePanels {
         Labels effective = Labels.defaults().merge(labels);
         return ResourcePanels.auto(UserFormDto.class)
                 .withStore(userStore)
-                .actionProvider(IamUiActions.usersCrudProvider())
+                .withActionProvider(IamUiActions.usersCrudProvider())
                 .override("username", cfg -> cfg.label(effective.userUsername()))
                 .override("status", cfg -> cfg.label(effective.userStatus()))
                 .override("roles", cfg -> cfg.label(effective.userRoles()))
@@ -106,7 +106,7 @@ public final class IAMResourcePanels {
         Labels effective = Labels.defaults().merge(labels);
         return ResourcePanels.auto(RoleFormDto.class)
                 .withStore(roleStore)
-                .actionProvider(IamUiActions.rolesCrudProvider())
+                .withActionProvider(IamUiActions.rolesCrudProvider())
                 .override("name", cfg -> cfg.label(effective.roleName()))
                 .override("permissions", cfg -> cfg.label(effective.rolePermissions()))
                 .rowAction(IamUiActions.assignPermissionsAction())
@@ -122,7 +122,7 @@ public final class IAMResourcePanels {
         Labels effective = Labels.defaults().merge(labels);
         return ResourcePanels.auto(PermissionFormDto.class)
                 .withStore(permissionStore)
-                .actionProvider(IamUiActions.permissionsCrudProvider())
+                .withActionProvider(IamUiActions.permissionsCrudProvider())
                 .override("code", cfg -> cfg.label(effective.permissionName()))
                 .build();
     }

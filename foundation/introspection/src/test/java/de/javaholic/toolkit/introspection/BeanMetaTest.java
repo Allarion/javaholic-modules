@@ -19,7 +19,7 @@ class BeanMetaTest {
     record UserRecord(@Id Long id, @Version long version, String name) {
     }
 
-    // TODO: correct usage of generics
+    // TODO: correct usage of generics, meta.properties supplies T,?
     @Test
     void getAndSetValueForPojo() {
         BeanMeta<User> meta = BeanIntrospector.inspect(User.class);

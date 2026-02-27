@@ -73,6 +73,7 @@ public final class BeanIntrospector {
                 properties.add(prop);
                 accessors.put(prop.name(), field);
 
+                // TODO: remove JPA depencency. also Compare with technicalField interpretation.
                 if (isId(component) || isId(field)) {
                     if (idProperty != null) {
                         throw new IllegalStateException(
@@ -144,7 +145,7 @@ public final class BeanIntrospector {
      *
      * <p>Concept note: currently this relies on JPA annotations. Long-term, this should move to an
      * adapter strategy so foundation stays persistence-agnostic.</p>
-     * // TODO: remove JPA depencency. also Compare with technicalField interpretation.
+     *
      */
     private static boolean isId(AnnotatedElement element) {
         return element.isAnnotationPresent(jakarta.persistence.Id.class);

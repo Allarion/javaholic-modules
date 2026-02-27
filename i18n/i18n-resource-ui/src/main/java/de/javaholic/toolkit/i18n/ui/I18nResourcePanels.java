@@ -36,7 +36,7 @@ public final class I18nResourcePanels {
         return ResourcePanels.auto(I18nEntryDto.class)
                 .withStore(store)
                 .withTextResolver(textResolver)
-                .actionProvider(CrudActionProvider.class)
+                .withActionProvider(CrudActionProvider.class)
                 .toolbarAction(I18nUiActions.importAction())
                 .toolbarAction(I18nUiActions.exportAction())
                 .toolbarAction(I18nUiActions.generateMissingKeysAction())

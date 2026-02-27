@@ -68,7 +68,8 @@ public final class Buttons {
      */
     public static Button from(Actions.Action action, PermissionChecker permissionChecker) {
         Objects.requireNonNull(action, "action");
-        // FIXME: whole .from(Action ) isnt using the Builder! API BREAK! solution: .withPermissionChecker
+        // FIXME: whole .from(Actions.Action ) isnt using the Builder!
+        // FIXME: API BREAK: 2 Parameters! solution: .withPermissionChecker
         Button button = new Button(action.label());
         if (action.tooltip() != null) {
             button.setTooltipText(action.tooltip());
