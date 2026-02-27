@@ -117,7 +117,7 @@ public sealed interface ResourceAction<T>
 
         @Override
         public ResourceActionScope scope() {
-            return ResourceActionScope.ROW;
+            return ResourceActionScope.ITEM;
         }
 
         public Predicate<T> enabledWhen() {
@@ -198,8 +198,7 @@ public sealed interface ResourceAction<T>
         /**
          * Action rendered per row in the actions column, operating on one item.
          */
-        // TODO: rethink 'ROW' as its view specific (that its a row). for nodeUI it would be NODE or smth
-        ROW,
+        ITEM,
         /**
          * Toolbar action operating on the current grid selection.
          */
