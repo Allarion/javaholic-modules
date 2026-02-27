@@ -9,13 +9,13 @@ import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Grids;
 import de.javaholic.toolkit.ui.api.ResourceAction;
-import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
-import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import de.javaholic.toolkit.ui.meta.UiPropertyConfig;
+import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
+import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -208,6 +208,7 @@ public final class ResourcePanels {
          * Sets which default create/edit/delete actions are shown.
          * Presets affect only default actions and never block custom actions.
          */
+        @Deprecated
         AutoCrudBuilder<T> preset(ResourcePreset preset);
 
         AutoCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);

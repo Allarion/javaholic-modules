@@ -2,7 +2,6 @@ package de.javaholic.toolkit.ui.resource;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,20 +11,15 @@ import de.javaholic.toolkit.introspection.BeanIntrospector;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.Buttons;
 import de.javaholic.toolkit.ui.Dialogs;
+import de.javaholic.toolkit.ui.annotations.UiSurface;
+import de.javaholic.toolkit.ui.api.ResourceAction;
 import de.javaholic.toolkit.ui.api.UiActionProvider;
 import de.javaholic.toolkit.ui.api.UiSurfaceContext;
 import de.javaholic.toolkit.ui.form.Forms;
 import de.javaholic.toolkit.ui.layout.Layouts;
-import de.javaholic.toolkit.ui.api.ResourceAction;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -278,7 +272,7 @@ public final class ResourcePanel<T> extends VerticalLayout {
                 .open();
     }
 
-    // TODO:add supplier as alternative to newEmptyBean: .withNewInstanceSupplier(Supplier<T>)
+    // TODO:add supplier as alternative to newEmptyBean: .withNewInstanceSupplier(Supplier<T>)...but how is it used (in DTO)
     private T newEmptyBean() {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor();
@@ -346,8 +340,11 @@ public final class ResourcePanel<T> extends VerticalLayout {
     }
 
     private Class<? extends UiActionProvider<?>> resolveProviderType() {
-        de.javaholic.toolkit.ui.annotations.UiSurface surface = BeanIntrospector.inspect(type).type().getAnnotation(de.javaholic.toolkit.ui.annotations.UiSurface.class);
-        return surface.actions();
+        UiSurface surface = BeanIntrospector.inspect(type).type().getAnnotation(de.javaholic.toolkit.ui.annotations.UiSurface.class);
+        if (surface != null) {return surface.actions();}
+        // fallback if no @UiSurface is specified. no actions. but this wants to instanciate a class...so
+        // TODO: check: instantiating needed for NoActions?
+        return UiSurface.NoActions.class;
     }
 
     @SuppressWarnings("unchecked")

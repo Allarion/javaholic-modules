@@ -3,10 +3,8 @@ package de.javaholic.toolkit.ui.annotations;
 import de.javaholic.toolkit.ui.api.ResourceAction;
 import de.javaholic.toolkit.ui.api.UiActionProvider;
 import de.javaholic.toolkit.ui.api.UiSurfaceContext;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+
+import java.lang.annotation.*;
 import java.util.List;
 
 @Retention(RetentionPolicy.RUNTIME)
