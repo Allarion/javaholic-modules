@@ -1,10 +1,10 @@
 package de.javaholic.toolkit.ui.contract;
 
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.resource.ResourcePanel;
+import de.javaholic.toolkit.ui.api.UiActionProvider;
+import de.javaholic.toolkit.ui.resource.GridFormsResourceView;
 import de.javaholic.toolkit.ui.resource.ResourcePanels;
 import de.javaholic.toolkit.ui.api.ResourceAction;
-import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import org.junit.jupiter.api.Test;
 
@@ -26,15 +26,15 @@ class ResourceFluentApiContractTest {
                 .withStore(store)
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
-                .preset(ResourcePresets.full())
+                .actionProvider(NoopActionProvider.class)
                 .toolbarAction(ResourceAction.toolbar("t", () -> { }))
                 .rowAction(ResourceAction.row("r", dto -> { }))
                 .selectionAction(ResourceAction.selection("s", selection -> { }));
 
-        ResourcePanel<UserDto> result = chained.build();
+        GridFormsResourceView<UserDto> result = chained.build();
 
         assertThat(chained).isSameAs(builder);
-        assertThat(result).isInstanceOf(ResourcePanel.class);
+        assertThat(result).isInstanceOf(GridFormsResourceView.class);
     }
 
     @Test
@@ -46,27 +46,27 @@ class ResourceFluentApiContractTest {
                 .withStore(store)
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
-                .preset(ResourcePresets.full())
+                .actionProvider(NoopActionProvider.class)
                 .toolbarAction(ResourceAction.toolbar("t", () -> { }))
                 .rowAction(ResourceAction.row("r", dto -> { }))
                 .selectionAction(ResourceAction.selection("s", selection -> { }))
                 .override("email", property -> property.label("user.email.label"));
 
-        ResourcePanel<UserDto> result = chained.build();
+        GridFormsResourceView<UserDto> result = chained.build();
 
         assertThat(chained).isSameAs(builder);
-        assertThat(result).isInstanceOf(ResourcePanel.class);
+        assertThat(result).isInstanceOf(GridFormsResourceView.class);
     }
 
     @Test
     void crudPanelExposesNoFluentConfigurationMethods() {
-        List<Method> fluentNamedMethods = Arrays.stream(ResourcePanel.class.getDeclaredMethods())
+        List<Method> fluentNamedMethods = Arrays.stream(GridFormsResourceView.class.getDeclaredMethods())
                 .filter(method -> method.getName().startsWith("with")
                         || method.getName().startsWith("override")
                         || method.getName().equals("build"))
                 .toList();
-        List<Method> fluentReturnMethods = Arrays.stream(ResourcePanel.class.getDeclaredMethods())
-                .filter(method -> method.getReturnType().equals(ResourcePanel.class))
+        List<Method> fluentReturnMethods = Arrays.stream(GridFormsResourceView.class.getDeclaredMethods())
+                .filter(method -> method.getReturnType().equals(GridFormsResourceView.class))
                 .toList();
 
         assertThat(fluentNamedMethods).isEmpty();
@@ -77,7 +77,7 @@ class ResourceFluentApiContractTest {
     void crudBuilderMethodReturnTypesStayStable() throws NoSuchMethodException {
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("withStore", CrudStore.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
-        assertThat(ResourcePanels.CrudBuilder.class.getMethod("preset", de.javaholic.toolkit.ui.resource.action.ResourcePreset.class).getReturnType())
+        assertThat(ResourcePanels.CrudBuilder.class.getMethod("actionProvider", Class.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("toolbarAction", ResourceAction.ToolbarAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
@@ -86,11 +86,11 @@ class ResourceFluentApiContractTest {
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("selectionAction", ResourceAction.SelectionAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("build").getReturnType())
-                .isEqualTo(ResourcePanel.class);
+                .isEqualTo(GridFormsResourceView.class);
 
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("withStore", CrudStore.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
-        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("preset", de.javaholic.toolkit.ui.resource.action.ResourcePreset.class).getReturnType())
+        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("actionProvider", Class.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("toolbarAction", ResourceAction.ToolbarAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
@@ -101,7 +101,7 @@ class ResourceFluentApiContractTest {
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("override", String.class, java.util.function.Consumer.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("build").getReturnType())
-                .isEqualTo(ResourcePanel.class);
+                .isEqualTo(GridFormsResourceView.class);
     }
 
     static final class StubCrudStore<T> implements CrudStore<T, Long> {
@@ -128,6 +128,13 @@ class ResourceFluentApiContractTest {
 
     static class UserDto {
         private String email;
+    }
+
+    public static final class NoopActionProvider implements UiActionProvider<UserDto> {
+        @Override
+        public List<ResourceAction<UserDto>> actions(de.javaholic.toolkit.ui.api.UiSurfaceContext<UserDto> context) {
+            return List.of();
+        }
     }
 }
 

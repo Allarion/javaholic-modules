@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ResourcePanelValidationTest {
+class GridFormsResourceViewValidationTest {
 
     @Test
     void saveActionIsDisabledWhenInvalidAndEnabledWhenValid() {

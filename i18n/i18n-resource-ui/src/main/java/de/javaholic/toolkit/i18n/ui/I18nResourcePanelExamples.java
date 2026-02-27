@@ -10,7 +10,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.i18n.dto.I18nEntryDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.resource.ResourcePanel;
+import de.javaholic.toolkit.ui.resource.GridFormsResourceView;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +30,7 @@ public final class I18nResourcePanelExamples {
         Objects.requireNonNull(textResolver, "textResolver");
 
         FilteredI18nEntryStore filteredStore = new FilteredI18nEntryStore(store);
-        ResourcePanel<I18nEntryDto> panel = I18nResourcePanels.entries(filteredStore, textResolver);
+        GridFormsResourceView<I18nEntryDto> panel = I18nResourcePanels.entries(filteredStore, textResolver);
 
         TextField keyFilter = new TextField(resolve(textResolver, "i18n.entries.filter.key", "Key contains"));
         keyFilter.setPlaceholder(resolve(textResolver, "i18n.entries.filter.key.placeholder", "e.g. app.title"));

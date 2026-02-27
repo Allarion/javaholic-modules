@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class IAMResourcePanelsSmokeTest {
+class IAMGridFormsResourcePanelsSmokeTest {
 
     @Mock
     private CrudStore<UserFormDto, UUID> userStore;

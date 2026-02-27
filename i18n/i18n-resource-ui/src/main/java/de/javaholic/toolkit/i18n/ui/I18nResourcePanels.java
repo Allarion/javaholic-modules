@@ -4,8 +4,9 @@ import com.vaadin.flow.component.Component;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.i18n.dto.I18nEntryDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.resource.ResourcePanel;
+import de.javaholic.toolkit.ui.resource.GridFormsResourceView;
 import de.javaholic.toolkit.ui.resource.ResourcePanels;
+import de.javaholic.toolkit.ui.resource.actionprovider.CrudActionProvider;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -28,17 +29,17 @@ public final class I18nResourcePanels {
         return I18nResourcePanelExamples.entriesWithFilters(store, textResolver);
     }
 
-    public static ResourcePanel<I18nEntryDto> entries(
+    public static GridFormsResourceView<I18nEntryDto> entries(
             CrudStore<I18nEntryDto, UUID> store,
             TextResolver textResolver
     ) {
         return ResourcePanels.auto(I18nEntryDto.class)
                 .withStore(store)
                 .withTextResolver(textResolver)
-                .preset(I18nUiPresets.texts())
-                .toolbarAction(I18nUiPresets.importAction())
-                .toolbarAction(I18nUiPresets.exportAction())
-                .toolbarAction(I18nUiPresets.generateMissingKeysAction())
+                .actionProvider(CrudActionProvider.class)
+                .toolbarAction(I18nUiActions.importAction())
+                .toolbarAction(I18nUiActions.exportAction())
+                .toolbarAction(I18nUiActions.generateMissingKeysAction())
                 .build();
     }
 }

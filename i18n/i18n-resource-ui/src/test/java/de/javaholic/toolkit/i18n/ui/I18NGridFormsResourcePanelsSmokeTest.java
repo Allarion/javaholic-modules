@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class I18nResourcePanelsSmokeTest {
+class I18NGridFormsResourcePanelsSmokeTest {
 
     @Mock
     private CrudStore<I18nEntryDto, UUID> store;

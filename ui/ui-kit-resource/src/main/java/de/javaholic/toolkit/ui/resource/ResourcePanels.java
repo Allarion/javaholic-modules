@@ -14,8 +14,6 @@ import de.javaholic.toolkit.ui.meta.UiInspector;
 import de.javaholic.toolkit.ui.meta.UiMeta;
 import de.javaholic.toolkit.ui.meta.UiProperty;
 import de.javaholic.toolkit.ui.meta.UiPropertyConfig;
-import de.javaholic.toolkit.ui.resource.action.ResourcePreset;
-import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -33,7 +31,7 @@ import java.util.function.Predicate;
  * <li>auto mode ({@link #auto(Class)}) when grid/form are generated from {@link UiMeta}</li>
  * </ul>
  *
- * <p>Both modes end in the same {@link ResourcePanel} orchestration component.</p>
+ * <p>Both modes end in the same {@link GridFormsResourceView} orchestration component.</p>
  *
  * <p>Example manual mode:</p>
  * <pre>{@code
@@ -86,7 +84,7 @@ public final class ResourcePanels {
          *
          * <p>Example: {@code ResourcePanel<User> panel = builder.build();}</p>
          */
-        ResourcePanel<T> build();
+        GridFormsResourceView<T> build();
 
         /**
          * Sets the backing store.
@@ -109,11 +107,7 @@ public final class ResourcePanels {
          */
         CrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
-        /**
-         * Sets which default create/edit/delete actions are shown.
-         * Presets affect only default actions and never block custom actions.
-         */
-        CrudBuilder<T> preset(ResourcePreset preset);
+        CrudBuilder<T> actionProvider(Class<?> actionProviderType);
 
         CrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
 
@@ -149,12 +143,7 @@ public final class ResourcePanels {
          */
         ManualCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
-        /**
-         * Sets which default create/edit/delete actions are shown.
-         * Presets affect only default actions and never block custom actions.
-         */
-        @Deprecated
-        ManualCrudBuilder<T> preset(ResourcePreset preset);
+        ManualCrudBuilder<T> actionProvider(Class<?> actionProviderType);
 
         ManualCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
 
@@ -205,13 +194,10 @@ public final class ResourcePanels {
          */
         AutoCrudBuilder<T> withPropertyFilter(Predicate<UiProperty<T>> filter);
 
-        /**
-         * Sets which default create/edit/delete actions are shown.
-         * Presets affect only default actions and never block custom actions.
-         */
-        @Deprecated
-        AutoCrudBuilder<T> preset(ResourcePreset preset);
+        // todo: rename withActionProvider
+        AutoCrudBuilder<T> actionProvider(Class<?> actionProviderType);
 
+        // todo: cant this be 1? the action know where it belongs
         AutoCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
 
         AutoCrudBuilder<T> rowAction(ResourceAction.RowAction<T> action);
@@ -235,7 +221,7 @@ public final class ResourcePanels {
          *
          * <p>Example: {@code ResourcePanel<User> panel = builder.build();}</p>
          */
-        ResourcePanel<T> build();
+        GridFormsResourceView<T> build();
     }
 
     private static final class ManualBuilder<T> implements ManualCrudBuilder<T> {
@@ -245,7 +231,7 @@ public final class ResourcePanels {
         private Forms.Form<T> form;
         private TextResolver textResolver = new DefaultTextResolver();
         private Predicate<UiProperty<T>> propertyFilter = UiProperty::isVisible;
-        private ResourcePreset preset = ResourcePresets.full();
+        private Class<?> actionProviderType;
         private final List<ResourceAction.ToolbarAction<T>> toolbarActions = new ArrayList<>();
         private final List<ResourceAction.RowAction<T>> rowActions = new ArrayList<>();
         private final List<ResourceAction.SelectionAction<T>> selectionActions = new ArrayList<>();
@@ -285,8 +271,8 @@ public final class ResourcePanels {
         }
 
         @Override
-        public ManualCrudBuilder<T> preset(ResourcePreset preset) {
-            this.preset = Objects.requireNonNull(preset, "preset");
+        public ManualCrudBuilder<T> actionProvider(Class<?> actionProviderType) {
+            this.actionProviderType = Objects.requireNonNull(actionProviderType, "actionProviderType");
             return this;
         }
 
@@ -309,13 +295,13 @@ public final class ResourcePanels {
         }
 
         @Override
-        public ResourcePanel<T> build() {
+        public GridFormsResourceView<T> build() {
             Objects.requireNonNull(store, "store");
             String[] excluded = excludedPropertyNames(type, propertyFilter);
             Grid<T> effectiveGrid = grid != null
                     ? grid
                     : Grids.of(type).withTextResolver(textResolver).build();
-            return new ResourcePanel<>(
+            return new GridFormsResourceView<>(
                     type,
                     store,
                     effectiveGrid,
@@ -325,6 +311,7 @@ public final class ResourcePanels {
                             .withTextResolver(textResolver)
                             .exclude(excluded)
                             .build(),
+                    actionProviderType,
                     toolbarActions,
                     rowActions,
                     selectionActions
@@ -338,7 +325,7 @@ public final class ResourcePanels {
         private TextResolver textResolver = new DefaultTextResolver();
         private Predicate<UiProperty<T>> propertyFilter = property -> true;
         private final Map<String, Consumer<UiPropertyConfig<T>>> overrides = new LinkedHashMap<>();
-        private ResourcePreset preset = ResourcePresets.full();
+        private Class<?> actionProviderType;
         private final List<ResourceAction.ToolbarAction<T>> toolbarActions = new ArrayList<>();
         private final List<ResourceAction.RowAction<T>> rowActions = new ArrayList<>();
         private final List<ResourceAction.SelectionAction<T>> selectionActions = new ArrayList<>();
@@ -366,8 +353,8 @@ public final class ResourcePanels {
         }
 
         @Override
-        public AutoCrudBuilder<T> preset(ResourcePreset preset) {
-            this.preset = Objects.requireNonNull(preset, "preset");
+        public AutoCrudBuilder<T> actionProvider(Class<?> actionProviderType) {
+            this.actionProviderType = Objects.requireNonNull(actionProviderType, "actionProviderType");
             return this;
         }
 
@@ -398,16 +385,17 @@ public final class ResourcePanels {
         }
 
         @Override
-        public ResourcePanel<T> build() {
+        public GridFormsResourceView<T> build() {
             Objects.requireNonNull(store, "store");
             Map<String, UiPropertyConfig<T>> effectiveConfigs = buildEffectiveConfigs();
             String[] excluded = excludedPropertyNames(effectiveConfigs);
             Grid<T> grid = buildGrid(excluded, effectiveConfigs);
-            return new ResourcePanel<>(
+            return new GridFormsResourceView<>(
                     type,
                     store,
                     grid,
                     () -> buildForm(excluded, effectiveConfigs),
+                    actionProviderType,
                     toolbarActions,
                     rowActions,
                     selectionActions
@@ -497,5 +485,3 @@ public final class ResourcePanels {
                 .toArray(String[]::new);
     }
 }
-
-

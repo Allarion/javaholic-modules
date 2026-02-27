@@ -19,7 +19,7 @@ class AutoResourceBuilderOverrideTest {
 
     @Test
     void overrideLabelIsAppliedToAutoGridColumn() throws Exception {
-        ResourcePanel<UserDto> panel = ResourcePanels.auto(UserDto.class)
+        GridFormsResourceView<UserDto> panel = ResourcePanels.auto(UserDto.class)
                 .withStore(new StubCrudStore<>())
                 .withTextResolver((key,locale) -> Optional.of("resolved:" + key))
                 .override("email", config -> config.label("user.email.label"))
@@ -46,7 +46,7 @@ class AutoResourceBuilderOverrideTest {
 
     @Test
     void overrideRequiredAndTooltipAreAppliedToAutoFormField() throws Exception {
-        ResourcePanel<UserDto> panel = ResourcePanels.auto(UserDto.class)
+        GridFormsResourceView<UserDto> panel = ResourcePanels.auto(UserDto.class)
                 .withStore(new StubCrudStore<>())
                 .withTextResolver((key,locale) -> Optional.of("resolved:" + key))
                 .override("email", config -> config
@@ -65,15 +65,15 @@ class AutoResourceBuilderOverrideTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Grid<T> gridOf(ResourcePanel<T> panel) throws Exception {
-        Field field = ResourcePanel.class.getDeclaredField("grid");
+    private static <T> Grid<T> gridOf(GridFormsResourceView<T> panel) throws Exception {
+        Field field = GridFormsResourceView.class.getDeclaredField("grid");
         field.setAccessible(true);
         return (Grid<T>) field.get(panel);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Supplier<Forms.Form<T>> formFactoryOf(ResourcePanel<T> panel) throws Exception {
-        Field field = ResourcePanel.class.getDeclaredField("formFactory");
+    private static <T> Supplier<Forms.Form<T>> formFactoryOf(GridFormsResourceView<T> panel) throws Exception {
+        Field field = GridFormsResourceView.class.getDeclaredField("formFactory");
         field.setAccessible(true);
         return (Supplier<Forms.Form<T>>) field.get(panel);
     }

@@ -10,7 +10,7 @@ import de.javaholic.toolkit.iam.dto.PermissionFormDto;
 import de.javaholic.toolkit.iam.dto.RoleFormDto;
 import de.javaholic.toolkit.iam.dto.UserFormDto;
 import de.javaholic.toolkit.persistence.core.CrudStore;
-import de.javaholic.toolkit.ui.resource.ResourcePanel;
+import de.javaholic.toolkit.ui.resource.GridFormsResourceView;
 import de.javaholic.toolkit.ui.resource.ResourcePanels;
 
 import java.util.Objects;
@@ -44,9 +44,9 @@ public final class IAMResourcePanels {
         Objects.requireNonNull(textResolver, "permissionStore");
         // TODO: actually USE textResolver (and i18n...)
 
-        ResourcePanel<UserFormDto> usersPanel = users(userStore, labels);
-        ResourcePanel<RoleFormDto> rolesPanel = roles(roleStore, permissionStore, labels);
-        ResourcePanel<PermissionFormDto> permissionsPanel = permissions(permissionStore, labels);
+        GridFormsResourceView<UserFormDto> usersPanel = users(userStore, labels);
+        GridFormsResourceView<RoleFormDto> rolesPanel = roles(roleStore, permissionStore, labels);
+        GridFormsResourceView<PermissionFormDto> permissionsPanel = permissions(permissionStore, labels);
 
         Tabs tabs = new Tabs(
                 new Tab("Users"),
@@ -77,52 +77,52 @@ public final class IAMResourcePanels {
         return layout;
     }
 
-    public static ResourcePanel<UserFormDto> users(CrudStore<UserFormDto, UUID> userStore) {
+    public static GridFormsResourceView<UserFormDto> users(CrudStore<UserFormDto, UUID> userStore) {
         return users(userStore, Labels.defaults());
     }
 
-    public static ResourcePanel<UserFormDto> users(CrudStore<UserFormDto, UUID> userStore, Labels labels) {
+    public static GridFormsResourceView<UserFormDto> users(CrudStore<UserFormDto, UUID> userStore, Labels labels) {
         Objects.requireNonNull(userStore, "userStore");
         Labels effective = Labels.defaults().merge(labels);
         return ResourcePanels.auto(UserFormDto.class)
                 .withStore(userStore)
-                .preset(IamUiPresets.users())
+                .actionProvider(IamUiActions.usersCrudProvider())
                 .override("username", cfg -> cfg.label(effective.userUsername()))
                 .override("status", cfg -> cfg.label(effective.userStatus()))
                 .override("roles", cfg -> cfg.label(effective.userRoles()))
-                .rowAction(IamUiPresets.deactivateUserAction(userStore))
-                .rowAction(IamUiPresets.activateUserAction(userStore))
-                .rowAction(IamUiPresets.assignRolesAction())
+                .rowAction(IamUiActions.deactivateUserAction(userStore))
+                .rowAction(IamUiActions.activateUserAction(userStore))
+                .rowAction(IamUiActions.assignRolesAction())
                 .build();
     }
 
-    public static ResourcePanel<RoleFormDto> roles(CrudStore<RoleFormDto, UUID> roleStore, CrudStore<PermissionFormDto, UUID> permissionStore) {
+    public static GridFormsResourceView<RoleFormDto> roles(CrudStore<RoleFormDto, UUID> roleStore, CrudStore<PermissionFormDto, UUID> permissionStore) {
         return roles(roleStore, permissionStore, Labels.defaults());
     }
 
-    public static ResourcePanel<RoleFormDto> roles(CrudStore<RoleFormDto, UUID> roleStore, CrudStore<PermissionFormDto, UUID> permissionStore, Labels labels) {
+    public static GridFormsResourceView<RoleFormDto> roles(CrudStore<RoleFormDto, UUID> roleStore, CrudStore<PermissionFormDto, UUID> permissionStore, Labels labels) {
         Objects.requireNonNull(roleStore, "roleStore");
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
         return ResourcePanels.auto(RoleFormDto.class)
                 .withStore(roleStore)
-                .preset(IamUiPresets.roles())
+                .actionProvider(IamUiActions.rolesCrudProvider())
                 .override("name", cfg -> cfg.label(effective.roleName()))
                 .override("permissions", cfg -> cfg.label(effective.rolePermissions()))
-                .rowAction(IamUiPresets.assignPermissionsAction())
+                .rowAction(IamUiActions.assignPermissionsAction())
                 .build();
     }
 
-    public static ResourcePanel<PermissionFormDto> permissions(CrudStore<PermissionFormDto, UUID> permissionStore) {
+    public static GridFormsResourceView<PermissionFormDto> permissions(CrudStore<PermissionFormDto, UUID> permissionStore) {
         return permissions(permissionStore, Labels.defaults());
     }
 
-    public static ResourcePanel<PermissionFormDto> permissions(CrudStore<PermissionFormDto, UUID> permissionStore, Labels labels) {
+    public static GridFormsResourceView<PermissionFormDto> permissions(CrudStore<PermissionFormDto, UUID> permissionStore, Labels labels) {
         Objects.requireNonNull(permissionStore, "permissionStore");
         Labels effective = Labels.defaults().merge(labels);
         return ResourcePanels.auto(PermissionFormDto.class)
                 .withStore(permissionStore)
-                .preset(IamUiPresets.permissions())
+                .actionProvider(IamUiActions.permissionsCrudProvider())
                 .override("code", cfg -> cfg.label(effective.permissionName()))
                 .build();
     }
@@ -154,4 +154,3 @@ public final class IAMResourcePanels {
         }
     }
 }
-

@@ -22,11 +22,29 @@ final class SurfaceResolvers {
         Objects.requireNonNull(context, "context");
 
         UiSurface surface = BeanIntrospector.inspect(dtoType).type().getAnnotation(UiSurface.class);
-        if (surface == null || surface.actions() == Void.class) {
+        return resolveActionsFromType(surface == null ? null : surface.actions(), context);
+    }
+
+    static <T> List<ResourceAction<T>> resolveActions(
+            Class<T> dtoType,
+            Class<?> actionProviderType,
+            UiSurfaceContext<T> context
+    ) {
+        Objects.requireNonNull(dtoType, "dtoType");
+        Objects.requireNonNull(context, "context");
+
+        if (actionProviderType != null) {
+            return resolveActionsFromType(actionProviderType, context);
+        }
+        UiSurface surface = BeanIntrospector.inspect(dtoType).type().getAnnotation(UiSurface.class);
+        return resolveActionsFromType(surface == null ? null : surface.actions(), context);
+    }
+
+    private static <T> List<ResourceAction<T>> resolveActionsFromType(Class<?> configuredProviderType, UiSurfaceContext<T> context) {
+        if (configuredProviderType == null || configuredProviderType == Void.class) {
             return List.of();
         }
 
-        Class<?> configuredProviderType = surface.actions();
         if (!UiActionProvider.class.isAssignableFrom(configuredProviderType)) {
             throw new IllegalStateException(
                     "Configured UiSurface.actions type " + configuredProviderType.getName()

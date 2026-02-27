@@ -47,11 +47,12 @@ import java.util.function.Supplier;
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
 // TODO: once again naming: ResourceGridFormsPanel? ResourceBrowserView?
-public final class ResourcePanel<T> extends VerticalLayout implements ResourceView<T> {
+public final class GridFormsResourceView<T> extends VerticalLayout implements ResourceView<T> {
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
     private final Supplier<Forms.Form<T>> formFactory;
+    private final Class<?> actionProviderType;
     // TODO: why supplier instead of Forms.Form?
     private final List<ResourceAction.ToolbarAction<T>> toolbarActions;
     private final List<ResourceAction.RowAction<T>> rowActions;
@@ -62,12 +63,57 @@ public final class ResourcePanel<T> extends VerticalLayout implements ResourceVi
      * Creates a Resource panel for one type and backing store.
      *
      * <p>Use {@link ResourcePanels} builders instead of calling this constructor directly.</p>
+     *
+     *****************
+     * DESIGN NOTE – Surface vs DTO coupling
+     *
+     * Current situation:
+     * A DTO can declare its UI surface via @UiSurface.
+     * This implies a 1:1 relation: DTO → Surface.
+     *
+     * Reality:
+     * The same DTO may legitimately require multiple views:
+     *
+     * - Grid/List view (dataset overview)
+     * - Form view (single entity edit)
+     * - Tree view (hierarchical representation)
+     * - Graph/UML view (structural visualization)
+     *
+     * The former "ResourcePanel" mixes:
+     *   - Dataset (grid)
+     *   - Selection handling
+     *   - CRUD actions
+     *   - Form editing
+     *
+     * This coupling creates architectural pressure:
+     * - A DTO becomes implicitly tied to one combined surface.
+     * - Alternative views require either:
+     *      a) multiple @UiSurface annotations
+     *      b) surface composition
+     *      c) view orchestration layer
+     *
+     * Current decision:
+     * We keep Forms-based dataset view as-is.
+     * We explicitly acknowledge that:
+     *
+     *   1 DTO != 1 Surface in the long term.
+     *
+     * Future direction (not implemented yet):
+     * - Allow multiple @UiSurface declarations per DTO.
+     * - Introduce separation between:
+     *      - DatasetSurface (list/select)
+     *      - DetailSurface (form/edit)
+     * - Or introduce a higher-level ViewComposition concept.
+     *
+     * Until then:
+     * GridFormsResourceView remains a combined dataset+form surface.
      */
-    ResourcePanel(
+    GridFormsResourceView(
             Class<T> type,
             CrudStore<T, ?> store,
             Grid<T> grid,
             Supplier<Forms.Form<T>> formFactory,
+            Class<?> actionProviderType,
             List<ResourceAction.ToolbarAction<T>> toolbarActions,
             List<ResourceAction.RowAction<T>> rowActions,
             List<ResourceAction.SelectionAction<T>> selectionActions
@@ -78,6 +124,7 @@ public final class ResourcePanel<T> extends VerticalLayout implements ResourceVi
         this.store = Objects.requireNonNull(store, "store");
         this.grid = Objects.requireNonNull(grid, "grid");
         this.formFactory = Objects.requireNonNull(formFactory, "formFactory");
+        this.actionProviderType = actionProviderType;
 
         List<ResourceAction<T>> allActions = new ArrayList<>(loadActionsFromProvider());
         allActions.addAll(Objects.requireNonNull(toolbarActions, "toolbarActions"));
@@ -311,15 +358,15 @@ public final class ResourcePanel<T> extends VerticalLayout implements ResourceVi
 
             @Override
             public void refresh() {
-                ResourcePanel.this.refresh();
+                GridFormsResourceView.this.refresh();
             }
 
             @Override
             public ResourceView<T> view() {
-                return ResourcePanel.this;
+                return GridFormsResourceView.this;
             }
         };
-        return SurfaceResolvers.resolveActions(type, context);
+        return SurfaceResolvers.resolveActions(type, actionProviderType, context);
     }
 
     @Override

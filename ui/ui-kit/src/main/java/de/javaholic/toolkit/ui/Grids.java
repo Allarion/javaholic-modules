@@ -442,7 +442,7 @@ public final class Grids {
          * @return {@code GridBuilder<T>} to provide further fluent operations on {@code Grid} level
          */
         public GridBuilder<T> selectable(Consumer<T> onSelect) {
-            grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+            grid.setSelectionMode(Grid.SelectionMode.SINGLE); // TODO: Whats about Grid.SelectionMode.MULTI? add something like .multiselect(able)
             grid.addSelectionListener(e -> e.getFirstSelectedItem().ifPresent(onSelect));
             return this;
         }

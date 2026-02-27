@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ResourcePanelSmokeTest {
+class GridFormsResourceViewSmokeTest {
 
     @Mock
     private CrudStore<User, Long> store;
@@ -27,7 +27,7 @@ class ResourcePanelSmokeTest {
     void refreshLoadsItemsFromStore() {
         when(store.findAll()).thenReturn(List.of(new User()));
 
-        ResourcePanel<User> view = ResourcePanels.of(User.class).withStore(store).build();
+        GridFormsResourceView<User> view = ResourcePanels.of(User.class).withStore(store).build();
 
         assertThatCode(view::refresh).doesNotThrowAnyException();
         verify(store, atLeastOnce()).findAll();
@@ -36,7 +36,7 @@ class ResourcePanelSmokeTest {
     @Test
     void saveAndRefreshDelegatesToStore() {
         when(store.findAll()).thenReturn(List.of());
-        ResourcePanel<User> view = ResourcePanels.of(User.class).withStore(store).build();
+        GridFormsResourceView<User> view = ResourcePanels.of(User.class).withStore(store).build();
         User user = new User();
 
         view.saveAndRefresh(user);
@@ -48,7 +48,7 @@ class ResourcePanelSmokeTest {
     @Test
     void deleteAndRefreshDelegatesToStore() {
         when(store.findAll()).thenReturn(List.of());
-        ResourcePanel<User> view = ResourcePanels.of(User.class).withStore(store).build();
+        GridFormsResourceView<User> view = ResourcePanels.of(User.class).withStore(store).build();
         User user = new User();
 
         view.deleteAndRefresh(user);
@@ -60,7 +60,7 @@ class ResourcePanelSmokeTest {
     @Test
     void createFailsFastWithoutNoArgsConstructor() {
         when(storeWithoutDefaultCtor.findAll()).thenReturn(List.of());
-        ResourcePanel<NoDefaultConstructorUser> view = ResourcePanels.of(NoDefaultConstructorUser.class)
+        GridFormsResourceView<NoDefaultConstructorUser> view = ResourcePanels.of(NoDefaultConstructorUser.class)
                 .withStore(storeWithoutDefaultCtor)
                 .build();
 

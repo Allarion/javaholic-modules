@@ -5,7 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import de.javaholic.toolkit.persistence.core.CrudStore;
 import de.javaholic.toolkit.ui.api.ResourceAction;
-import de.javaholic.toolkit.ui.resource.action.ResourcePresets;
+import de.javaholic.toolkit.ui.resource.actionprovider.CrudActionProvider;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -14,17 +14,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ResourcePanelActionsTest {
+class GridFormsResourceViewActionsTest {
 
     @Test
-    void nonePresetHidesDefaultCreateAndDefaultRowActionsColumn() {
+    void noProviderIsReadOnlyAndRendersNoDefaultCrudActions() {
         InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
         Grid<User> grid = new Grid<>(User.class, false);
 
-        ResourcePanel<User> panel = ResourcePanels.of(User.class)
+        GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .preset(ResourcePresets.none())
                 .build();
 
         assertThat(findButton(panel, "Create")).isEmpty();
@@ -32,30 +31,29 @@ class ResourcePanelActionsTest {
     }
 
     @Test
-    void readOnlyPresetDisablesDefaultActionsLikeNonePreset() {
+    void crudActionProviderAddsCreateAndRowActions() {
         InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
         Grid<User> grid = new Grid<>(User.class, false);
 
-        ResourcePanel<User> panel = ResourcePanels.of(User.class)
+        GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .preset(ResourcePresets.readOnly())
+                .actionProvider(CrudActionProvider.class)
                 .build();
 
-        assertThat(findButton(panel, "Create")).isEmpty();
-        assertThat(grid.getColumns()).isEmpty();
+        assertThat(findButton(panel, "Create")).isPresent();
+        assertThat(grid.getColumns()).hasSize(1);
     }
 
     @Test
-    void customToolbarAndRowActionsWorkWithNonePreset() {
+    void customToolbarAndRowActionsWorkWithoutProvider() {
         InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
         Grid<User> grid = new Grid<>(User.class, false);
         AtomicInteger toolbarInvocations = new AtomicInteger();
 
-        ResourcePanel<User> panel = ResourcePanels.of(User.class)
+        GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .preset(ResourcePresets.none())
                 .toolbarAction(ResourceAction.toolbar("Run", toolbarInvocations::incrementAndGet))
                 .rowAction(ResourceAction.row("Inspect", user -> { }))
                 .build();
@@ -72,7 +70,7 @@ class ResourcePanelActionsTest {
         InMemoryStore<User> store = new InMemoryStore<>(List.of(new User("A")));
         Grid<User> grid = new Grid<>(User.class, false);
 
-        ResourcePanel<User> panel = ResourcePanels.of(User.class)
+        GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
                 .toolbarAction(ResourceAction.<User>toolbar("Run", () -> { }).enabledWhen(() -> false))
@@ -91,7 +89,7 @@ class ResourcePanelActionsTest {
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
         AtomicReference<Set<User>> selectedOnInvoke = new AtomicReference<>(Set.of());
 
-        ResourcePanel<User> panel = ResourcePanels.of(User.class)
+        GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
                 .selectionAction(ResourceAction.selection("Bulk", selectedOnInvoke::set))
@@ -171,5 +169,4 @@ class ResourcePanelActionsTest {
         }
     }
 }
-
 
