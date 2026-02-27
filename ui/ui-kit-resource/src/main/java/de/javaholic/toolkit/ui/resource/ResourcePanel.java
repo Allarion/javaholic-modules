@@ -51,7 +51,6 @@ import java.util.function.Supplier;
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
 public final class ResourcePanel<T> extends VerticalLayout {
-    // TODO: Since Actions are now not necessary CRUD the class name is not fitting. ActionsPanel o.ae.
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
@@ -339,6 +338,7 @@ public final class ResourcePanel<T> extends VerticalLayout {
         return instantiateProvider(providerType);
     }
 
+    // FIXME: this is NOT the right layer as ResourcePanel IS already a UISurface View.
     private Class<? extends UiActionProvider<?>> resolveProviderType() {
         UiSurface surface = BeanIntrospector.inspect(type).type().getAnnotation(de.javaholic.toolkit.ui.annotations.UiSurface.class);
         if (surface != null) {return surface.actions();}
