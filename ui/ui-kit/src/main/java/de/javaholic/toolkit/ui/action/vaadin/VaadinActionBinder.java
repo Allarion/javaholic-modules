@@ -86,6 +86,6 @@ public final class VaadinActionBinder {
             task.run();
             return;
         }
-        ui.access(() -> task.run());
+        ui.access(task::run);
     }
 }

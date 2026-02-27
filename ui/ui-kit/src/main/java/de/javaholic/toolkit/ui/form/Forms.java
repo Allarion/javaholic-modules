@@ -37,7 +37,6 @@ import jakarta.validation.constraints.NotNull;
 import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Form builder facade for Vaadin Binder-based forms.
@@ -300,7 +299,7 @@ public final class Forms {
             if (!uiRequired && !isRequired(annotations)) {
                 return;
             }
-            if (component instanceof HasValueAndElement hasValue) {
+            if (component instanceof HasValueAndElement<?,?> hasValue) {
                 hasValue.setRequiredIndicatorVisible(true);
             }
         }
@@ -321,7 +320,7 @@ public final class Forms {
                     meta,
                     (BeanProperty<T, V>) property,
                     (HasValue<?, V>) field,
-                    (List) validators,
+                    validators,
                     uiRequired,
                     uiRequiredMessage
             );
@@ -417,7 +416,7 @@ public final class Forms {
     public static final class AutoFormBuilder<T> {
         private final Class<T> type;
         private final UiMeta<T> uiMeta;
-        private FieldRegistry fieldRegistry = new FieldRegistry();
+        private final FieldRegistry fieldRegistry = new FieldRegistry();
         private PermissionChecker permissionChecker;
         // UiMeta provides keys only; auto forms resolve keys only while rendering fields.
         private TextResolver textResolver = new DefaultTextResolver();
@@ -570,7 +569,6 @@ public final class Forms {
             });
         }
 
-        @SuppressWarnings("unchecked")
         private void addField(
                 UiProperty<T> property,
                 BeanMeta<T> beanMeta,
@@ -622,7 +620,7 @@ public final class Forms {
             if (!uiRequired && !isRequired(annotations)) {
                 return;
             }
-            if (component instanceof HasValueAndElement hasValue) {
+            if (component instanceof HasValueAndElement<?,?> hasValue) {
                 hasValue.setRequiredIndicatorVisible(true);
             }
         }
@@ -814,18 +812,12 @@ public final class Forms {
     }
 
     private static boolean isEmptyValue(Object value) {
-        if (value == null) {
-            return true;
-        }
-        if (value instanceof CharSequence chars) {
-            return chars.toString().trim().isEmpty();
-        }
-        if (value instanceof Collection<?> collection) {
-            return collection.isEmpty();
-        }
-        if (value instanceof Map<?, ?> map) {
-            return map.isEmpty();
-        }
-        return false;
+        return switch (value) {
+            case null -> true;
+            case CharSequence chars -> chars.toString().trim().isEmpty();
+            case Collection<?> collection -> collection.isEmpty();
+            case Map<?, ?> map -> map.isEmpty();
+            default -> false;
+        };
     }
 }
