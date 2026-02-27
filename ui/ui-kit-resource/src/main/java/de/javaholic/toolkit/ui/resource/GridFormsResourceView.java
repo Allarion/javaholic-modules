@@ -65,6 +65,7 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
      * <p>Use {@link ResourcePanels} builders instead of calling this constructor directly.</p>
      *
      *****************
+     * <pre>
      * DESIGN NOTE – Surface vs DTO coupling
      *
      * Current situation:
@@ -104,7 +105,7 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
      *      - DatasetSurface (list/select)
      *      - DetailSurface (form/edit)
      * - Or introduce a higher-level ViewComposition concept.
-     *
+     *</pre>
      * Until then:
      * GridFormsResourceView remains a combined dataset+form surface.
      */
