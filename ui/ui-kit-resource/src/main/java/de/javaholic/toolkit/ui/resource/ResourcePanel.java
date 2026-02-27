@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * ({@link Grid}, {@link Forms.Form}, {@link CrudStore}) and keeps each concern isolated:
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
  */
-// TODO: once again naming: ResourceGridFormsPanel
+// TODO: once again naming: ResourceGridFormsPanel? ResourceBrowserView?
 public final class ResourcePanel<T> extends VerticalLayout implements ResourceView<T> {
     private final Class<T> type;
     private final CrudStore<T, ?> store;

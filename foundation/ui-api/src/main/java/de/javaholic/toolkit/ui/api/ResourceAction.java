@@ -43,7 +43,7 @@ public sealed interface ResourceAction<T>
         private final Supplier<Boolean> enabledWhen;
         private final Runnable onInvoke;
 
-        private ToolbarAction(
+        public ToolbarAction(
                 String label,
                 String tooltip,
                 Supplier<Boolean> enabledWhen,
@@ -93,7 +93,7 @@ public sealed interface ResourceAction<T>
         private final Predicate<T> enabledWhen;
         private final Consumer<T> onInvoke;
 
-        private RowAction(
+        public RowAction(
                 String label,
                 String tooltip,
                 Predicate<T> enabledWhen,
@@ -143,7 +143,7 @@ public sealed interface ResourceAction<T>
         private final Predicate<Set<T>> enabledWhen;
         private final Consumer<Set<T>> onInvoke;
 
-        private SelectionAction(
+        public SelectionAction(
                 String label,
                 String tooltip,
                 Predicate<Set<T>> enabledWhen,

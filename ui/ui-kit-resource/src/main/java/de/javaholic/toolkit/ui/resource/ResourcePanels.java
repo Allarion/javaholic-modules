@@ -153,6 +153,7 @@ public final class ResourcePanels {
          * Sets which default create/edit/delete actions are shown.
          * Presets affect only default actions and never block custom actions.
          */
+        @Deprecated
         ManualCrudBuilder<T> preset(ResourcePreset preset);
 
         ManualCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
