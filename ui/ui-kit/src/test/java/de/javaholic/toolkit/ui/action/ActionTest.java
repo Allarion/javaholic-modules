@@ -23,8 +23,8 @@ class ActionTest {
         builder.label("Changed");
         enabled.set(false);
 
-        assertThat(action.labelKeyOrText()).isEqualTo("Save");
-        assertThat(action.tooltipKeyOrText()).isEqualTo("save.tooltip");
+        assertThat(action.label()).isEqualTo("Save");
+        assertThat(action.tooltip()).isEqualTo("save.tooltip");
         assertThat(action.permissionKey()).contains("user.save");
         assertThat(action.enabled().get()).isFalse();
     }

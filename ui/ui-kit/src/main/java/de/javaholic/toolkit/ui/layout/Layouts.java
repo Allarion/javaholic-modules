@@ -172,9 +172,9 @@ public final class Layouts {
                     continue;
                 }
 
-                MenuItem item = menuBar.addItem(action.labelKeyOrText(), e -> action.onClick().run());
-                if (action.tooltipKeyOrText() != null) {
-                    item.getElement().setProperty("title", action.tooltipKeyOrText());
+                MenuItem item = menuBar.addItem(action.label(), e -> action.onClick().run());
+                if (action.tooltip() != null) {
+                    item.getElement().setProperty("title", action.tooltip());
                 }
                 item.setEnabled(Boolean.TRUE.equals(action.enabled().get()));
 

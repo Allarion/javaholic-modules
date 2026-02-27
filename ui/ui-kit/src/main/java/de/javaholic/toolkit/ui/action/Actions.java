@@ -64,7 +64,6 @@ public final class Actions {
      * Vaadin UI thread only.</p>
      */
     public static final class ActionBuilder {
-        // TODO: move into Actions.
         private String label;
         private String tooltip;
         private Supplier<Component> iconSupplier;
@@ -278,13 +277,11 @@ public final class Actions {
             this.permissionKey = permissionKey;
         }
 
-        // TODO: codesmell!!
-        public String labelKeyOrText() {
+        public String label() {
             return labelKeyOrText;
         }
 
-        // TODO: codesmell!!
-        public String tooltipKeyOrText() {
+        public String tooltip() {
             return tooltipKeyOrText;
         }
 

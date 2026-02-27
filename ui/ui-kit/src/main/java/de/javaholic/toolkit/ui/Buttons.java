@@ -69,9 +69,9 @@ public final class Buttons {
     public static Button from(Actions.Action action, PermissionChecker permissionChecker) {
         Objects.requireNonNull(action, "action");
         // FIXME: whole .from(Action ) isnt using the Builder! API BREAK! solution: .withPermissionChecker
-        Button button = new Button(action.labelKeyOrText());
-        if (action.tooltipKeyOrText() != null) {
-            button.setTooltipText(action.tooltipKeyOrText());
+        Button button = new Button(action.label());
+        if (action.tooltip() != null) {
+            button.setTooltipText(action.tooltip());
         }
         action.createIcon().ifPresent(button::setIcon);
         button.addClickListener(e -> action.onClick().run());
