@@ -148,8 +148,6 @@ public final class Forms {
         private TextResolver textResolver = new DefaultTextResolver();
         private final Map<String, FieldOverride<T>> overrides = new LinkedHashMap<>();
         private final List<Consumer<Form<T>>> configurators = new ArrayList<>();
-        private boolean includeId = false;
-        private boolean includeVersion = false;
 
         private FormBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -164,17 +162,6 @@ public final class Forms {
         }
 
         /**
-         * Bean Validation is always active; this is kept for fluent symmetry.
-         * TODO: why not remove this if always active anyways??
-         *
-         * <p>Example: {@code Forms.of(User.class).withValidation().build();}</p>
-         */
-        @Deprecated
-        public FormBuilder<T> withValidation() {
-            return this;
-        }
-
-        /**
          * Overrides a single field by name.
          *
          * <p>Example: {@code Forms.of(User.class).field("email", f -> f.label("user.email"));}</p>
@@ -184,41 +171,6 @@ public final class Forms {
             Objects.requireNonNull(spec, "spec");
             FieldOverride<T> override = overrides.computeIfAbsent(name, key -> new FieldOverride<>());
             spec.accept(override);
-            return this;
-        }
-
-        /**
-         * Includes the technical {@code @Id} property in manual form mode.
-         *
-         * <p>Example: {@code Forms.of(User.class).includeId().build();}</p>
-         */
-        // TODO: revisit, vgl @UiHidden usw
-        public FormBuilder<T> includeId() {
-            this.includeId = true;
-            return this;
-        }
-
-        /**
-         * Includes the technical {@code @Version} property in manual form mode.
-         *
-         * <p>Example: {@code Forms.of(User.class).includeVersion().build();}</p>
-         */
-        // TODO: revisit, vgl @UiHidden usw
-        public FormBuilder<T> includeVersion() {
-            this.includeVersion = true;
-            return this;
-        }
-
-        /**
-         * Conditionally includes technical fields based on a supplier.
-         *
-         * <p>Example: {@code Forms.of(User.class).includeTechnicalFields(() -> debugMode).build();}</p>
-         */
-        public FormBuilder<T> includeTechnicalFields(Supplier<Boolean> include) {
-            if (include.get()) {
-                includeId();
-                includeVersion();
-            }
             return this;
         }
 
@@ -319,13 +271,9 @@ public final class Forms {
             }
             boolean isId = meta.idProperty().map(p -> p.name().equals(property.name())).orElse(false);
             if (isId) {
-                return includeId;
+                return true;
             }
-            boolean isVersion = meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false);
-            if (isVersion) {
-                return includeVersion;
-            }
-            return false;
+            return meta.versionProperty().map(p -> p.name().equals(property.name())).orElse(false);
         }
 
         private void applyLabel(Component component, String fieldName, String overrideLabelKey) {
@@ -570,7 +518,7 @@ public final class Forms {
                     new UiPolicyContext(permissionChecker, bean)
             );
             BeanValidationBinder<T> binder = new PolicyAwareBeanValidationBinder<>(type, policyApplier);
-            // TODO: revisit i18n key, see HierarchicalTextResolver for concept
+            // TODO: i18n key, see HierarchicalTextResolver for concept
             String formError = textResolver.resolve("form.validation.error").orElse("form.validation.error");
             Span formErrorLabel = new Span(formError);
             formErrorLabel.addClassName("form-error");
@@ -790,7 +738,7 @@ public final class Forms {
         }
 
         /**
-         * Adds an additional validator to the field binding.
+         * Adds a validator to the field binding.
          *
          * <p>Example: {@code f.validate(String.class, b -> b.asRequired("Email required"));}</p>
          */
