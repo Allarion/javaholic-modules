@@ -52,6 +52,7 @@ public final class ResourcePanel<T> extends VerticalLayout implements ResourceVi
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
     private final Supplier<Forms.Form<T>> formFactory;
+    // TODO: why supplier instead of Forms.Form?
     private final List<ResourceAction.ToolbarAction<T>> toolbarActions;
     private final List<ResourceAction.RowAction<T>> rowActions;
     private final List<ResourceAction.SelectionAction<T>> selectionActions;

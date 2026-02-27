@@ -11,14 +11,14 @@ class ActionTest {
     void actionIsStableAfterBuild() {
         MutableState<Boolean> enabled = MutableState.of(true);
 
-        ActionBuilder builder = Actions.create()
+        Actions.ActionBuilder builder = Actions.create()
                 .label("Save")
                 .tooltip("save.tooltip")
                 .enabledBy(enabled)
                 .permission("user.save")
                 .onClick(() -> { });
 
-        Action action = builder.build();
+        Actions.Action action = builder.build();
 
         builder.label("Changed");
         enabled.set(false);
