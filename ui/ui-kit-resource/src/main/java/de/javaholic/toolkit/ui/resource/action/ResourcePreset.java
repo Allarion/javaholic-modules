@@ -14,4 +14,4 @@ public interface ResourcePreset {
 
     boolean enableDelete();
 }
-
+// FIXME: 1) NO boolean Flags rather list of actions. 2) Presets are questionable conceptionally.
