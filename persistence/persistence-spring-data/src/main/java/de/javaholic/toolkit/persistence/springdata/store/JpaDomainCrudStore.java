@@ -17,14 +17,21 @@ import java.util.Optional;
  *
  * <p>Example:</p>
  * <pre>{@code
- * final class JpaUserStore extends AbstractJpaDomainCrudStore<User, UUID, JpaUserEntity, JpaUserRepository> {
- *     JpaUserStore(JpaUserRepository repository, JpaUserMapper mapper) {
- *         super(repository, mapper);
+ * public class JpaDomainUserFormStore extends JpaDomainCrudStore<User, UUID, JpaUserEntity, JpaUserRepository> implements UserFormStore {
+ * private final JpaUserMapper mapper;
+ *
+ *     public JpaDomainUserFormStore(JpaUserRepository repo, JpaUserMapper mapper) {
+ *         super(repo, mapper);
+ *         this.mapper = mapper;
  *     }
- * }
+ *
+ *     @Override
+ *     public Optional<User> findByUsername(String username) {
+ *         return repository.findByUsername(username)
+ *                 .map(mapper::toDomain);
+ *     }
  * }</pre>
  */
-// TODO: compare DtoCrudStore -
 public abstract class JpaDomainCrudStore<
         D,        // Domain
         ID,

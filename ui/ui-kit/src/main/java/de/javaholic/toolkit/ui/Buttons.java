@@ -59,43 +59,14 @@ public final class Buttons {
      *
      * <p>Subscriptions are tied to component detach lifecycle.</p>
      */
-    public static Button from(Actions.Action action) {
-        return from(action, null);
+    public static Builder from(Actions.Action action) {
+        return  Buttons.create().fromAction(action);
     }
 
-    /**
-     * Renders a Vaadin {@link Button} from immutable {@link Actions.Action} definition with optional permission context.
-     */
-    public static Button from(Actions.Action action, PermissionChecker permissionChecker) {
-        Objects.requireNonNull(action, "action");
-        // FIXME: whole .from(Actions.Action ) isnt using the Builder!
-        // FIXME: API BREAK: 2 Parameters! solution: .withPermissionChecker
-        Button button = new Button(action.label());
-        if (action.tooltip() != null) {
-            button.setTooltipText(action.tooltip());
-        }
-        action.createIcon().ifPresent(button::setIcon);
-        button.addClickListener(e -> action.onClick().run());
-
-        VaadinActionBinder.bindEnabled(button, action, permissionChecker);
-        VaadinActionBinder.bindVisible(button, action.visible());
-
-        return button;
+    public static Builder from(Actions.ActionBuilder actionBuilder) {
+        return from(actionBuilder.build());
     }
 
-    /**
-     * Alias for {@link #from(Actions.Action)}.
-     */
-    public static Button action(Actions.Action action) {
-        return from(action);
-    }
-
-    /**
-     * Alias for {@link #from(Actions.Action, PermissionChecker)}.
-     */
-    public static Button action(Actions.Action action, PermissionChecker permissionChecker) {
-        return from(action, permissionChecker);
-    }
 
     /**
      * Fluent builder for a Vaadin {@link Button}.
@@ -111,12 +82,19 @@ public final class Buttons {
         private final List<ButtonVariant> themeVariants = new ArrayList<>();
         private TextResolver textResolver = new DefaultTextResolver();
         private int errorNotificationMs = 5_000;
+        private PermissionChecker permissionChecker;
+        private Actions.Action sourceAction;
 
         private Builder() {
         }
 
         public Builder withTextResolver(TextResolver textResolver) {
             this.textResolver = Objects.requireNonNull(textResolver, "textResolver");
+            return this;
+        }
+
+        public Builder withPermissionChecker(PermissionChecker permissionChecker) {
+            this.permissionChecker = permissionChecker;
             return this;
         }
 
@@ -182,6 +160,9 @@ public final class Buttons {
         }
 
         public Button build() {
+            if (sourceAction != null) {
+                return render(sourceAction);
+            }
             ObservableValue<Boolean> effectiveEnabled = resolveEnabledState();
             var actionBuilder = Actions.create()
                     .label(resolve(defaultIfNull(labelKey, "")))
@@ -192,8 +173,23 @@ public final class Buttons {
                 actionBuilder.visibleBy(visibleState);
             }
             Actions.Action rendered = actionBuilder.build();
+            return render(rendered);
+        }
 
-            Button button = Buttons.from(rendered);
+        private Builder fromAction(Actions.Action sourceAction) {
+            this.sourceAction = Objects.requireNonNull(sourceAction, "sourceAction");
+            return this;
+        }
+
+        private Button render(Actions.Action action) {
+            Button button = new Button(action.label());
+            if (action.tooltip() != null) {
+                button.setTooltipText(action.tooltip());
+            }
+            action.createIcon().ifPresent(button::setIcon);
+            button.addClickListener(e -> action.onClick().run());
+            VaadinActionBinder.bindEnabled(button, action, permissionChecker);
+            VaadinActionBinder.bindVisible(button, action.visible());
             themeVariants.forEach(button::addThemeVariants);
             return button;
         }

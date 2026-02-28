@@ -134,7 +134,7 @@ public final class Layouts {
             }
             for (ToolbarEntry entry : entries) {
                 switch (entry.kind) {
-                    case ACTION -> toolbar.add(Buttons.from(entry.action));
+                    case ACTION -> toolbar.add(Buttons.from(entry.action).build());
                     case COMPONENT -> toolbar.add(entry.component);
                     case SPACER -> toolbar.add(Layouts.spacer());
                 }

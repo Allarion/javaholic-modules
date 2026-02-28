@@ -29,11 +29,11 @@ class GridFormsResourceViewValidationTest {
         form.binder().setBean(new Model());
         FormState state = Forms.state(form.binder());
 
-        Button save = Buttons.action(Actions.create()
+        Button save = Buttons.from(Actions.create()
                 .label("Save")
                 .enabledBy(state.canSubmit())
                 .onClick(() -> { })
-                .build());
+                .build()).build();
 
         assertThat(save.isEnabled()).isFalse();
 

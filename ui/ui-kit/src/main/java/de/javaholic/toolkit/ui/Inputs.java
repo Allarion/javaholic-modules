@@ -9,9 +9,12 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import de.javaholic.toolkit.iam.core.api.PermissionChecker;
 import de.javaholic.toolkit.i18n.TextResolver;
 import de.javaholic.toolkit.ui.component.UUIDField;
 import de.javaholic.toolkit.i18n.DefaultTextResolver;
+import de.javaholic.toolkit.ui.policy.DefaultUiPolicyEngine;
+import de.javaholic.toolkit.ui.policy.UiPolicyContext;
 
 
 /**
@@ -29,10 +32,12 @@ import de.javaholic.toolkit.i18n.DefaultTextResolver;
  * You can always skip this and use Vaadin directly.
  */
 public final class Inputs {
+    private static final DefaultUiPolicyEngine POLICY_ENGINE = new DefaultUiPolicyEngine();
+
+    // TODO: add TESTS
 
     private Inputs() {
     }
-    // TODO: Inputs .withPermissionChecker
     // ---------- Factories ----------
 
     public static InputBuilder<TextField> textField() {
@@ -94,6 +99,8 @@ public final class Inputs {
         private String tooltipKey;
         private String errorKey;
         private String placeholderKey;
+        private PermissionChecker permissionChecker;
+        private String permissionKey;
 
         private InputBuilder(T component) {
             this.component = component;
@@ -101,6 +108,16 @@ public final class Inputs {
 
         public InputBuilder<T> withTextResolver(TextResolver textResolver) {
             this.textResolver = java.util.Objects.requireNonNull(textResolver, "textResolver");
+            return this;
+        }
+
+        public InputBuilder<T> withPermissionChecker(PermissionChecker permissionChecker) {
+            this.permissionChecker = permissionChecker;
+            return this;
+        }
+
+        public InputBuilder<T> permission(String permissionKey) {
+            this.permissionKey = permissionKey;
             return this;
         }
 
@@ -160,6 +177,7 @@ public final class Inputs {
          */
         public T build() {
             applyTexts();
+            applyPolicy();
             return component;
         }
 
@@ -184,6 +202,21 @@ public final class Inputs {
 
             if (placeholderKey != null && component instanceof HasPlaceholder hasPlaceholder) {
                 hasPlaceholder.setPlaceholder(textResolver.resolve(placeholderKey).orElse(placeholderKey));
+            }
+        }
+
+        // TODO: why not VaadinActionBinder? also all Inputs are HasEnabled.
+        private void applyPolicy() {
+            boolean allowed = POLICY_ENGINE.isPermissionAllowed(
+                    permissionKey,
+                    new UiPolicyContext(permissionChecker, null)
+            );
+            component.setVisible(allowed);
+            if (component instanceof HasEnabled hasEnabled) {
+                hasEnabled.setEnabled(allowed);
+            }
+            if (component instanceof HasValue<?, ?> hasValue) {
+                hasValue.setReadOnly(!allowed);
             }
         }
     }

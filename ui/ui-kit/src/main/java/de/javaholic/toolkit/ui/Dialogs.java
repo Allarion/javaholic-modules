@@ -134,7 +134,7 @@ public final class Dialogs {
                         completion.accept(Optional.ofNullable(selection.value));
                     })
                     .build();
-            Button ok = Buttons.from(okAction);
+            Button ok = Buttons.from(okAction).build();
 
             if (cancelEnabled) {
                 Actions.Action cancelAction = Actions.create()
@@ -145,7 +145,7 @@ public final class Dialogs {
                             completion.accept(Optional.empty());
                         })
                         .build();
-                Button cancel = Buttons.from(cancelAction);
+                Button cancel = Buttons.from(cancelAction).build();
                 dialog.getFooter().add(Layouts.hbox(cancel, ok));
             } else {
                 dialog.getFooter().add(Layouts.hbox(ok));
@@ -205,7 +205,7 @@ public final class Dialogs {
                             dialog.close();
                         }
                     })
-                    .build());
+                    .build()).build();
 
             cancel = Buttons.from(Actions.create()
                     .label(this.cancelLabelKey)
@@ -215,7 +215,7 @@ public final class Dialogs {
                         }
                         dialog.close();
                     })
-                    .build());
+                    .build()).build();
 
             buttons = Layouts.hbox(ok);
             dialog.getFooter().add(buttons);
@@ -410,7 +410,7 @@ public final class Dialogs {
                         dialog.close();
                         completion.accept(true);
                     })
-                    .build());
+                    .build()).build();
 
             dialog.getFooter().removeAll();
             if (cancelEnabled) {
@@ -421,7 +421,7 @@ public final class Dialogs {
                             dialog.close();
                             completion.accept(false);
                         })
-                        .build());
+                        .build()).build();
                 dialog.getFooter().add(Layouts.hbox(cancel, ok));
             } else {
                 dialog.getFooter().add(Layouts.hbox(ok));

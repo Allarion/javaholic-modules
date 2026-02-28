@@ -19,7 +19,7 @@ class ActionBindingTest {
                 .onClick(() -> { })
                 .build();
 
-        Button button = Buttons.action(action);
+        Button button = Buttons.from(action).build();
 
         assertThat(button.isEnabled()).isFalse();
 

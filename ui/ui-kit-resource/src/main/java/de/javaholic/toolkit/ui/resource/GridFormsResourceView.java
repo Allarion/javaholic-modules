@@ -262,6 +262,8 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
         return builder.build();
     }
 
+
+    // TODO: die sind protected als markierung dass da was passieren muss...weil: wieso delete(onDelete()) aufruft?
     /**
      * Opens the create dialog with a fresh bean instance.
      *
