@@ -15,9 +15,15 @@ class LayoutsActionsSmokeTest {
         Actions.Action delete = Actions.create().label("Delete").onClick(() -> { }).build();
 
         Component menu = Layouts.menu().item(save).separator().item(delete).build();
-        HorizontalLayout toolbar = Layouts.toolbar().action(save).spacer().action(delete).build();
+        HorizontalLayout toolbar = Layouts.toolbar()
+                .action(save)
+                .spacer()
+                .action(delete)
+                .overflowToMenu(true)
+                .build();
 
         assertThat(menu).isNotNull();
         assertThat(toolbar.getComponentCount()).isEqualTo(3);
+        assertThat(toolbar.getElement().getAttribute("data-overflow")).isEqualTo("menu-todo");
     }
 }

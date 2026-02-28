@@ -26,7 +26,9 @@ class GridFormsResourceViewValidationTest {
                 .withForm(form)
                 .build();
 
-        form.binder().setBean(new Model());
+        Model model = new Model();
+        model.setName("");
+        form.binder().setBean(model);
         FormState state = Forms.state(form.binder());
 
         Button save = Buttons.from(Actions.create()
@@ -39,6 +41,7 @@ class GridFormsResourceViewValidationTest {
 
         TextField name = (TextField) form.field("name").orElseThrow();
         name.setValue("ok");
+        assertThat(model.getName()).isEqualTo("ok");
 
         assertThat(save.isEnabled()).isTrue();
     }
@@ -77,4 +80,3 @@ class GridFormsResourceViewValidationTest {
         }
     }
 }
-

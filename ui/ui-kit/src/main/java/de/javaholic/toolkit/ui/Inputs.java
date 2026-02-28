@@ -84,6 +84,7 @@ public final class Inputs {
 
     public static <T>
     InputBuilder<MultiSelectComboBox<T>> multiselect(Class<T> type) {
+        java.util.Objects.requireNonNull(type, "type");
         return new InputBuilder<>(new MultiSelectComboBox<>());
     }
 

@@ -184,23 +184,23 @@ public final class Dialogs {
         private String cancelTooltipKey;
         private boolean cancelEnabled;
 
-        private FormDialog(Forms.Form<T> form) {
-            this.form = form;
+        private FormDialog(Forms.Form<T> formInstance) {
+            this.form = formInstance;
 
             content = Layouts.vbox();
-            content.add(form.layout());
+            content.add(this.form.layout());
             dialog.add(content);
 
             Trigger validationTrigger = new Trigger();
-            form.binder().addStatusChangeListener(e -> validationTrigger.fire());
-            var formValid = DerivedState.of(() -> form.binder().isValid(), validationTrigger);
+            this.form.binder().addStatusChangeListener(e -> validationTrigger.fire());
+            var formValid = DerivedState.of(() -> this.form.binder().isValid(), validationTrigger);
 
             ok = Buttons.from(Actions.create()
                     .label(this.okLabelKey)
                     .enabledBy(formValid)
                     .onClick(() -> {
                         if (onOk != null) {
-                            onOk.accept(form, dialog);
+                            onOk.accept(this.form, dialog);
                         } else {
                             dialog.close();
                         }

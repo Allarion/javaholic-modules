@@ -115,6 +115,8 @@ public final class Forms {
 
     /**
      * Creates a reactive state facade for a Binder-backed form.
+     *
+     * TODO: check API, not very fluent: FormState state = Forms.state(form.binder());
      */
     public static <T> FormState state(Binder<T> binder) {
         return new BinderFormState<>(binder);

@@ -165,7 +165,7 @@ public final class Buttons {
             }
             ObservableValue<Boolean> effectiveEnabled = resolveEnabledState();
             var actionBuilder = Actions.create()
-                    .label(resolve(defaultIfNull(labelKey, "")))
+                    .label(labelKey != null ? resolve(labelKey) : "")
                     .tooltip(tooltipKey != null ? resolve(tooltipKey) : null)
                     .onClick(action != null ? () -> runSafely(action) : () -> { })
                     .enabledBy(effectiveEnabled);
@@ -224,9 +224,6 @@ public final class Buttons {
             }
         }
 
-        private static String defaultIfNull(String value, String fallback) {
-            return value != null ? value : fallback;
-        }
     }
 
     /**
