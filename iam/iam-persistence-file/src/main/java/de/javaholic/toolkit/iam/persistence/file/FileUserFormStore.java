@@ -27,7 +27,7 @@ public final class FileUserFormStore implements UserFormStore {
     private static final String DEFAULT_RESOURCE = "iam/users.yaml";
 
     private final List<User> users;
-    private final Map<String, User> usersByUsername;
+    private final Map<String, User> usersByIdentifier;
 
     public FileUserFormStore() {
         this(DEFAULT_RESOURCE, new ObjectMapper(new YAMLFactory()));
@@ -43,12 +43,12 @@ public final class FileUserFormStore implements UserFormStore {
         UsersFile data = load(resourcePath, mapper);
         Map<String, Role> rolesByName = buildRoles(data.roles);
         this.users = Collections.unmodifiableList(buildUsers(data.users, rolesByName));
-        this.usersByUsername = indexUsers(this.users);
+        this.usersByIdentifier = indexUsers(this.users);
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return Optional.ofNullable(usersByUsername.get(username));
+    public Optional<User> findByIdentifier(String identifier) {
+        return Optional.ofNullable(usersByIdentifier.get(identifier));
     }
 
     @Override
@@ -97,11 +97,11 @@ public final class FileUserFormStore implements UserFormStore {
             if (entry == null) {
                 continue;
             }
-            String username = Objects.requireNonNull(entry.username, "username");
-            UUID id = entry.id != null ? entry.id : defaultIdFor(username);
+            String identifier = Objects.requireNonNull(entry.identifier, "identifier");
+            UUID id = entry.id != null ? entry.id : defaultIdFor(identifier);
             UserStatus status = entry.status != null ? UserStatus.valueOf(entry.status) : UserStatus.ACTIVE;
             Set<Role> roles = resolveRoles(entry.roles, rolesByName);
-            result.add(new User(id, username, status, roles));
+            result.add(new User(id, identifier, entry.displayName, status, roles));
         }
         return result;
     }
@@ -109,7 +109,7 @@ public final class FileUserFormStore implements UserFormStore {
     private Map<String, User> indexUsers(List<User> users) {
         Map<String, User> result = new HashMap<>();
         for (User user : users) {
-            result.put(user.getUsername(), user);
+            result.put(user.getIdentifier(), user);
         }
         return result;
     }
@@ -127,8 +127,8 @@ public final class FileUserFormStore implements UserFormStore {
         return roles;
     }
 
-    private UUID defaultIdFor(String username) {
-        return UUID.nameUUIDFromBytes(("user:" + username).getBytes(StandardCharsets.UTF_8));
+    private UUID defaultIdFor(String identifier) {
+        return UUID.nameUUIDFromBytes(("user:" + identifier).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -148,7 +148,8 @@ public final class FileUserFormStore implements UserFormStore {
 
     private static final class UserEntry {
         public UUID id;
-        public String username;
+        public String identifier;
+        public String displayName;
         public String status;
         public Set<String> roles = new HashSet<>();
     }

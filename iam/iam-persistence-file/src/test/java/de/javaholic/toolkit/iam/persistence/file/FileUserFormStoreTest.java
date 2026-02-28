@@ -17,10 +17,11 @@ public class FileUserFormStoreTest {
     @Test
     public void loadsUsersFromYaml() {
         FileUserFormStore store = new FileUserFormStore("iam/users-test.yaml");
-        Optional<User> admin = store.findByUsername("admin");
+        Optional<User> admin = store.findByIdentifier("admin");
 
         assertTrue(admin.isPresent());
         assertEquals(UserStatus.ACTIVE, admin.get().getStatus());
+        assertEquals("Administrator", admin.get().getDisplayName());
         assertEquals(Set.of("ADMIN"), toRoleNames(admin.get()));
 
         Role adminRole = admin.get().getRoles().iterator().next();

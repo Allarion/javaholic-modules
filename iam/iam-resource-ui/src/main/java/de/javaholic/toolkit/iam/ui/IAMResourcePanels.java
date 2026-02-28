@@ -87,7 +87,7 @@ public final class IAMResourcePanels {
         return ResourcePanels.auto(UserFormDto.class)
                 .withStore(userStore)
                 .withActionProvider(IamUiActions.usersCrudProvider())
-                .override("username", cfg -> cfg.label(effective.userUsername()))
+                .override("identifier", cfg -> cfg.label(effective.userUsername()))
                 .override("status", cfg -> cfg.label(effective.userStatus()))
                 .override("roles", cfg -> cfg.label(effective.userRoles()))
                 .action(IamUiActions.deactivateUserAction(userStore))

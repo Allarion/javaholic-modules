@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaUserRepository extends JpaRepository<JpaUserEntity, UUID> {
 
-    Optional<JpaUserEntity> findByUsername(String username);
+    Optional<JpaUserEntity> findByIdentifier(String identifier);
 }

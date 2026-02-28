@@ -12,11 +12,14 @@ public class UserFormDto {
     private UUID id;
 
     @UIRequired
-    @UiLabel("form.user.email.label")
-    private String username;
+    @UiLabel("form.user.identifier.label")
+    private String identifier;
+
+    @UiLabel("form.user.display-name.label")
+    private String displayName;
 
     @UIRequired
-    @UiLabel("form.user.active.label")
+    @UiLabel("form.user.status.label")
     private UserStatus status;
 
     @UiLabel("form.user.roles.label")
@@ -25,9 +28,10 @@ public class UserFormDto {
     public UserFormDto() {
     }
 
-    public UserFormDto(UUID id, String username, UserStatus status, Set<RoleFormDto> roles) {
+    public UserFormDto(UUID id, String identifier, String displayName, UserStatus status, Set<RoleFormDto> roles) {
         this.id = id;
-        this.username = username;
+        this.identifier = identifier;
+        this.displayName = displayName;
         this.status = status;
         this.roles = roles;
     }
@@ -40,12 +44,20 @@ public class UserFormDto {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public UserStatus getStatus() {

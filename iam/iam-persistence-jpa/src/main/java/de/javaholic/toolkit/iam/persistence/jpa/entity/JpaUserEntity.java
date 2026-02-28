@@ -24,8 +24,11 @@ public class JpaUserEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false)
-    private String username;
+    @Column(name = "identifier", nullable = false)
+    private String identifier;
+
+    @Column(name = "display_name", nullable = true)
+    private String displayName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -50,12 +53,20 @@ public class JpaUserEntity {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public UserStatus getStatus() {

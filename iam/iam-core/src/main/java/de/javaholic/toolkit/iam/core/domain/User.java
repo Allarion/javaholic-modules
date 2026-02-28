@@ -28,13 +28,15 @@ public final class User {
 
     // TODO: Wrap the ID in UserId(UUID)?
     private UUID id;
-    private String username;
+    private String identifier;
+    private String displayName;
     private UserStatus status;
     private Set<Role> roles;
 
-    public User(UUID id, String username, UserStatus status, Set<Role> roles) {
+    public User(UUID id, String identifier, String displayName, UserStatus status, Set<Role> roles) {
         this.id = Objects.requireNonNull(id, "id");
-        this.username = Objects.requireNonNull(username, "username");
+        this.identifier = Objects.requireNonNull(identifier, "identifier");
+        this.displayName = displayName;
         this.status = Objects.requireNonNull(status, "status");
         this.roles = Set.copyOf(Objects.requireNonNull(roles, "roles"));
     }
@@ -43,27 +45,35 @@ public final class User {
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+        this.roles = Set.copyOf(Objects.requireNonNull(roles, "roles"));
     }
 
     public void setStatus(UserStatus status) {
-        this.status = status;
+        this.status = Objects.requireNonNull(status, "status");
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setIdentifier(String identifier) {
+        this.identifier = Objects.requireNonNull(identifier, "identifier");
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public void setId(UUID id) {
-        this.id = id;
+        this.id = Objects.requireNonNull(id, "id");
     }
 
     public UUID getId() {
         return id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 
     public UserStatus getStatus() {

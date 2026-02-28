@@ -36,7 +36,7 @@ import java.util.UUID;
  * <p>Example usage:</p>
  * <pre>{@code
  * UserStore userStore = ...;
- * userStore.findByUsername("admin");
+ * userStore.findByIdentifier("admin");
  * userStore.save(user);
  * }</pre>
  */

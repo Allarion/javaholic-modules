@@ -21,7 +21,8 @@ public class UserFormDtoMapper implements DtoMapper<UserFormDto, User> {
     public UserFormDto toDto(User domain) {
         return new UserFormDto(
             domain.getId(),
-            domain.getUsername(),
+            domain.getIdentifier(),
+            domain.getDisplayName(),
             domain.getStatus(),
             toRoleDtos(domain.getRoles())
         );
@@ -31,7 +32,8 @@ public class UserFormDtoMapper implements DtoMapper<UserFormDto, User> {
     public User toDomain(UserFormDto dto) {
         return new User(
             dto.getId(),
-            dto.getUsername(),
+            dto.getIdentifier(),
+            dto.getDisplayName(),
             dto.getStatus(),
             toDomainRoles(dto.getRoles())
         );

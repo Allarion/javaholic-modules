@@ -32,7 +32,7 @@ class IAMGridFormsResourcePanelsSmokeTest {
     @Test
     void usersPanelCreatesAndWiresRoleChoices() {
         RoleFormDto admin = new RoleFormDto("admin", Set.of());
-        UserFormDto user = new UserFormDto(UUID.randomUUID(), "anna", UserStatus.ACTIVE, Set.of(admin));
+        UserFormDto user = new UserFormDto(UUID.randomUUID(), "anna", "Anna", UserStatus.ACTIVE, Set.of(admin));
         when(userStore.findAll()).thenReturn(List.of(user));
 
         var panel = IAMResourcePanels.users(userStore);
@@ -62,5 +62,4 @@ class IAMGridFormsResourcePanelsSmokeTest {
         verify(permissionDtoStore, atLeastOnce()).findAll();
     }
 }
-
 

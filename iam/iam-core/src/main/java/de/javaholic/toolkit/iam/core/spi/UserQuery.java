@@ -20,9 +20,9 @@ import java.util.UUID;
 
 public interface UserQuery {
     /**
-     * Finds a user by unique username.
+     * Finds a user by unique identifier.
      */
-    Optional<User> findByUsername(String username);
+    Optional<User> findByIdentifier(String identifier);
 
     /**
      * Returns all users.

@@ -22,7 +22,8 @@ public final class JpaUserMapper implements EntityMapper<User, JpaUserEntity> {
         Objects.requireNonNull(entity, "entity");
         return new User(
             entity.getId(),
-            entity.getUsername(),
+            entity.getIdentifier(),
+            entity.getDisplayName(),
             entity.getStatus(),
             toDomainRoles(entity.getRoles())
         );
@@ -33,7 +34,8 @@ public final class JpaUserMapper implements EntityMapper<User, JpaUserEntity> {
         Objects.requireNonNull(user, "user");
         JpaUserEntity entity = new JpaUserEntity();
         entity.setId(user.getId());
-        entity.setUsername(user.getUsername());
+        entity.setIdentifier(user.getIdentifier());
+        entity.setDisplayName(user.getDisplayName());
         entity.setStatus(user.getStatus());
         entity.setRoles(toJpaRoles(user.getRoles()));
         return entity;

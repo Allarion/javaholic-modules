@@ -22,8 +22,8 @@ public class JpaDomainUserFormStore extends JpaDomainCrudStore<User, UUID, JpaUs
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return repository.findByUsername(username)
+    public Optional<User> findByIdentifier(String identifier) {
+        return repository.findByIdentifier(identifier)
                 .map(mapper::toDomain);
     }
 }

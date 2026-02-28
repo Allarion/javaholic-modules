@@ -68,13 +68,15 @@ class IamJpaPersistenceTest {
 
         JpaUserEntity user = new JpaUserEntity();
         user.setId(UUID.randomUUID());
-        user.setUsername("alice");
+        user.setIdentifier("alice");
+        user.setDisplayName("Alice");
         user.setStatus(de.javaholic.toolkit.iam.core.domain.UserStatus.ACTIVE);
         user.setRoles(Set.of(adminRole));
         userRepository.save(user);
 
-        User loaded = userFormStore.findByUsername("alice").orElseThrow();
-        assertEquals("alice", loaded.getUsername());
+        User loaded = userFormStore.findByIdentifier("alice").orElseThrow();
+        assertEquals("alice", loaded.getIdentifier());
+        assertEquals("Alice", loaded.getDisplayName());
         assertEquals(Set.of("ADMIN"),
             loaded.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toSet()));
         Role role = loaded.getRoles().iterator().next();
@@ -83,14 +85,15 @@ class IamJpaPersistenceTest {
     }
 
     @Test
-    void userStoreFindByUsernameWorks() {
+    void userStoreFindByIdentifierWorks() {
         JpaUserEntity user = new JpaUserEntity();
         user.setId(UUID.randomUUID());
-        user.setUsername("bob");
+        user.setIdentifier("bob");
+        user.setDisplayName("Bob");
         user.setStatus(de.javaholic.toolkit.iam.core.domain.UserStatus.ACTIVE);
         userRepository.save(user);
 
-        assertTrue(userFormStore.findByUsername("bob").isPresent());
+        assertTrue(userFormStore.findByIdentifier("bob").isPresent());
     }
 
     @SpringBootConfiguration
