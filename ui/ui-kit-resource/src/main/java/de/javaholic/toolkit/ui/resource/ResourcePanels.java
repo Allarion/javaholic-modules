@@ -18,6 +18,7 @@ import de.javaholic.toolkit.ui.meta.UiPropertyConfig;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Factory for fluent Resource UI surface builders.
@@ -50,6 +51,7 @@ import java.util.function.Predicate;
  *         .build();
  * }</pre>
  */
+// TODO: rename: its the builder for GridFormsResourceView so ..Views.
 public final class ResourcePanels {
 
     private ResourcePanels() {
@@ -109,11 +111,9 @@ public final class ResourcePanels {
 
         CrudBuilder<T> withActionProvider(Class<?> actionProviderType);
 
-        CrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
+        CrudBuilder<T> withNewInstanceSupplier(Supplier<T> newInstanceSupplier);
 
-        CrudBuilder<T> rowAction(ResourceAction.RowAction<T> action);
-
-        CrudBuilder<T> selectionAction(ResourceAction.SelectionAction<T> action);
+        CrudBuilder<T> action(ResourceAction<T> action);
     }
 
     /**
@@ -145,11 +145,9 @@ public final class ResourcePanels {
 
         ManualCrudBuilder<T> withActionProvider(Class<?> actionProviderType);
 
-        ManualCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
+        ManualCrudBuilder<T> withNewInstanceSupplier(Supplier<T> newInstanceSupplier);
 
-        ManualCrudBuilder<T> rowAction(ResourceAction.RowAction<T> action);
-
-        ManualCrudBuilder<T> selectionAction(ResourceAction.SelectionAction<T> action);
+        ManualCrudBuilder<T> action(ResourceAction<T> action);
 
         /**
          * Injects a prebuilt grid.
@@ -196,12 +194,9 @@ public final class ResourcePanels {
 
         AutoCrudBuilder<T> withActionProvider(Class<?> actionProviderType);
 
-        // todo: cant this be 1 for all actions? the action know where it belongs
-        AutoCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action);
+        AutoCrudBuilder<T> withNewInstanceSupplier(Supplier<T> newInstanceSupplier);
 
-        AutoCrudBuilder<T> rowAction(ResourceAction.RowAction<T> action);
-
-        AutoCrudBuilder<T> selectionAction(ResourceAction.SelectionAction<T> action);
+        AutoCrudBuilder<T> action(ResourceAction<T> action);
 
         /**
          * Overrides one auto-generated property before grid/form generation.
@@ -231,9 +226,8 @@ public final class ResourcePanels {
         private TextResolver textResolver = new DefaultTextResolver();
         private Predicate<UiProperty<T>> propertyFilter = UiProperty::isVisible;
         private Class<?> actionProviderType;
-        private final List<ResourceAction.ToolbarAction<T>> toolbarActions = new ArrayList<>();
-        private final List<ResourceAction.RowAction<T>> rowActions = new ArrayList<>();
-        private final List<ResourceAction.SelectionAction<T>> selectionActions = new ArrayList<>();
+        private Supplier<T> newInstanceSupplier;
+        private final List<ResourceAction<T>> actions = new ArrayList<>();
 
         private ManualBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -276,20 +270,14 @@ public final class ResourcePanels {
         }
 
         @Override
-        public ManualCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action) {
-            this.toolbarActions.add(Objects.requireNonNull(action, "action"));
+        public ManualCrudBuilder<T> withNewInstanceSupplier(Supplier<T> newInstanceSupplier) {
+            this.newInstanceSupplier = Objects.requireNonNull(newInstanceSupplier, "newInstanceSupplier");
             return this;
         }
 
         @Override
-        public ManualCrudBuilder<T> rowAction(ResourceAction.RowAction<T> action) {
-            this.rowActions.add(Objects.requireNonNull(action, "action"));
-            return this;
-        }
-
-        @Override
-        public ManualCrudBuilder<T> selectionAction(ResourceAction.SelectionAction<T> action) {
-            this.selectionActions.add(Objects.requireNonNull(action, "action"));
+        public ManualCrudBuilder<T> action(ResourceAction<T> action) {
+            this.actions.add(Objects.requireNonNull(action, "action"));
             return this;
         }
 
@@ -311,9 +299,8 @@ public final class ResourcePanels {
                             .exclude(excluded)
                             .build(),
                     actionProviderType,
-                    toolbarActions,
-                    rowActions,
-                    selectionActions
+                    newInstanceSupplier,
+                    actions
             );
         }
     }
@@ -325,9 +312,8 @@ public final class ResourcePanels {
         private Predicate<UiProperty<T>> propertyFilter = property -> true;
         private final Map<String, Consumer<UiPropertyConfig<T>>> overrides = new LinkedHashMap<>();
         private Class<?> actionProviderType;
-        private final List<ResourceAction.ToolbarAction<T>> toolbarActions = new ArrayList<>();
-        private final List<ResourceAction.RowAction<T>> rowActions = new ArrayList<>();
-        private final List<ResourceAction.SelectionAction<T>> selectionActions = new ArrayList<>();
+        private Supplier<T> newInstanceSupplier;
+        private final List<ResourceAction<T>> actions = new ArrayList<>();
 
         private AutoBuilder(Class<T> type) {
             this.type = Objects.requireNonNull(type, "type");
@@ -358,20 +344,14 @@ public final class ResourcePanels {
         }
 
         @Override
-        public AutoCrudBuilder<T> toolbarAction(ResourceAction.ToolbarAction<T> action) {
-            this.toolbarActions.add(Objects.requireNonNull(action, "action"));
+        public AutoCrudBuilder<T> withNewInstanceSupplier(Supplier<T> newInstanceSupplier) {
+            this.newInstanceSupplier = Objects.requireNonNull(newInstanceSupplier, "newInstanceSupplier");
             return this;
         }
 
         @Override
-        public AutoCrudBuilder<T> rowAction(ResourceAction.RowAction<T> action) {
-            this.rowActions.add(Objects.requireNonNull(action, "action"));
-            return this;
-        }
-
-        @Override
-        public AutoCrudBuilder<T> selectionAction(ResourceAction.SelectionAction<T> action) {
-            this.selectionActions.add(Objects.requireNonNull(action, "action"));
+        public AutoCrudBuilder<T> action(ResourceAction<T> action) {
+            this.actions.add(Objects.requireNonNull(action, "action"));
             return this;
         }
 
@@ -395,9 +375,8 @@ public final class ResourcePanels {
                     grid,
                     () -> buildForm(excluded, effectiveConfigs),
                     actionProviderType,
-                    toolbarActions,
-                    rowActions,
-                    selectionActions
+                    newInstanceSupplier,
+                    actions
             );
         }
 

@@ -27,9 +27,9 @@ class ResourceFluentApiContractTest {
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
                 .withActionProvider(NoopActionProvider.class)
-                .toolbarAction(ResourceAction.toolbar("t", () -> { }))
-                .rowAction(ResourceAction.row("r", dto -> { }))
-                .selectionAction(ResourceAction.selection("s", selection -> { }));
+                .action(ResourceAction.toolbar("t", () -> { }))
+                .action(ResourceAction.row("r", dto -> { }))
+                .action(ResourceAction.selection("s", selection -> { }));
 
         GridFormsResourceView<UserDto> result = chained.build();
 
@@ -47,9 +47,9 @@ class ResourceFluentApiContractTest {
                 .withTextResolver((key, locale) -> Optional.of(key))
                 .withPropertyFilter(UiProperty::isVisible)
                 .withActionProvider(NoopActionProvider.class)
-                .toolbarAction(ResourceAction.toolbar("t", () -> { }))
-                .rowAction(ResourceAction.row("r", dto -> { }))
-                .selectionAction(ResourceAction.selection("s", selection -> { }))
+                .action(ResourceAction.toolbar("t", () -> { }))
+                .action(ResourceAction.row("r", dto -> { }))
+                .action(ResourceAction.selection("s", selection -> { }))
                 .override("email", property -> property.label("user.email.label"));
 
         GridFormsResourceView<UserDto> result = chained.build();
@@ -79,11 +79,9 @@ class ResourceFluentApiContractTest {
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("withActionProvider", Class.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
-        assertThat(ResourcePanels.CrudBuilder.class.getMethod("toolbarAction", ResourceAction.ToolbarAction.class).getReturnType())
+        assertThat(ResourcePanels.CrudBuilder.class.getMethod("withNewInstanceSupplier", java.util.function.Supplier.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
-        assertThat(ResourcePanels.CrudBuilder.class.getMethod("rowAction", ResourceAction.RowAction.class).getReturnType())
-                .isEqualTo(ResourcePanels.CrudBuilder.class);
-        assertThat(ResourcePanels.CrudBuilder.class.getMethod("selectionAction", ResourceAction.SelectionAction.class).getReturnType())
+        assertThat(ResourcePanels.CrudBuilder.class.getMethod("action", ResourceAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.CrudBuilder.class);
         assertThat(ResourcePanels.CrudBuilder.class.getMethod("build").getReturnType())
                 .isEqualTo(GridFormsResourceView.class);
@@ -92,11 +90,9 @@ class ResourceFluentApiContractTest {
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("withActionProvider", Class.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
-        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("toolbarAction", ResourceAction.ToolbarAction.class).getReturnType())
+        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("withNewInstanceSupplier", java.util.function.Supplier.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
-        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("rowAction", ResourceAction.RowAction.class).getReturnType())
-                .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
-        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("selectionAction", ResourceAction.SelectionAction.class).getReturnType())
+        assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("action", ResourceAction.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);
         assertThat(ResourcePanels.AutoCrudBuilder.class.getMethod("override", String.class, java.util.function.Consumer.class).getReturnType())
                 .isEqualTo(ResourcePanels.AutoCrudBuilder.class);

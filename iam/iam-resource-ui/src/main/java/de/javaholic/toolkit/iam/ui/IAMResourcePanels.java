@@ -90,9 +90,9 @@ public final class IAMResourcePanels {
                 .override("username", cfg -> cfg.label(effective.userUsername()))
                 .override("status", cfg -> cfg.label(effective.userStatus()))
                 .override("roles", cfg -> cfg.label(effective.userRoles()))
-                .rowAction(IamUiActions.deactivateUserAction(userStore))
-                .rowAction(IamUiActions.activateUserAction(userStore))
-                .rowAction(IamUiActions.assignRolesAction())
+                .action(IamUiActions.deactivateUserAction(userStore))
+                .action(IamUiActions.activateUserAction(userStore))
+                .action(IamUiActions.assignRolesAction())
                 .build();
     }
 
@@ -109,7 +109,7 @@ public final class IAMResourcePanels {
                 .withActionProvider(IamUiActions.rolesCrudProvider())
                 .override("name", cfg -> cfg.label(effective.roleName()))
                 .override("permissions", cfg -> cfg.label(effective.rolePermissions()))
-                .rowAction(IamUiActions.assignPermissionsAction())
+                .action(IamUiActions.assignPermissionsAction())
                 .build();
     }
 

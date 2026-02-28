@@ -54,8 +54,8 @@ class GridFormsResourceViewActionsTest {
         GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .toolbarAction(ResourceAction.toolbar("Run", toolbarInvocations::incrementAndGet))
-                .rowAction(ResourceAction.row("Inspect", user -> { }))
+                .action(ResourceAction.toolbar("Run", toolbarInvocations::incrementAndGet))
+                .action(ResourceAction.row("Inspect", user -> { }))
                 .build();
 
         Button run = findButton(panel, "Run").orElseThrow();
@@ -73,7 +73,7 @@ class GridFormsResourceViewActionsTest {
         GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .toolbarAction(ResourceAction.<User>toolbar("Run", () -> { }).enabledWhen(() -> false))
+                .action(ResourceAction.<User>toolbar("Run", () -> { }).enabledWhen(() -> false))
                 .build();
 
         Button run = findButton(panel, "Run").orElseThrow();
@@ -92,7 +92,7 @@ class GridFormsResourceViewActionsTest {
         GridFormsResourceView<User> panel = ResourcePanels.of(User.class)
                 .withStore(store)
                 .withGrid(grid)
-                .selectionAction(ResourceAction.selection("Bulk", selectedOnInvoke::set))
+                .action(ResourceAction.selection("Bulk", selectedOnInvoke::set))
                 .build();
 
         Button bulk = findButton(panel, "Bulk").orElseThrow();
@@ -169,4 +169,3 @@ class GridFormsResourceViewActionsTest {
         }
     }
 }
-

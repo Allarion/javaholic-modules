@@ -50,9 +50,11 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
     private final Class<T> type;
     private final CrudStore<T, ?> store;
     private final Grid<T> grid;
+    // Supplier avoids reusing binder/component state across dialog opens.
     private final Supplier<Forms.Form<T>> formFactory;
+    // TODO: Forms is a Factory.
     private final Class<?> actionProviderType;
-    // TODO: why supplier instead of Forms.Form?
+    private final Supplier<T> newInstanceSupplier;
     private final List<ResourceAction.ToolbarAction<T>> toolbarActions;
     private final List<ResourceAction.RowAction<T>> rowActions;
     private final List<ResourceAction.SelectionAction<T>> selectionActions;
@@ -98,7 +100,7 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
      *
      *   1 DTO != 1 Surface in the long term.
      *
-     * Future direction (not implemented yet):
+     * TODO: Future direction (not implemented yet):
      * - Allow multiple @UiSurface declarations per DTO.
      * - Introduce separation between:
      *      - DatasetSurface (list/select)
@@ -114,22 +116,19 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
             Grid<T> grid,
             Supplier<Forms.Form<T>> formFactory,
             Class<?> actionProviderType,
-            List<ResourceAction.ToolbarAction<T>> toolbarActions,
-            List<ResourceAction.RowAction<T>> rowActions,
-            List<ResourceAction.SelectionAction<T>> selectionActions
+            Supplier<T> newInstanceSupplier,
+            List<ResourceAction<T>> actions
     )
-        // TODO: warum nicht 1 liste der ResourceAction. wird ja eh aussortiert
         {
         this.type = Objects.requireNonNull(type, "type");
         this.store = Objects.requireNonNull(store, "store");
         this.grid = Objects.requireNonNull(grid, "grid");
         this.formFactory = Objects.requireNonNull(formFactory, "formFactory");
         this.actionProviderType = actionProviderType;
+        this.newInstanceSupplier = newInstanceSupplier;
 
         List<ResourceAction<T>> allActions = new ArrayList<>(loadActionsFromProvider());
-        allActions.addAll(Objects.requireNonNull(toolbarActions, "toolbarActions"));
-        allActions.addAll(Objects.requireNonNull(rowActions, "rowActions"));
-        allActions.addAll(Objects.requireNonNull(selectionActions, "selectionActions"));
+        allActions.addAll(Objects.requireNonNull(actions, "actions"));
 
         List<ResourceAction.ToolbarAction<T>> resolvedToolbarActions = new ArrayList<>();
         List<ResourceAction.RowAction<T>> resolvedRowActions = new ArrayList<>();
@@ -314,8 +313,10 @@ public final class GridFormsResourceView<T> extends VerticalLayout implements Re
                 .open();
     }
 
-    //  TODO:add supplier as alternative to newEmptyBean: .withNewInstanceSupplier(Supplier<T>)...but how is it used (in DTO? => ActionProvider!)
     private T newEmptyBean() {
+        if (newInstanceSupplier != null) {
+            return newInstanceSupplier.get();
+        }
         try {
             Constructor<T> constructor = type.getDeclaredConstructor();
             constructor.setAccessible(true);

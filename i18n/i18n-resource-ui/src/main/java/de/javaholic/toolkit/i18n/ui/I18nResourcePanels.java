@@ -37,10 +37,9 @@ public final class I18nResourcePanels {
                 .withStore(store)
                 .withTextResolver(textResolver)
                 .withActionProvider(CrudActionProvider.class)
-                .toolbarAction(I18nUiActions.importAction())
-                .toolbarAction(I18nUiActions.exportAction())
-                .toolbarAction(I18nUiActions.generateMissingKeysAction())
+                .action(I18nUiActions.importAction())
+                .action(I18nUiActions.exportAction())
+                .action(I18nUiActions.generateMissingKeysAction())
                 .build();
     }
 }
-
