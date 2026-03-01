@@ -45,7 +45,12 @@ import java.util.function.Supplier;
  * <p>Concept: this component coordinates existing building blocks
  * ({@link Grid}, {@link Forms.Form}, {@link CrudStore}) and keeps each concern isolated:
  * layout/dialog flow here, mapping/persistence in stores, and field/column metadata in builders.</p>
- */
+ *
+ * TODO: the whole class is a MIX of different concerns/roles.(vgl. selection-grid => Editor). Also coupled directly with CrudStore<T> ( instead of a service) which is nice, but unusable as spring beans as generics wont work there.
+ * - also, permissions need to specify the domain (iam.user.edit, iam.user.view);
+ * - CrudStore should not be disposed but used in a (named) service.
+ *
+ * */
 public final class GridFormsResourceView<T> extends VerticalLayout implements ResourceView<T> {
     private final Class<T> type;
     private final CrudStore<T, ?> store;

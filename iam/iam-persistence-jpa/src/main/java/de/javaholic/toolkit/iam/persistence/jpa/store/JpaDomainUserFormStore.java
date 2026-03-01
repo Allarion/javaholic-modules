@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Transactional(readOnly = true)
 public class JpaDomainUserFormStore extends JpaDomainCrudStore<User, UUID, JpaUserEntity, JpaUserRepository> implements UserFormStore {
-
+// TODO: add permissions to JpaCrudStore - no! Add SERVICE layer, add permission there!
     private final JpaUserMapper mapper;
 
     public JpaDomainUserFormStore(JpaUserRepository repo, JpaUserMapper mapper) {
@@ -21,6 +21,7 @@ public class JpaDomainUserFormStore extends JpaDomainCrudStore<User, UUID, JpaUs
         this.mapper = mapper;
     }
 
+    // TODO: test: is this reachable from UI?
     @Override
     public Optional<User> findByIdentifier(String identifier) {
         return repository.findByIdentifier(identifier)

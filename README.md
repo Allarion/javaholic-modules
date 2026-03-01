@@ -31,3 +31,18 @@ with:
 Minimal magic. Explicit mapping. Composable layers. Extensible but
 predictable.
 
+
+--
+## Endgame Vision: 
+App Generator / Toolkit:
+Define DTOs (name + fields) with @UiSurface define the view (from provided views (extensible))
+Define actions (name at this point, rest is impl.)
+
+Generate Code for CrudBeans (maybe better to go CQRS) + Services + Actions stubs
+Code actions stub.
+
+--
+Also JPA Editor (mit mutate function to generate flyway oä) aus +/- feld/relation
+Domain (optional) daraus ableitbar (wieder mapper definition)
+
+Dann könnte der DTO editor die bekannten domain objekte (alternativ JPA) und deren felder anbieten. daraus kann man fix neue dtos bauen.
